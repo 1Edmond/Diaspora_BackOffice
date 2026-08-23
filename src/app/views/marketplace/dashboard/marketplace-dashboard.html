@@ -1,0 +1,44 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Marketplace" subTitle="Dashboard" />
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+  </div>
+  }
+
+  <div class="row">
+    <div class="col-xl-3 col-md-6">
+      <div class="card text-center p-4">
+        <app-icon icon="shopping-bag" class="fs-2 text-primary mb-2"></app-icon>
+        <h3 class="mb-0">{{stats.totalListings}}</h3>
+        <p class="text-muted mb-0">Total Listings</p>
+        <a routerLink="/marketplace/listings" class="stretched-link"></a>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card text-center p-4 border-success">
+        <app-icon icon="folder" class="fs-2 text-success mb-2"></app-icon>
+        <h3 class="mb-0">{{stats.totalCategories}}</h3>
+        <p class="text-muted mb-0">Categories</p>
+        <a routerLink="/marketplace/categories" class="stretched-link"></a>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card text-center p-4 border-warning">
+        <app-icon icon="clock" class="fs-2 text-warning mb-2"></app-icon>
+        <h3 class="mb-0">{{stats.pendingListings}}</h3>
+        <p class="text-muted mb-0">Pending Approval</p>
+        <a routerLink="/marketplace/pending" class="stretched-link"></a>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card text-center p-4 border-info">
+        <app-icon icon="message-square" class="fs-2 text-info mb-2"></app-icon>
+        <h3 class="mb-0">{{stats.totalRequests}}</h3>
+        <p class="text-muted mb-0">Service Requests</p>
+        <a routerLink="/marketplace/requests" class="stretched-link"></a>
+      </div>
+    </div>
+  </div>
+</div>

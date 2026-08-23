@@ -1,0 +1,111 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Document Details" subTitle="Document" />
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @else if(document) {
+  <div class="row">
+    <div class="col-xxl-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">{{document.fileName}}</h5>
+          <span class="badge fs-sm" [class]="'bg-' + statusBadges[document.status]">{{statusLabels[document.status]}}</span>
+        </div>
+        <div class="card-body">
+          @if(success) {
+          <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+          }
+          @if(error) {
+          <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+          }
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">File Type</h6>
+              <p>{{document.mimeType}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Size</h6>
+              <p>{{(document.fileSize / 1024).toFixed(1)}} KB</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Document Type</h6>
+              <p>{{document.documentTypeName || 'N/A'}}</p>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Uploaded</h6>
+              <p>{{document.createdAt | date:'medium'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Validated At</h6>
+              <p>{{document.validatedAt ? (document.validatedAt | date:'medium') : '—'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Expires</h6>
+              <p>{{document.expiresAt ? (document.expiresAt | date:'medium') : '—'}}</p>
+            </div>
+          </div>
+
+          @if(document.rejectionReason) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Rejection Reason</h6>
+            <p class="text-danger">{{document.rejectionReason}}</p>
+          </div>
+          }
+
+          <div class="d-flex gap-2 flex-wrap">
+            @if(document.status === DocumentStatus.Pending) {
+            <button class="btn btn-success" (click)="openValidateModal(validateModal)">Validate</button>
+            <button class="btn btn-danger" (click)="openRejectModal(rejectModal)">Reject</button>
+            }
+            <a routerLink="/documents" class="btn btn-outline-secondary">Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #validateModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Validate Document</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="validateNotes" placeholder="Add any notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-success" (click)="validate()">Validate</button>
+    </div>
+  </ng-template>
+
+  <ng-template #rejectModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Reject Document</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Reason <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [(ngModel)]="rejectReason" placeholder="Enter rejection reason..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-danger" [disabled]="!rejectReason" (click)="reject()">Reject</button>
+    </div>
+  </ng-template>
+  } @else {
+  <div class="alert alert-danger">Document not found</div>
+  }
+</div>

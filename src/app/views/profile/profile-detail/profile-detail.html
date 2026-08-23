@@ -1,0 +1,88 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Profile Detail" subTitle="Profile" />
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @else if(profile) {
+  <div class="row">
+    <div class="col-xxl-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Profile</h5>
+          <span class="badge fs-sm" [class]="'bg-' + statusBadges[profile.status]">{{statusLabels[profile.status]}}</span>
+        </div>
+        <div class="card-body">
+          @if(success) {
+          <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+          }
+          @if(error) {
+          <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+          }
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Name</h6>
+              <p>{{profile.firstName}} {{profile.lastName}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Phone</h6>
+              <p>{{profile.phoneNumber}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Date of Birth</h6>
+              <p>{{profile.dateOfBirth}}</p>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">User ID</h6>
+              <p class="text-truncate">{{profile.userId}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Profile Type ID</h6>
+              <p class="text-truncate">{{profile.profileTypeId}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Created</h6>
+              <p>{{profile.createdAt | date:'medium'}}</p>
+            </div>
+          </div>
+
+          @if(profile.verifiedAt) {
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6 class="text-uppercase text-muted">Verified At</h6>
+              <p>{{profile.verifiedAt | date:'medium'}}</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-uppercase text-muted">Verified By</h6>
+              <p class="text-truncate">{{profile.verifiedByAdminId || 'N/A'}}</p>
+            </div>
+          </div>
+          }
+
+          <div class="d-flex gap-2 flex-wrap mt-3">
+            @if(profile.status === ProfileStatus.PendingVerification) {
+            <button class="btn btn-success" (click)="verify()">Verify Profile</button>
+            }
+            @if(profile.status !== ProfileStatus.Activate) {
+            <button class="btn btn-primary" (click)="activate()">Activate</button>
+            }
+            @if(profile.status !== ProfileStatus.Suspended) {
+            <button class="btn btn-danger" (click)="suspend()">Suspend</button>
+            }
+            <a routerLink="/profiles/pending" class="btn btn-outline-secondary">Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="alert alert-danger">Profile not found</div>
+  }
+</div>

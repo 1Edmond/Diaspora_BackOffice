@@ -1,0 +1,52 @@
+{
+  "name": "ubold",
+  "version": "8.0.0",
+  "description": "UBold is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features.",
+  "author": "Coderthemes",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.7",
+    "@angular/cli": "^21.2.7",
+    "@angular/compiler-cli": "^21.2.8",
+    "@popperjs/core": "^2.11.8",
+    "@types/lodash-es": "^4.17.12",
+    "jasmine-core": "~6.1.0",
+    "karma": "~6.4.4",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.1",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.2.0",
+    "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "@angular/animations": "^21.2.8",
+    "@angular/cdk": "^21.2.6",
+    "@angular/common": "^21.2.8",
+    "@angular/compiler": "^21.2.8",
+    "@angular/core": "^21.2.8",
+    "@angular/forms": "^21.2.8",
+    "@angular/localize": "^21.2.8",
+    "@angular/platform-browser": "^21.2.8",
+    "@angular/router": "^21.2.8",
+    "@ng-bootstrap/ng-bootstrap": "^20.0.0",
+    "angularx-flatpickr": "^8.1.0",
+    "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
+    "dayjs": "^1.11.21",
+    "flatpickr": "^4.6.13",
+    "iconify-icon": "1.0.2",
+    "lodash-es": "^4.18.1",
+    "ng-otp-input": "^2.0.9",
+    "ng2-charts": "^10.0.0",
+    "ngx-countup": "^21.0.0",
+    "ngx-daterangepicker-bootstrap": "^21.5.0",
+    "simplebar-angular": "^3.3.2",
+    "zone.js": "^0.16.2"
+  }
+}

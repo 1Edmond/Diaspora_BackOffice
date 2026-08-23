@@ -1,0 +1,62 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Roles" subTitle="Identity" />
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex align-items-sm-center flex-sm-row flex-column my-3">
+        <div class="flex-grow-1">
+          <h4 class="fs-lg mb-1">Manage Roles</h4>
+          <p class="text-muted mb-0">Manage roles for smoother operations and secure access.</p>
+        </div>
+        <div class="text-end">
+          <a routerLink="/identity/roles/new" class="btn btn-success"><app-icon icon="plus" class="me-1"></app-icon> Add New Role</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Description</th>
+                  <th>Users</th>
+                  <th>Permissions</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (role of roles; track role.id) {
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar flex-shrink-0">
+                        <div class="avatar-title rounded-circle bg-soft-primary text-primary">{{role.name.charAt(0).toUpperCase()}}</div>
+                      </div>
+                      <div class="fw-semibold">{{role.name}}</div>
+                    </div>
+                  </td>
+                  <td>{{role.description || '—'}}</td>
+                  <td><span class="badge bg-soft-primary text-primary">{{role.permissionCount}}</span></td>
+                  <td>{{role.permissionCount}}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a [routerLink]="['/identity/roles', role.id]" class="btn btn-soft-primary btn-sm"><app-icon icon="eye"></app-icon></a>
+                      <a [routerLink]="['/identity/roles', role.id, 'edit']" class="btn btn-soft-success btn-sm"><app-icon icon="pencil"></app-icon></a>
+                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(role)"><app-icon icon="trash"></app-icon></button>
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

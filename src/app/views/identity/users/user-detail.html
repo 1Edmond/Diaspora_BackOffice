@@ -1,0 +1,91 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="User Detail" subTitle="Users" />
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @else if(user) {
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-xl-4 text-center mb-4 mb-xl-0">
+              <div class="avatar avatar-lg">
+                <div class="avatar-title rounded-circle bg-soft-primary text-primary fs-2">{{user.firstName?user.firstName.charAt(0):user.email.charAt(0).toUpperCase()}}</div>
+              </div>
+              <h5 class="mt-2">{{user.firstName}} {{user.lastName}}</h5>
+              <p class="text-muted">{{user.email}}</p>
+              <span class="badge" [class]="'bg-' + (user.status === 'Active' ? 'success' : user.status === 'Suspended' ? 'danger' : user.status === 'Deleted' ? 'dark' : 'secondary')">{{user.status}}</span>
+            </div>
+            <div class="col-xl-8">
+              <ul class="nav nav-tabs nav-tabs-bordered">
+                <li class="nav-item">
+                  <a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-bs-toggle="tab" href="#security">Security</a>
+                </li>
+              </ul>
+              <div class="tab-content p-3">
+                <div class="tab-pane active" id="overview">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Email</span></p>
+                      <p>{{user.email}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Phone</span></p>
+                      <p>{{user.phoneNumber ? (user.phoneNumber.countryCode + ' ' + user.phoneNumber.value) : 'N/A'}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Role</span></p>
+                      <p>{{user.role.join(', ')}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Email Verified</span></p>
+                      <p>{{user.emailVerified ? 'Yes' : 'No'}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">KYC Level</span></p>
+                      <p>{{user.kycLevel}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Last Login</span></p>
+                      <p>{{user.lastLoginAt || 'N/A'}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class=" mb-1"><span class="text-muted fw-semibold">Created</span></p>
+                      <p>{{user.createdAt | date:'medium'}}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane" id="security">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Status</span></p>
+                      <p>{{user.kycLevel}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Submitted</span></p>
+                      <p>{{user.kycSubmittedAt || 'N/A'}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Approved</span></p>
+                      <p>{{user.kycApprovedAt || 'N/A'}}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="alert alert-danger">User not found</div>
+  }
+</div>

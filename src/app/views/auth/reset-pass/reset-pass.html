@@ -1,0 +1,59 @@
+<div class="auth-box overflow-hidden align-items-center d-flex">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xxl-4 col-md-6 col-sm-8">
+        <div class="card p-4">
+          <div class="position-absolute top-0 end-0" style="width: 180px">
+            <img src="assets/images/auth-card-bg.svg" class="auth-card-bg-img" alt="auth-card-bg" />
+          </div>
+          <div class="auth-brand text-center mb-4">
+            <a routerLink="/" class="logo-dark">
+              <img src="assets/images/logo-black.png" alt="dark logo" />
+            </a>
+            <a routerLink="/" class="logo-light">
+              <img src="assets/images/logo.png" alt="logo" />
+            </a>
+            <p class="text-muted w-lg-75 mt-3 mx-auto">Enter your email address and we'll send you a link to reset your password.</p>
+          </div>
+
+          <form (ngSubmit)="onSubmit(f)" #f="ngForm">
+            <div class="mb-3">
+              <label for="userEmail" class="form-label">
+                Email address
+                <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="email" class="form-control" id="userEmail" name="email" placeholder="you@example.com" required [(ngModel)]="email" email />
+              </div>
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger">{{ error }}</div>
+            }
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary fw-semibold py-2" [disabled]="loading">
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Sending...
+                } @else {
+                  Send Request
+                }
+              </button>
+            </div>
+          </form>
+
+          <p class="text-muted text-center mt-4 mb-0">
+            Return to
+            <a routerLink="/auth/sign-in" class="text-decoration-underline link-offset-3 fw-semibold">Sign in</a>
+          </p>
+        </div>
+
+        <p class="text-center text-muted mt-4 mb-0">
+          © {{currentYear}} {{name}} — by
+          <span class="fw-semibold">{{author}}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

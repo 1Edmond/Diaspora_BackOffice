@@ -1,0 +1,92 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Categories" subTitle="Marketplace" />
+
+  <div class="row">
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">{{editId ? 'Edit' : 'Add'}} Category</h5></div>
+        <div class="card-body">
+          @if(error) {
+          <div class="alert alert-danger">{{error}}</div>
+          }
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="model.name" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="model.description"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Icon URL</label>
+            <input type="text" class="form-control" [(ngModel)]="model.iconUrl" placeholder="https://..." />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Display Order</label>
+            <input type="number" class="form-control" [(ngModel)]="model.displayOrder" />
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" [disabled]="!model.name || saving" (click)="save()">
+              @if(saving) { Saving... } @else { {{editId ? 'Update' : 'Add Category'}} }
+            </button>
+            @if(editId) {
+            <button class="btn btn-outline-secondary" (click)="resetForm()">Cancel</button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>Description</th>
+                  <th>Order</th>
+                  <th>Listings</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cat of categories; track cat.id) {
+                <tr>
+                  <td>
+                    @if(cat.iconUrl) {
+                    <img [src]="cat.iconUrl" class="rounded me-1" style="width: 20px; height: 20px; object-fit: cover;" alt="" />
+                    } @else {
+                    <app-icon icon="tag" class="me-1"></app-icon>
+                    }
+                    {{cat.name}}
+                  </td>
+                  <td>{{cat.slug}}</td>
+                  <td>{{cat.description || '—'}}</td>
+                  <td>{{cat.displayOrder}}</td>
+                  <td>{{cat.listingCount}}</td>
+                  <td>
+                    <span class="badge" [class]="cat.isActive ? 'bg-success' : 'bg-secondary'">{{cat.isActive ? 'Active' : 'Inactive'}}</span>
+                  </td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <button class="btn btn-soft-info btn-sm" (click)="edit(cat)"><app-icon icon="pencil"></app-icon></button>
+                      <button class="btn btn-soft-warning btn-sm" (click)="toggleStatus(cat)"><app-icon icon="refresh-cw"></app-icon></button>
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="7" class="text-center text-muted p-4">No categories</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

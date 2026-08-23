@@ -1,0 +1,106 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Listing Detail" subTitle="Marketplace" />
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+  </div>
+  } @else if(listing) {
+  <div class="row">
+    <div class="col-xxl-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">{{listing.title}}</h5>
+          <span class="badge fs-sm" [class]="'bg-' + ListingStatusBadgeVariants[listing.status]">{{ListingStatusLabels[listing.status]}}</span>
+        </div>
+        <div class="card-body">
+          @if(success) {
+          <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+          }
+          @if(error) {
+          <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+          }
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Price</h6>
+              <h4>{{listing.price != null ? (listing.price | currency: (listing.currency || 'EUR')) : 'Contact for price'}}</h4>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Category</h6>
+              <p>{{listing.categoryName || 'N/A'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Provider</h6>
+              <p>{{listing.providerName || listing.providerId}}</p>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Payment Mode</h6>
+              <p>{{PaymentModeLabels[listing.paymentMode]}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Rating</h6>
+              <p>{{listing.averageRating > 0 ? (listing.averageRating | number:'1.1-1') + ' (' + listing.reviewCount + ' reviews)' : 'No reviews'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Created</h6>
+              <p>{{listing.createdAt | date:'medium'}}</p>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Views</h6>
+              <p>{{listing.viewCount}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Status</h6>
+              <p>{{listing.isActive ? 'Active' : 'Inactive'}}</p>
+            </div>
+            @if(listing.contactInfo) {
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Contact</h6>
+              <p>{{listing.contactInfo}}</p>
+            </div>
+            }
+          </div>
+
+          @if(listing.description) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Description</h6>
+            <p>{{listing.description}}</p>
+          </div>
+          }
+
+          @if(listing.imageUrls.length > 0) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Images</h6>
+            <div class="d-flex flex-wrap gap-2">
+              @for (img of listing.imageUrls; track img) {
+              <img [src]="img" class="rounded" style="width: 80px; height: 80px; object-fit: cover;" alt="Listing image" />
+              }
+            </div>
+          </div>
+          }
+
+          <div class="d-flex gap-2 flex-wrap">
+            @if(listing.status === ListingStatus.Pending) {
+            <button class="btn btn-success" (click)="approve()"><app-icon icon="check" class="me-1"></app-icon>Approve</button>
+            <button class="btn btn-danger" (click)="reject()"><app-icon icon="x" class="me-1"></app-icon>Reject</button>
+            }
+            @if(listing.status === ListingStatus.Approved) {
+            <button class="btn btn-warning" (click)="suspend()"><app-icon icon="pause-circle" class="me-1"></app-icon>Suspend</button>
+            }
+            <a routerLink="/marketplace/listings" class="btn btn-outline-secondary"><app-icon icon="arrow-left" class="me-1"></app-icon>Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="alert alert-danger">Listing not found</div>
+  }
+</div>

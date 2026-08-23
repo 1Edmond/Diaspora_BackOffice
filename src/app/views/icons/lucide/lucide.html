@@ -1,0 +1,110 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Lucide" subTitle="Icons" />
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-block">
+          <h4 class="card-title mb-1 d-flex align-items-center gap-2">
+            <iconify-icon icon="lucide:layout-dashboard" class="fs-xl"></iconify-icon>
+            Overview
+          </h4>
+          <p class="mb-0 text-muted">Lucide is an open-source library of clean, scalable SVG icons for web and app development, offering easy integration and customization.</p>
+        </div>
+
+        <div class="card-body">
+          <h4 class="mt-0 fs-base mb-1">Usage</h4>
+          <code>&lt;iconify-icon icon=&quot;lucide:xxx&quot;&gt;&lt;/iconify-icon&gt;</code>
+
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <iconify-icon icon="lucide:camera" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:heart" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:star" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:check" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:bell" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:cloud" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:user" class="fs-3"></iconify-icon>
+          </div>
+        </div>
+        <div class="card-body border-top border-dashed">
+          <h4 class="mt-0 fs-base mb-1">Colors</h4>
+          <code>&lt;iconify-icon icon=&quot;lucide:xxx&quot; class=&quot;text-xx&quot;&gt;&lt;/iconify-icon&gt;</code>
+
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <iconify-icon icon="lucide:home" class="fs-3 text-primary"></iconify-icon>
+            <iconify-icon icon="lucide:settings" class="fs-3 text-secondary"></iconify-icon>
+            <iconify-icon icon="lucide:calendar" class="fs-3 text-success"></iconify-icon>
+            <iconify-icon icon="lucide:message-circle" class="fs-3 text-info"></iconify-icon>
+            <iconify-icon icon="lucide:flag" class="fs-3 text-warning"></iconify-icon>
+            <iconify-icon icon="lucide:folder" class="fs-3 text-danger"></iconify-icon>
+            <iconify-icon icon="lucide:globe" class="fs-3 text-light"></iconify-icon>
+            <iconify-icon icon="lucide:key" class="fs-3 text-dark"></iconify-icon>
+            <iconify-icon icon="lucide:layers" class="fs-3 text-purple"></iconify-icon>
+          </div>
+        </div>
+
+        <div class="card-body border-top border-dashed">
+          <h4 class="mt-0 fs-base mb-1">Fill Colors</h4>
+          <code>&lt;iconify-icon icon=&quot;lucide:xxx&quot; class=&quot;text-xx fill-xx&quot;&gt;&lt;/iconify-icon&gt;</code>
+
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <iconify-icon icon="lucide:star" class="fs-3 text-primary fill-primary"></iconify-icon>
+            <iconify-icon icon="lucide:user" class="fs-3 text-secondary fill-secondary"></iconify-icon>
+            <iconify-icon icon="lucide:check-circle" class="fs-3 text-success fill-success"></iconify-icon>
+            <iconify-icon icon="lucide:bell" class="fs-3 text-info fill-info"></iconify-icon>
+            <iconify-icon icon="lucide:alert-triangle" class="fs-3 text-warning fill-warning"></iconify-icon>
+            <iconify-icon icon="lucide:file-text" class="fs-3 text-danger fill-danger"></iconify-icon>
+            <iconify-icon icon="lucide:airplay" class="fs-3 text-light fill-light"></iconify-icon>
+            <iconify-icon icon="lucide:lock" class="fs-3 text-dark fill-dark"></iconify-icon>
+            <iconify-icon icon="lucide:database" class="fs-3 text-purple fill-purple"></iconify-icon>
+          </div>
+        </div>
+
+        <div class="card-body border-top border-dashed">
+          <h4 class="mt-0 fs-base mb-1">Sizes</h4>
+          <code>&lt;iconify-icon icon=&quot;lucide:xxx&quot; class=&quot;fs-xx&quot;&gt;&lt;/iconify-icon&gt;</code>
+
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <iconify-icon icon="lucide:phone" class="fs-1"></iconify-icon>
+            <iconify-icon icon="lucide:badge-dollar-sign" class="fs-2"></iconify-icon>
+            <iconify-icon icon="lucide:monitor" class="fs-3"></iconify-icon>
+            <iconify-icon icon="lucide:tablet" class="fs-4"></iconify-icon>
+            <iconify-icon icon="lucide:gamepad-2" class="fs-5"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-6"></iconify-icon>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <iconify-icon icon="lucide:watch"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-sm"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-lg"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-xl"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-xxl"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-24"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-32"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-36"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-42"></iconify-icon>
+            <iconify-icon icon="lucide:watch" class="fs-60"></iconify-icon>
+          </div>
+        </div>
+
+        <div class="card-body border-top border-dashed">
+          <h4 class="mt-0 mb-3">Icons</h4>
+
+          <div class="d-flex flex-wrap align-items-center text-center gap-2">
+            @for (item of lucideIconData; track $index) {
+            <div class="avatar-xxl">
+              <span class="avatar-title flex-column gap-1 border border-dashed rounded-3 overflow-hidden text-truncate text-center p-1">
+                <iconify-icon [icon]="'lucide:' + item.iconName" class="fs-xxl"></iconify-icon>
+                <span class="fw-semibold d-block w-100 text-truncate">{{ item.name }}</span>
+              </span>
+            </div>
+            }
+          </div>
+
+          <div class="text-center mt-3">
+            <a href="https://lucide.dev/icons/" target="_blank" class="btn btn-danger">View All Icons</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

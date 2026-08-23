@@ -1,0 +1,107 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Document Types" subTitle="Document" />
+
+  @if (errorMessage) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Add New Type</h5></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Profile Type <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="formData.profileTypeId">
+              <option value="">Select profile type</option>
+              @for (pt of profileTypes; track pt.id) {
+              <option [value]="pt.id">{{pt.countryName}} ({{pt.countryCode}})</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="e.g. Passport" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="e.g. PASSPORT" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="formData.description" placeholder="Optional description"></textarea>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Renewal Alert (days)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.renewalAlertDays" min="0" />
+            </div>
+            <div class="col-md-6 d-flex align-items-end gap-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isRenewable" [(ngModel)]="formData.isRenewable" />
+                <label class="form-check-label" for="isRenewable">Renewable</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isRequired" [(ngModel)]="formData.isRequired" />
+                <label class="form-check-label" for="isRequired">Required</label>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" [disabled]="!formData.name || !formData.code || !formData.profileTypeId" (click)="createType()">Add Type</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Renewable</th>
+                  <th>Required</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of types; track t.id) {
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{t.name}}</div>
+                    <small class="text-muted">{{t.description || '—'}}</small>
+                  </td>
+                  <td><code>{{t.code}}</code></td>
+                  <td>
+                    <span class="badge" [class]="t.isRenewable ? 'bg-soft-primary text-primary' : 'bg-soft-secondary text-muted'">{{t.isRenewable ? 'Yes' : 'No'}}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="t.isRequired ? 'bg-soft-warning text-warning' : 'bg-soft-secondary text-muted'">{{t.isRequired ? 'Yes' : 'No'}}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Active' : 'Inactive'}}</span>
+                  </td>
+                  <td>
+                    @if(t.isActive) {
+                    <button class="btn btn-soft-danger btn-sm" (click)="deactivateType(t.id)">Deactivate</button>
+                    }
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="6" class="text-center text-muted p-4">No document types</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<div class="container-fluid">
+  <app-page-breadcrumb [title]="isEdit ? 'Edit Procedure' : 'New Procedure'" subTitle="Procedure" />
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          @if(error) {
+          <div class="alert alert-danger">{{error}}</div>
+          }
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label">Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="model.title" required />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Profile Type <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="model.profileType" [disabled]="isEdit">
+                  <option [ngValue]="ProcedureProfileType.Internal">Internal</option>
+                  <option [ngValue]="ProcedureProfileType.External">External</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="model.description"></textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Cost Amount</label>
+                <input type="number" class="form-control" [(ngModel)]="model.costAmount" min="0" step="0.01" />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Currency</label>
+                <input type="text" class="form-control" [(ngModel)]="model.costCurrency" placeholder="EUR" />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Estimated Duration (days)</label>
+                <input type="number" class="form-control" [(ngModel)]="model.estimatedDurationDays" min="1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Profile Type (Country) <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="model.profileTypeId" [disabled]="isEdit">
+              <option value="">Select a profile type...</option>
+              @for (pt of profileTypes; track pt.id) {
+              <option [value]="pt.id">{{pt.countryName}}</option>
+              }
+            </select>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" [disabled]="!model.title || !model.profileTypeId || saving" (click)="save()">
+              @if(saving) { Saving... } @else { Save }
+            </button>
+            <a routerLink="/procedures" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0">Locations</h6></div>
+        <div class="card-body">
+          @for (loc of locations; track loc.id) {
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [id]="'loc-' + loc.id" [checked]="model.locationIds.includes(loc.id)" (change)="toggleLocation(loc.id)" />
+            <label class="form-check-label" [for]="'loc-' + loc.id">{{loc.name}} <span class="text-muted">— {{loc.city}}</span></label>
+          </div>
+          } @empty {
+          <p class="text-muted mb-0">No locations available. Add them in the Locations page.</p>
+          }
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h6 class="mb-0">Required Documents</h6></div>
+        <div class="card-body">
+          @for (dt of documentTypes; track dt.id) {
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [id]="'doc-' + dt.id" [checked]="model.requiredDocumentTypeIds.includes(dt.id)" (change)="toggleDocumentType(dt.id)" />
+            <label class="form-check-label" [for]="'doc-' + dt.id">{{dt.name}}</label>
+          </div>
+          } @empty {
+          <p class="text-muted mb-0">No document types available.</p>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

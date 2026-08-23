@@ -1,0 +1,77 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Service Requests" subTitle="Marketplace" />
+
+  <ul class="nav nav-tabs nav-tabs-bordered mb-3">
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="tab === 'received'" (click)="switchTab('received')">Received</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="tab === 'sent'" (click)="switchTab('sent')">Sent</a>
+    </li>
+  </ul>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Listing</th>
+                  <th>{{tab === 'received' ? 'Requester' : 'Provider'}}</th>
+                  <th>Price</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (req of requests; track req.id) {
+                <tr>
+                  <td>{{req.listingTitle || req.listingId}}</td>
+                  <td>{{tab === 'received' ? req.requesterName : req.providerName}}</td>
+                  <td>{{req.agreedPrice != null ? (req.agreedPrice | currency: (req.agreedCurrency || 'EUR')) : '—'}}</td>
+                  <td><span class="badge" [class]="'bg-' + PaymentStatusBadgeVariants[req.paymentStatus]">{{PaymentStatusLabels[req.paymentStatus]}}</span></td>
+                  <td>
+                    <span class="badge" [class]="'bg-' + ServiceRequestStatusBadgeVariants[req.status]">{{ServiceRequestStatusLabels[req.status]}}</span>
+                  </td>
+                  <td>{{req.createdAt | date:'short'}}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      @if(tab === 'received' && req.status === ServiceRequestStatus.Pending) {
+                      <button class="btn btn-soft-success btn-sm" (click)="accept(req.id)"><app-icon icon="check"></app-icon></button>
+                      <button class="btn btn-soft-danger btn-sm" (click)="decline(req.id)"><app-icon icon="x"></app-icon></button>
+                      }
+                      @if(req.status === ServiceRequestStatus.Accepted) {
+                      <button class="btn btn-soft-success btn-sm" (click)="complete(req.id)"><app-icon icon="check-circle"></app-icon></button>
+                      }
+                      @if(tab === 'sent' && (req.status === ServiceRequestStatus.Pending || req.status === ServiceRequestStatus.Accepted)) {
+                      <button class="btn btn-soft-secondary btn-sm" (click)="cancel(req.id)"><app-icon icon="x-circle"></app-icon></button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="7" class="text-center text-muted p-4">No service requests</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if(totalPages > 1) {
+        <div class="card-body d-flex justify-content-between align-items-center border-top">
+          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

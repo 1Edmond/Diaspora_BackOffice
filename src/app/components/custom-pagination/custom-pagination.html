@@ -1,0 +1,11 @@
+<div class="d-flex justify-content-between pagination-boxed pagination-sm align-items-center">
+  <span class="text-muted"> {{ showingRange }} {{itemsName}} </span>
+  <ngb-pagination class="pagination-sm" [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" (pageChange)="onPageChange($event)">
+    <ng-template ngbPaginationPrevious>
+      <app-icon icon="chevron-left"></app-icon>
+    </ng-template>
+    <ng-template ngbPaginationNext>
+      <app-icon icon="chevron-right"></app-icon>
+    </ng-template>
+  </ngb-pagination>
+</div>

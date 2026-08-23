@@ -1,0 +1,73 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Wallet" subTitle="Wallet" />
+
+  <div class="row mb-3">
+    <div class="col-lg-6">
+      <app-profile-dropdown />
+    </div>
+  </div>
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+  </div>
+  } @else if(!wallet && !profileState.selectedProfileId()) {
+  <div class="alert alert-warning">Select a profile above to view its wallet.</div>
+  } @else if(wallet) {
+  @if(success) {
+  <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+  }
+  @if(error) {
+  <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+  }
+
+  <div class="row">
+    <div class="col-xl-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center p-4">
+          <h6>Current Balance</h6>
+          <h2 class="mb-0">{{wallet.balance | currency:wallet.currency}}</h2>
+          <p class="mb-0 mt-2 opacity-75">Profile: {{wallet.externalProfileId}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Deposit Funds</h5></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <input type="number" class="form-control" [(ngModel)]="depositAmount" min="0" step="0.01" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <input type="text" class="form-control" [(ngModel)]="depositNotes" placeholder="Optional reference" />
+          </div>
+          <button class="btn btn-primary" [disabled]="!depositAmount" (click)="deposit()">Deposit</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Wallet Info</h5></div>
+        <div class="card-body">
+          <p class="mb-1"><span class="text-muted">Currency</span></p>
+          <p>{{wallet.currency}}</p>
+          <p class="mb-1"><span class="text-muted">Status</span></p>
+          <span class="badge" [class]="wallet.isActive ? 'bg-success' : 'bg-secondary'">{{wallet.isActive ? 'Active' : 'Inactive'}}</span>
+          <p class="mb-1 mt-2"><span class="text-muted">Created</span></p>
+          <p>{{wallet.createdAt | date:'medium'}}</p>
+          <p class="mb-1 mt-2"><span class="text-muted">User ID</span></p>
+          <p class="text-truncate">{{wallet.userId}}</p>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a routerLink="/wallet/transactions" class="btn btn-outline-primary">View Transactions</a>
+        <a routerLink="/wallet/parameters" class="btn btn-outline-secondary">Parameters</a>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="alert alert-warning">No wallet found for this profile</div>
+  }
+</div>

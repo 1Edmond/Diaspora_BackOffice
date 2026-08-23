@@ -1,0 +1,70 @@
+<div class="auth-box p-0 w-100">
+  <div class="row w-100 g-0">
+    <div class="col-md-auto">
+      <!--Auth Box content -->
+      <div class="card auth-box-form border-0 mb-0">
+        <div class="position-absolute top-0 end-0" style="width: 180px">
+          <img src="assets/images/auth-card-bg.svg" class="auth-card-bg-img" alt="auth-card-bg" />
+        </div>
+        <div class="card-body min-vh-100 position-relative d-flex flex-column justify-content-center">
+          <div class="auth-brand mb-0 text-center">
+            <a routerLink="/" class="logo-dark">
+              <img src="assets/images/logo-black.png" alt="dark logo" />
+            </a>
+            <a routerLink="/" class="logo-light">
+              <img src="assets/images/logo.png" alt="logo" />
+            </a>
+          </div>
+
+          <div class="mt-auto">
+            <p class="text-muted text-center auth-sub-text mx-auto">Enter your email address and we'll send you a link to reset your password.</p>
+
+            <form (ngSubmit)="onSubmit(f)" #f="ngForm" class="mt-4">
+              <div class="mb-3">
+                <label for="userEmail" class="form-label">
+                  Email address
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="app-search">
+                  <input type="email" class="form-control" id="userEmail" name="email" placeholder="you@example.com" required [(ngModel)]="email" email />
+                  <app-icon icon="mail" class="app-search-icon text-muted"></app-icon>
+                </div>
+              </div>
+
+              @if (error) {
+                <div class="alert alert-danger mb-3">{{ error }}</div>
+              }
+
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary fw-semibold py-2" [disabled]="loading">
+                  @if (loading) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Sending...
+                  } @else {
+                    Send Request
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <p class="text-muted text-center mt-4 mb-0">
+            Return to
+            <a routerLink="/auth/split/sign-in" class="text-decoration-underline link-offset-3 fw-semibold">Sign in</a>
+          </p>
+
+          <p class="text-center text-muted mt-auto mb-0">
+            © {{ currentYear }} {{ name }} — by
+            <span class="fw-bold">{{author}}</span>
+          </p>
+        </div>
+      </div>
+      <!-- End Auth Box Content -->
+    </div>
+    <div class="col">
+      <div class="h-100 position-relative card-side-img rounded-0 overflow-hidden" style="background-image: url(assets/images/auth.jpg)">
+        <div class="p-4 card-img-overlay auth-overlay d-flex align-items-end justify-content-center"></div>
+      </div>
+    </div>
+  </div>
+</div>

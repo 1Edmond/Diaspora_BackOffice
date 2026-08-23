@@ -1,0 +1,38 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="eCommerce" subTitle="Dashboards" />
+  <div class="row row-cols-xxl-4 row-cols-md-2 row-cols-1">
+    @for (item of stateData; track $index) {
+    <div class="col">
+      <statistics-widget [item]="item" />
+    </div>
+    }
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row g-0">
+            <div class="col-xxl-3 col-xl-6 order-xl-1 order-xxl-0">
+              <app-total-sales />
+            </div>
+
+            <div class="col-xxl-9 order-xl-3 order-xxl-1">
+              <app-sales-analytics />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xxl-6">
+      <app-product-inventory />
+    </div>
+
+    <div class="col-xxl-6">
+      <app-recent-orders />
+    </div>
+  </div>
+</div>

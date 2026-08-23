@@ -1,0 +1,77 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="KYC Verifications" subTitle="KYC" />
+  <div class="row">
+    <div class="col-lg-12">
+      <form class="card border p-3">
+        <div class="row gap-3 align-items-end">
+          <div class="col-lg-4">
+            <div class="app-search">
+              <input type="text" class="form-control" placeholder="Search by email..." [(ngModel)]="searchTerm" name="searchTerm" />
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <select class="form-select" [(ngModel)]="statusFilter" name="statusFilter" (change)="onFilterChange()">
+              <option value="">All Statuses</option>
+              @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{opt.label}}</option>
+              }
+            </select>
+          </div>
+          <div class="col">
+            <button type="button" class="btn btn-primary" (click)="onSearch()">Search</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Level</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of verifications; track v.id) {
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar flex-shrink-0">
+                        <div class="avatar-title rounded-circle bg-soft-primary text-primary">{{(v.userEmail || '?').charAt(0).toUpperCase()}}</div>
+                      </div>
+                      <div>{{v.userFirstName}} {{v.userLastName}}</div>
+                    </div>
+                  </td>
+                  <td>{{v.userEmail}}</td>
+                  <td><span class="badge bg-soft-info text-info">{{v.level}}</span></td>
+                  <td>
+                    <span class="badge" [class]="'bg-' + statusBadges[v.status]">{{statusLabels[v.status]}}</span>
+                  </td>
+                  <td>{{v.submittedAt | date:'short'}}</td>
+                  <td><a [routerLink]="['/kyc', v.id]" class="btn btn-soft-primary btn-sm">View</a></td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="6" class="text-center text-muted p-4">
+                    @if(loading) { Loading... } @else { No verifications found }
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

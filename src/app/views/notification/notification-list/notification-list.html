@@ -1,0 +1,64 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Notifications" subTitle="Notification" />
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <h5 class="mb-0">Notifications</h5>
+            @if(unreadCount > 0) {
+            <span class="badge bg-primary">{{unreadCount}} unread</span>
+            }
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm" (click)="toggleFilter()">
+              <app-icon [icon]="unreadOnly ? 'mail' : 'mail-open'" class="me-1"></app-icon>
+              {{unreadOnly ? 'All' : 'Unread only'}}
+            </button>
+            @if(unreadCount > 0) {
+            <button class="btn btn-soft-success btn-sm" (click)="markAllRead()"><app-icon icon="check-double" class="me-1"></app-icon>Mark all read</button>
+            }
+          </div>
+        </div>
+        <div class="card-body p-0">
+          @for (n of notifications; track n.id) {
+          <div class="d-flex align-items-start gap-3 p-3 border-bottom" [class]="n.isRead ? '' : 'bg-soft-primary'" (click)="markRead(n)" style="cursor:pointer">
+            <div class="flex-shrink-0">
+              <div class="avatar">
+                <div class="avatar-title rounded-circle" [class]="n.isRead ? 'bg-soft-secondary text-secondary' : 'bg-primary text-white'">
+                  <app-icon [icon]="n.icon"></app-icon>
+                </div>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{n.title}} <span class="badge bg-soft-info text-info ms-1">{{n.eventType}}</span></h6>
+              <p class="mb-1 text-muted">{{n.message || '—'}}</p>
+              <small class="text-muted">{{n.createdAt | date:'medium'}}</small>
+            </div>
+            @if(!n.isRead) {
+            <div class="flex-shrink-0">
+              <span class="badge bg-primary rounded-pill">New</span>
+            </div>
+            }
+          </div>
+          } @empty {
+          <div class="text-center text-muted p-5">
+            <app-icon icon="bell-off" class="fs-1 d-block mb-2"></app-icon>
+            @if(loading) { Loading... } @else { No notifications }
+          </div>
+          }
+        </div>
+        @if(totalPages > 1) {
+        <div class="card-body d-flex justify-content-between align-items-center border-top">
+          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+<ng-template #defaultStar let-fill="fill">
+  <ng-container>
+    @switch (true) { @case (fill >= 100) {
+    <iconify-icon icon="tabler:star-filled" class="text-warning" />
+    } @case (fill >= 45 && fill < 100) { <iconify-icon icon="tabler:star-half-filled" class="text-warning" />
+    } @default {
+    <iconify-icon icon="tabler:star" class="text-warning" />
+    } }
+  </ng-container>
+</ng-template>
+
+<ngb-rating [(rate)]="rate" [max]="max" class="d-flex align-items-center gap-1" [readonly]="readonly" [resettable]="resettable" [disabled]="disabled" [tabindex]="tabindex" [starTemplate]="starTemplate || defaultStar" />

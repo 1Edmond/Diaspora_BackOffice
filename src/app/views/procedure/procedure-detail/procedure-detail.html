@@ -1,0 +1,122 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Procédure" subTitle="Détail" />
+
+  @if (loading) {
+    <div class="d-flex justify-content-center p-5">
+      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>
+    </div>
+  } @else if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  } @else if (procedure) {
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ procedure.title }}</h5>
+            <span class="badge" [class]="procedure.isActive ? 'bg-success' : 'bg-secondary'">{{ procedure.isActive ? 'Active' : 'Inactive' }}</span>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">{{ procedure.description }}</p>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Type de profil</label>
+                <div class="badge bg-soft-primary text-primary">{{ getProfileTypeLabel(procedure.profileType) }}</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Profil Type ID</label>
+                <code>{{ procedure.profileTypeId }}</code>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Coût</label>
+                <div>{{ procedure.costAmount | currency:procedure.costCurrency }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Durée estimée</label>
+                <div>{{ procedure.estimatedDurationDays }} jour(s)</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Créée le</label>
+                <div>{{ procedure.createdAt | date:'medium' }}</div>
+              </div>
+            </div>
+
+            <hr />
+
+<h6 class="fw-semibold mb-2">Documents de sortie (<code>outputDocumentType</code>)</h6>
+            @if (procedure.outputDocumentType.length) {
+              <div class="mb-3">
+                @for (doc of procedure.outputDocumentType; track doc) {
+                  <span class="badge bg-soft-info text-info me-1 mb-1">{{ getDocumentTypeName(doc) }}</span>
+                }
+              </div>
+            } @else {
+              <div class="text-muted">Aucun document de sortie défini</div>
+            }
+
+            <h6 class="fw-semibold mb-2">Dépendances (<code>dependencyIds</code>)</h6>
+            @if (procedure.dependencyIds.length) {
+              <div class="mb-3">
+                @for (depId of procedure.dependencyIds; track depId) {
+                  <span class="badge bg-soft-warning text-warning me-1 mb-1">{{ getDependencyTitle(depId) }}</span>
+                }
+              </div>
+            } @else {
+              <div class="text-muted">Aucune dépendance</div>
+            }
+
+            <h6 class="fw-semibold mb-2">Types de documents requis (<code>requiredDocumentTypeIds</code>)</h6>
+            @if (procedure.requiredDocumentTypeIds.length) {
+              <div class="mb-3">
+                @for (reqId of procedure.requiredDocumentTypeIds; track reqId) {
+                  <span class="badge bg-soft-secondary text-muted me-1 mb-1">{{ getDocumentTypeName(reqId) }}</span>
+                }
+              </div>
+            } @else {
+              <div class="text-muted">Aucun document requis</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-header"><h5 class="mb-0">Localisations ({{ procedure.locations.length || 0 }})</h5></div>
+          <div class="card-body p-0">
+            @if (procedure.locations.length) {
+              <div class="list-group list-group-flush">
+                @for (loc of procedure.locations; track loc.id) {
+                  <div class="list-group-item">
+                    <h6 class="mb-1">{{ loc.name }}</h6>
+                    <small class="text-muted d-block">{{ loc.street }}, {{ loc.postalCode }} {{ loc.city }}, {{ loc.country }}</small>
+                    @if (loc.phoneNumber) {
+                      <small class="text-muted d-block">📞 {{ loc.phoneNumber }}</small>
+                    }
+                    @if (loc.website) {
+                      <small class="text-muted d-block">🌐 <a [href]="loc.website" target="_blank">{{ loc.website }}</a></small>
+                    }
+                    <small class="text-muted d-block">{{ formatSchedule(loc.schedule) }}</small>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="p-3 text-center text-muted">Aucune localisation</div>
+            }
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body d-flex flex-column gap-2">
+            <button class="btn btn-primary" (click)="goBack()"><app-icon icon="arrow-left" class="me-1"></app-icon>Retour</button>
+            @if (procedure.isActive && selectedProfileId) {
+              <button class="btn btn-success" (click)="startProcedure()"><app-icon icon="play" class="me-1"></app-icon>Démarrer pour ce profil</button>
+            } @else if (!selectedProfileId) {
+              <button class="btn btn-outline-secondary" disabled>Sélectionnez un profil dans la topbar</button>
+            }
+            <a [routerLink]="['/procedures', procedure.id, 'edit']" class="btn btn-outline-primary"><app-icon icon="pencil" class="me-1"></app-icon>Éditer</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

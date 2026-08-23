@@ -1,0 +1,55 @@
+<div class="container-fluid">
+  <app-page-breadcrumb [title]="editing ? 'Edit User' : 'Add User'" subTitle="Users" />
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+            @if(error) {
+            <div class="alert alert-danger">{{error}}</div>
+            }
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" id="email" name="email" [(ngModel)]="formData.email" required />
+              </div>
+              <div class="col-md-6">
+                <label for="password" class="form-label">{{editing ? 'New Password (leave blank to keep current)' : 'Password'}} <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="password" name="password" [(ngModel)]="formData.password" [required]="!editing" />
+              </div>
+              <div class="col-md-6">
+                <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                <select class="form-select" id="role" name="role" [(ngModel)]="formData.role" required>
+                  <option value="">Select role</option>
+                  @for (role of roles; track role.id) {
+                  <option [value]="role.name">{{role.name}}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" [(ngModel)]="formData.dateOfBirth" />
+              </div>
+              <div class="col-md-6">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="firstName" name="firstName" [(ngModel)]="formData.firstName" />
+              </div>
+              <div class="col-md-6">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" name="lastName" [(ngModel)]="formData.lastName" />
+              </div>
+              <div class="col-md-6">
+                <label for="phoneNumber" class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" [(ngModel)]="formData.phoneNumber" />
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="loading">{{editing ? 'Update' : 'Create'}}</button>
+              <a routerLink="/identity/users" class="btn btn-light">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

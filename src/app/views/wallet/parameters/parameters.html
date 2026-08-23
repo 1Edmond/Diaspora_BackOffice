@@ -1,0 +1,71 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Wallet Parameters" subTitle="Wallet" />
+
+  @if(success) {
+  <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+  }
+  @if(error) {
+  <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+  }
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Value</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of parameters; track p.key) {
+                <tr>
+                  <td><code>{{p.key}}</code></td>
+                  <td>{{p.value}}</td>
+                  <td>{{p.description || '—'}}</td>
+                  <td>
+                    <button class="btn btn-soft-info btn-sm" (click)="edit(p)">Edit</button>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted p-4">No parameters</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if(editKey) {
+  <div class="row mt-3">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Edit: <code>{{editKey}}</code></h5></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Value</label>
+            <input type="text" class="form-control" [(ngModel)]="editValue" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-control" [(ngModel)]="editDescription" />
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" (click)="save()">Save</button>
+            <button class="btn btn-outline-secondary" (click)="editKey = ''">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

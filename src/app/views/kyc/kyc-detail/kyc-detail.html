@@ -1,0 +1,179 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="KYC Details" subTitle="KYC" />
+
+  @if(loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @else if(verification) {
+  <div class="row">
+    <div class="col-xxl-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">KYC Verification #{{verification.id.slice(0, 8)}}</h5>
+          <span class="badge fs-sm" [class]="'bg-' + statusBadges[verification.status]">{{statusLabels[verification.status]}}</span>
+        </div>
+        <div class="card-body">
+          @if(success) {
+          <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
+          }
+          @if(error) {
+          <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
+          }
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Email</h6>
+              <p>{{verification.userEmail || 'N/A'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">User ID</h6>
+              <p class="text-truncate">{{verification.userId}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">KYC Level</h6>
+              <span class="badge bg-soft-info text-info">{{verification.level}}</span>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Submitted</h6>
+              <p>{{verification.submittedAt | date:'medium'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Reviewed At</h6>
+              <p>{{verification.reviewedAt ? (verification.reviewedAt | date:'medium') : '—'}}</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-uppercase text-muted">Reviewed By</h6>
+              <p>{{verification.reviewedBy || '—'}}</p>
+            </div>
+          </div>
+
+          @if(verification.rejectionReason) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Rejection Reason</h6>
+            <p class="text-danger">{{verification.rejectionReason}}</p>
+          </div>
+          }
+
+          @if(verification.additionalInfoRequest) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Additional Info Requested</h6>
+            <p>{{verification.additionalInfoRequest}}</p>
+          </div>
+          }
+
+          @if(verification.notes) {
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted">Notes</h6>
+            <p>{{verification.notes}}</p>
+          </div>
+          }
+
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted mb-3">Documents ({{verification.documents.length}})</h6>
+            @if(verification.documents.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Uploaded</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (doc of verification.documents; track doc.id) {
+                  <tr>
+                    <td>{{doc.fileName}}</td>
+                    <td>{{doc.fileType}}</td>
+                    <td>{{(doc.fileSize / 1024).toFixed(1)}} KB</td>
+                    <td>{{doc.uploadedAt | date:'short'}}</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            } @else {
+            <p class="text-muted">No documents uploaded</p>
+            }
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            @if(verification.status === KYCStatus.Pending) {
+            <button class="btn btn-info" (click)="startReview()"><app-icon icon="eye" class="me-1"></app-icon>Start Review</button>
+            }
+            @if(verification.status === KYCStatus.UnderReview || verification.status === KYCStatus.Pending) {
+            <button class="btn btn-success" (click)="openApproveModal(approveModal)"><app-icon icon="check" class="me-1"></app-icon>Approve</button>
+            <button class="btn btn-danger" (click)="openRejectModal(rejectModal)"><app-icon icon="x" class="me-1"></app-icon>Reject</button>
+            <button class="btn btn-warning" (click)="openInfoModal(infoModal)"><app-icon icon="help-circle" class="me-1"></app-icon>Request Info</button>
+            }
+            <a routerLink="/kyc/list" class="btn btn-outline-secondary"><app-icon icon="arrow-left" class="me-1"></app-icon>Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve Modal -->
+  <ng-template #approveModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Approve Verification</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="approveNotes" placeholder="Add any notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-success" (click)="approve()">Approve</button>
+    </div>
+  </ng-template>
+
+  <!-- Reject Modal -->
+  <ng-template #rejectModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Reject Verification</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Reason <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [(ngModel)]="rejectReason" placeholder="Enter rejection reason..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-danger" [disabled]="!rejectReason" (click)="reject()">Reject</button>
+    </div>
+  </ng-template>
+
+  <!-- Request Info Modal -->
+  <ng-template #infoModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Request Additional Information</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Message <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [(ngModel)]="infoMessage" placeholder="Describe what information is needed..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-warning" [disabled]="!infoMessage" (click)="requestMoreInfo()">Request</button>
+    </div>
+  </ng-template>
+  } @else {
+  <div class="alert alert-danger">Verification not found</div>
+  }
+</div>

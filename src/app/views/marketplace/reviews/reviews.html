@@ -1,0 +1,73 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Reviews" subTitle="Marketplace" />
+
+  <div class="row">
+    <div class="col-lg-6">
+      <form class="card border p-3">
+        <div class="row gap-3 align-items-end">
+          <div class="col">
+            <label class="form-label">Listing ID</label>
+            <input type="text" class="form-control" placeholder="Enter a listing ID..." [(ngModel)]="listingId" name="listingId" />
+          </div>
+          <div class="col-auto">
+            <button type="button" class="btn btn-primary" (click)="onListingIdChange()">Load</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Reviewer</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Verified</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of reviews; track r.id) {
+                <tr>
+                  <td>{{r.reviewerName || r.reviewerId}}</td>
+                  <td>
+                    @for (star of [1,2,3,4,5]; track star) {
+                    <span class="text-warning">{{star <= r.rating ? '★' : '☆'}}</span>
+                    }
+                  </td>
+                  <td>{{r.comment || '—'}}</td>
+                  <td>
+                    <span class="badge" [class]="r.isVerified ? 'bg-soft-success text-success' : 'bg-soft-secondary text-muted'">{{r.isVerified ? 'Verified' : 'Unverified'}}</span>
+                  </td>
+                  <td>{{r.createdAt | date:'short'}}</td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="5" class="text-center text-muted p-4">
+                    @if(listingId) { @if(loading) { Loading... } @else { No reviews } } @else { Enter a listing ID to load reviews }
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if(totalPages > 1) {
+        <div class="card-body d-flex justify-content-between align-items-center border-top">
+          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

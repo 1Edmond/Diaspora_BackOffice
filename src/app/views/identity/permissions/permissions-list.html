@@ -1,0 +1,58 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Permissions" subTitle="Identity" />
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center gap-2">
+            <div class="app-search flex-grow-1">
+              <input type="text" class="form-control" placeholder="Search by key, name, service or resource..." [(ngModel)]="searchTerm" name="searchTerm" />
+              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Permission</th>
+                  <th>Key</th>
+                  <th>Service</th>
+                  <th>Resource</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (perm of filteredPermissions; track perm.permissionKey) {
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar flex-shrink-0">
+                        <div class="avatar-title rounded-circle bg-soft-primary text-primary">{{perm.permission.charAt(0).toUpperCase()}}</div>
+                      </div>
+                      <div class="fw-semibold">{{perm.permission}}</div>
+                    </div>
+                  </td>
+                  <td><code>{{perm.permissionKey}}</code></td>
+                  <td>{{perm.serviceName}}</td>
+                  <td>{{perm.resourceName}}</td>
+                  <td>{{perm.description || '—'}}</td>
+                </tr>
+                }
+                @if(filteredPermissions.length === 0 && !loading) {
+                <tr>
+                  <td colspan="5" class="text-center text-muted p-4">No permissions found</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="text-muted">{{filteredPermissions.length}} of {{totalCount}} permissions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

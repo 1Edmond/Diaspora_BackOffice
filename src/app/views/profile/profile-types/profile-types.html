@@ -1,0 +1,75 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Profile Types" subTitle="Profile" />
+
+  <div class="row">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">{{editingId ? 'Edit Profile Type' : 'Add Profile Type'}}</h5></div>
+        <div class="card-body">
+          @if(error) {
+          <div class="alert alert-danger">{{error}}</div>
+          }
+          <div class="mb-3">
+            <label class="form-label">Country Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.countryName" placeholder="e.g. Togo" />
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Country Code <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="formData.countryCode" placeholder="e.g. TG" maxlength="2" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Phone Indicatif</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.phoneIndicatif" placeholder="e.g. +228" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Currency</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.currency" placeholder="e.g. XOF" />
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" [disabled]="!formData.countryName || !formData.countryCode" (click)="submit()">{{editingId ? 'Update' : 'Add Type'}}</button>
+            @if(editingId) {
+            <button class="btn btn-light" (click)="cancelEdit()">Cancel</button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="row g-3">
+        @for (t of types; track t.id) {
+        <div class="col-md-6">
+          <div class="card mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="avatar flex-shrink-0">
+                  <div class="avatar-title rounded bg-soft-primary text-primary fw-semibold">{{t.countryCode}}</div>
+                </div>
+                <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Active' : 'Inactive'}}</span>
+              </div>
+              <h6 class="mb-1">{{t.countryName}}</h6>
+              <p class="text-muted mb-2 small">
+                {{t.phoneIndicatif || '—'}} &middot; {{t.currency || '—'}}
+              </p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-soft-primary btn-sm" (click)="startEdit(t)">Edit</button>
+                <button class="btn btn-soft-{{t.isActive ? 'danger' : 'success'}} btn-sm" (click)="toggleActive(t)">{{t.isActive ? 'Deactivate' : 'Activate'}}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        } @empty {
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body text-center text-muted p-4">
+              @if(loading) { Loading... } @else { No profile types found }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

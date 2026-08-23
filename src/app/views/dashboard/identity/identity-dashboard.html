@@ -1,0 +1,10 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Identity" subTitle="Dashboard" />
+  <div class="row row-cols-xxl-5 row-cols-md-3 row-cols-1">
+    @for (item of kpiData; track $index) {
+    <div class="col">
+      <statistics-widget [item]="item" />
+    </div>
+    }
+  </div>
+</div>

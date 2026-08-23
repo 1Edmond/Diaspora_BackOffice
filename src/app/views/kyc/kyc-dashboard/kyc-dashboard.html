@@ -1,0 +1,56 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="KYC" subTitle="Dashboard" />
+  <div class="row row-cols-xxl-5 row-cols-md-3 row-cols-1">
+    @for (item of kpiData; track $index) {
+    <div class="col">
+      <statistics-widget [item]="item" />
+    </div>
+    }
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Recent Pending Verifications</h5>
+          <a routerLink="/kyc/list" class="btn btn-sm btn-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Level</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of pendingVerifications; track v.id) {
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar flex-shrink-0">
+                        <div class="avatar-title rounded-circle bg-soft-warning text-warning">{{(v.userEmail || '?').charAt(0).toUpperCase()}}</div>
+                      </div>
+                      <div>{{v.userEmail}}</div>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-soft-warning text-warning">{{v.level}}</span></td>
+                  <td>{{v.submittedAt | date:'short'}}</td>
+                  <td><a [routerLink]="['/kyc', v.id]" class="btn btn-soft-primary btn-sm">Review</a></td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted p-4">No pending verifications</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

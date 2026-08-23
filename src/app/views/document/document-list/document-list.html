@@ -1,0 +1,131 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Documents" subTitle="Document" />
+
+  <div class="row mb-3">
+    <div class="col-lg-12">
+      <div class="card border p-3">
+        <div class="row g-3 align-items-end justify-content-between">
+          <div class="col-md-5">
+            <label class="form-label fw-medium">Select Profile</label>
+            <app-profile-search-dropdown [placeholder]="'Select profile...'" (onProfileSelect)="onProfileSelect($event)" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Or enter Profile ID</label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Paste Profile ID..." [(ngModel)]="manualProfileId" (keyup.enter)="applyManualProfileId()" />
+              <button class="btn btn-outline-primary" type="button" (click)="applyManualProfileId()">Apply</button>
+            </div>
+          </div>
+          @if (profileId) {
+          <div class="col-auto">
+            <button class="btn btn-success" (click)="openUploadModal(uploadModal)">
+              <app-icon icon="upload" class="me-1"></app-icon> Upload Document
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (profileId) {
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Profile Documents</h5>
+          <span class="badge bg-primary">{{totalCount}} total</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>File Name</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                  <th>Status</th>
+                  <th>Expires</th>
+                  <th>Uploaded</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (doc of documents; track doc.id) {
+                <tr>
+                  <td class="fw-medium">{{doc.fileName}}</td>
+                  <td><span class="badge bg-soft-info text-info">{{doc.documentTypeName || 'N/A'}}</span></td>
+                  <td>{{(doc.fileSize / 1024).toFixed(1)}} KB</td>
+                  <td>
+                    <span class="badge" [class]="'bg-' + statusBadges[doc.status]">{{statusLabels[doc.status]}}</span>
+                  </td>
+                  <td>{{doc.expiresAt ? (doc.expiresAt | date:'short') : '—'}}</td>
+                  <td>{{doc.createdAt | date:'short'}}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a [routerLink]="['/documents', doc.id]" class="btn btn-soft-primary btn-sm" title="View"><app-icon icon="eye"></app-icon></a>
+                      <button class="btn btn-soft-info btn-sm" (click)="downloadDocument(doc)" title="Download"><app-icon icon="download"></app-icon></button>
+                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(doc)" title="Delete"><app-icon icon="trash"></app-icon></button>
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="7" class="text-center text-muted p-4">
+                    @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading... } @else { No documents found for this profile }
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if(totalPages > 1) {
+        <div class="card-body d-flex justify-content-between align-items-center border-top">
+          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="alert alert-info">
+    <app-icon icon="info-circle" class="me-2"></app-icon> Select a profile from the dropdown above or in the topbar to view documents.
+  </div>
+  }
+
+  <ng-template #uploadModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Upload Document</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      @if (uploadError) {
+      <div class="alert alert-danger mb-3">{{uploadError}}</div>
+      }
+      <div class="mb-3">
+        <label class="form-label">Document Type <span class="text-danger">*</span></label>
+        <select class="form-select" [(ngModel)]="selectedDocumentTypeId">
+          <option value="">Select type...</option>
+          @for (dt of documentTypes; track dt.id) {
+          <option [value]="dt.id">{{dt.name}} ({{dt.code}})</option>
+          }
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">File <span class="text-danger">*</span></label>
+        <input type="file" class="form-control" (change)="onFileChange($event)" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="uploading || !selectedDocumentTypeId || !selectedFile" (click)="uploadDocument()">
+        @if (uploading) { <span class="spinner-border spinner-border-sm me-1"></span> Uploading... } @else { Upload }
+      </button>
+    </div>
+  </ng-template>
+</div>

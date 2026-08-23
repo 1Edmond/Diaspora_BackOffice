@@ -1,0 +1,96 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Procedures" subTitle="Procedure" />
+
+  <div class="row">
+    <div class="col-lg-12">
+      <form class="card border p-3">
+        <div class="row gap-3 align-items-end">
+          <div class="col-lg-3">
+            <label class="form-label">Profile Type</label>
+            <select class="form-select" [(ngModel)]="profileType" name="profileType" (change)="onFilterChange()">
+              <option [ngValue]="ProcedureProfileType.Internal">Internal</option>
+              <option [ngValue]="ProcedureProfileType.External">External</option>
+            </select>
+          </div>
+          <div class="col-lg-4">
+            <label class="form-label">Profile Type (Country)</label>
+            <select class="form-select" [(ngModel)]="profileTypeId" name="profileTypeId" (change)="onFilterChange()">
+              <option value="">Select a profile type...</option>
+              @for (pt of profileTypes; track pt.id) {
+              <option [value]="pt.id">{{pt.countryName}}</option>
+              }
+            </select>
+          </div>
+          <div class="col">
+            <a routerLink="/procedures/new" class="btn btn-success"><app-icon icon="plus" class="me-1"></app-icon>Add Procedure</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Procedure Definitions</h5>
+          <span class="text-muted">{{totalCount}} total</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Profile Type</th>
+                  <th>Cost</th>
+                  <th>Duration (days)</th>
+                  <th>Locations</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of procedures; track p.id) {
+                <tr>
+                  <td>{{p.title}}</td>
+                  <td><span class="badge bg-soft-info text-info">{{ProcedureProfileTypeLabels[p.profileType]}}</span></td>
+                  <td>{{p.costAmount | number:'1.0-2'}} {{p.costCurrency}}</td>
+                  <td>{{p.estimatedDurationDays}}</td>
+                  <td>{{p.locations.length}}</td>
+                  <td>
+                    <span class="badge" [class]="p.isActive ? 'bg-success' : 'bg-secondary'">{{p.isActive ? 'Active' : 'Inactive'}}</span>
+                  </td>
+                  <td>{{p.createdAt | date:'short'}}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a [routerLink]="['/procedures', p.id, 'edit']" class="btn btn-soft-success btn-sm"><app-icon icon="pencil"></app-icon></a>
+                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(p.id)"><app-icon icon="trash"></app-icon></button>
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="8" class="text-center text-muted p-4">
+                    @if(loading) { Loading... } @else { No procedures found }
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if(totalPages > 1) {
+        <div class="card-body d-flex justify-content-between align-items-center border-top">
+          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
