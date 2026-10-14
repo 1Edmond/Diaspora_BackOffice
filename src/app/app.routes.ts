@@ -190,6 +190,11 @@ export const routes: Routes = [
         data: { title: 'Categories' },
       },
       {
+        path: 'marketplace/reports',
+        loadComponent: () => import('./views/marketplace/reports/reports').then((m) => m.Reports),
+        data: { title: 'Reports' },
+      },
+      {
         path: 'marketplace/reviews',
         loadComponent: () => import('./views/marketplace/reviews/reviews').then((m) => m.Reviews),
         data: { title: 'Reviews' },
@@ -198,6 +203,11 @@ export const routes: Routes = [
         path: 'marketplace/requests',
         loadComponent: () => import('./views/marketplace/service-requests/service-requests').then((m) => m.ServiceRequests),
         data: { title: 'Service Requests' },
+      },
+      {
+        path: 'marketplace/providers',
+        loadComponent: () => import('./views/marketplace/providers/providers').then((m) => m.Providers),
+        data: { title: 'Providers Analytics' },
       },
       {
         path: 'wallet',
@@ -218,6 +228,11 @@ export const routes: Routes = [
         path: 'notifications',
         loadComponent: () => import('./views/notification/notification-list/notification-list').then((m) => m.NotificationList),
         data: { title: 'Notifications' },
+      },
+      {
+        path: 'notifications/preferences',
+        loadComponent: () => import('./views/notification/notification-preferences/notification-preferences').then((m) => m.NotificationPreferences),
+        data: { title: 'Notification Preferences' },
       },
       {
         path: 'pages/empty',

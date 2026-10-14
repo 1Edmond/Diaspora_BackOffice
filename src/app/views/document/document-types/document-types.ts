@@ -18,6 +18,7 @@ export class DocumentTypes implements OnInit {
   profileTypes: ProfileTypeDto[] = []
   loading = false
   errorMessage = ''
+  selectedCountryFilter = ''
 
   formData = {
     profileTypeId: '',
@@ -35,7 +36,11 @@ export class DocumentTypes implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadProfileTypes()
     this.loadTypes()
+  }
+
+  loadProfileTypes() {
     this.profileService.getProfileTypes().subscribe({
       next: (res) => {
         this.profileTypes = res
@@ -49,7 +54,7 @@ export class DocumentTypes implements OnInit {
   loadTypes() {
     this.loading = true
     this.errorMessage = ''
-    this.documentService.getDocumentTypes().subscribe({
+    this.documentService.getDocumentTypes(this.selectedCountryFilter || undefined).subscribe({
       next: (res) => {
         this.types = res
         this.loading = false
@@ -62,8 +67,18 @@ export class DocumentTypes implements OnInit {
     })
   }
 
+  onFilterCountryChange() {
+    this.loadTypes()
+  }
+
+  getCountryLabel(profileTypeId?: string): string {
+    if (!profileTypeId) return 'Global (Tous pays)'
+    const pt = this.profileTypes.find(p => p.id === profileTypeId)
+    return pt ? `${pt.flag || ''} ${pt.countryName} (${pt.countryCode})` : 'Pays spécifique'
+  }
+
   createType() {
-    if (!this.formData.name || !this.formData.code || !this.formData.profileTypeId) return
+    if (!this.formData.name || !this.formData.code) return
     this.documentService.createDocumentType({
       profileTypeId: this.formData.profileTypeId,
       name: this.formData.name,
@@ -93,7 +108,7 @@ export class DocumentTypes implements OnInit {
   }
 
   deactivateType(id: string) {
-    if (confirm('Deactivate this document type?')) {
+    if (confirm('Désactiver ce type de document ?')) {
       this.documentService.deactivateDocumentType(id).subscribe({
         next: () => this.loadTypes(),
         error: (err) => {

@@ -1,4 +1,24 @@
-import { ProfileStatus, ProfileKind } from '../shared/enums.model'
+import {
+  ProfileStatus,
+  ProfileKind,
+  ProfileStatusLabels,
+  ProfileStatusBadgeVariants,
+  ProfileKindLabels,
+  VerificationLevel,
+  VerificationLevelLabels,
+  VerificationLevelBadgeVariants,
+} from '../shared/enums.model'
+
+export {
+  ProfileStatus,
+  ProfileKind,
+  ProfileStatusLabels,
+  ProfileStatusBadgeVariants,
+  ProfileKindLabels,
+  VerificationLevel,
+  VerificationLevelLabels,
+  VerificationLevelBadgeVariants,
+}
 
 export interface ProfileDto {
   id: string
@@ -12,6 +32,7 @@ export interface ProfileDto {
   status: ProfileStatus
   verifiedAt?: string
   verifiedByAdminId?: string
+  verificationLevel?: VerificationLevel
   createdAt: string
 }
 
@@ -38,6 +59,7 @@ export interface ProfileTypeDto {
   countryCode: string
   phoneIndicatif: string
   currency: string
+  flag?: string
   isActive: boolean
 }
 
@@ -46,4 +68,5 @@ export interface CreateProfileTypeRequest {
   countryCode: string
   phoneIndicatif: string
   currency: string
+  flag?: string
 }

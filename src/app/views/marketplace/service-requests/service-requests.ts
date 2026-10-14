@@ -1,26 +1,38 @@
 import { Component, OnInit } from '@angular/core'
 import { DatePipe, CurrencyPipe } from '@angular/common'
+import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
-import { ServiceRequestDto } from '@core/models/marketplace/marketplace.model'
-import { ServiceRequestStatus, ServiceRequestStatusLabels, ServiceRequestStatusBadgeVariants, PaymentStatusLabels, PaymentStatusBadgeVariants } from '@core/models/shared/enums.model'
+import { ServiceRequestDto, AdminServiceRequestQuery } from '@core/models/marketplace/marketplace.model'
+import {
+  ServiceRequestStatus,
+  ServiceRequestStatusLabels,
+  ServiceRequestStatusBadgeVariants,
+  PaymentStatus,
+  PaymentStatusLabels,
+  PaymentStatusBadgeVariants,
+} from '@core/models/shared/enums.model'
 
 @Component({
   selector: 'app-service-requests',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, Icon],
+  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, Icon, FormsModule],
   templateUrl: './service-requests.html',
   styles: ``,
 })
 export class ServiceRequests implements OnInit {
   requests: ServiceRequestDto[] = []
-  tab: 'received' | 'sent' = 'received'
+  tab: 'all' | 'received' | 'sent' = 'all'
   page = 1
   pageSize = 10
   totalCount = 0
   totalPages = 1
   loading = false
+  selectedStatus: number | null = null
+  selectedPaymentStatus: number | null = null
+
+  selectedRequest: ServiceRequestDto | null = null
 
   ServiceRequestStatus = ServiceRequestStatus
   ServiceRequestStatusLabels = ServiceRequestStatusLabels
@@ -38,25 +50,57 @@ export class ServiceRequests implements OnInit {
 
   loadRequests() {
     this.loading = true
-    const obs = this.tab === 'received'
-      ? this.marketplaceService.getReceivedRequests(this.page, this.pageSize)
-      : this.marketplaceService.getSentRequests(this.page, this.pageSize)
+    if (this.tab === 'all') {
+      const query: AdminServiceRequestQuery = {
+        page: this.page,
+        pageSize: this.pageSize,
+        status: this.selectedStatus != null ? (this.selectedStatus as ServiceRequestStatus) : undefined,
+        paymentStatus: this.selectedPaymentStatus != null ? (this.selectedPaymentStatus as PaymentStatus) : undefined,
+      }
+      this.marketplaceService.getAllServiceRequestsAdmin(query).subscribe({
+        next: (res) => {
+          this.requests = res.items
+          this.totalCount = res.totalCount
+          this.totalPages = res.totalPages
+          this.loading = false
+        },
+        error: () => { this.loading = false },
+      })
+    } else {
+      const obs = this.tab === 'received'
+        ? this.marketplaceService.getReceivedRequests(this.page, this.pageSize)
+        : this.marketplaceService.getSentRequests(this.page, this.pageSize)
 
-    obs.subscribe({
-      next: (res) => {
-        this.requests = res.items
-        this.totalCount = res.totalCount
-        this.totalPages = res.totalPages
-        this.loading = false
-      },
-      error: () => { this.loading = false },
-    })
+      obs.subscribe({
+        next: (res) => {
+          this.requests = res.items
+          this.totalCount = res.totalCount
+          this.totalPages = res.totalPages
+          this.loading = false
+        },
+        error: () => { this.loading = false },
+      })
+    }
   }
 
-  switchTab(tab: 'received' | 'sent') {
+  switchTab(tab: 'all' | 'received' | 'sent') {
     this.tab = tab
     this.page = 1
+    this.selectedRequest = null
     this.loadRequests()
+  }
+
+  onFilterChange() {
+    this.page = 1
+    this.loadRequests()
+  }
+
+  viewDetail(req: ServiceRequestDto) {
+    this.selectedRequest = req
+  }
+
+  closeDetail() {
+    this.selectedRequest = null
   }
 
   accept(id: string) {

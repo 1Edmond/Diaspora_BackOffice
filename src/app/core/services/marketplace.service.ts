@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse, PagedList } from '../models/shared/base-response.model';
 import {
+  AdminListingListQuery,
+  AdminServiceRequestQuery,
   CategoryDto,
   CreateCategoryRequest,
   CreateListingRequest,
@@ -12,11 +14,14 @@ import {
   CreateServiceRequest,
   CreateServiceRequestResponse,
   ListingListQuery,
+  ProviderStatsDto,
+  ReportDto,
   ReviewDto,
   ServiceListingDto,
   ServiceListingSummaryDto,
   ServiceRequestDto,
   UpdateCategoryRequest,
+  UpdateCategoryPolicyRequest,
   UpdateListingRequest,
 } from '../models/marketplace/marketplace.model';
 
@@ -106,6 +111,10 @@ export class MarketplaceService {
     return this.http.patch<void>(`${this.categoryApiUrl}/${id}/status`, isActive);
   }
 
+  updateCategoryPolicy(id: string, data: UpdateCategoryPolicyRequest): Observable<void> {
+    return this.http.put<void>(`${this.categoryApiUrl}/${id}/policy`, data);
+  }
+
   getReviews(listingId: string, page = 1, pageSize = 10): Observable<PagedList<ReviewDto>> {
     return this.http.get<PagedList<ReviewDto>>(`${environment.apiBaseUrl}/api/listings/${listingId}/reviews`, {
       params: { page: page.toString(), pageSize: pageSize.toString() },
@@ -158,5 +167,50 @@ export class MarketplaceService {
     return this.http.post<BaseResponse>(`${this.requestsApiUrl}/${id}/cancel`, JSON.stringify(reason), {
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // Admin methods
+  getAllListingsAdmin(query: AdminListingListQuery = {}): Observable<PagedList<ServiceListingSummaryDto>> {
+    const params: any = {};
+    if (query.page != null) params.page = query.page;
+    if (query.pageSize != null) params.pageSize = query.pageSize;
+    if (query.categoryId) params.categoryId = query.categoryId;
+    if (query.search) params.search = query.search;
+    if (query.paymentMode != null) params.paymentMode = query.paymentMode;
+    if (query.minPrice != null) params.minPrice = query.minPrice;
+    if (query.maxPrice != null) params.maxPrice = query.maxPrice;
+    if (query.city) params.city = query.city;
+    if (query.country) params.country = query.country;
+    if (query.sortBy != null) params.sortBy = query.sortBy;
+    if (query.status != null) params.status = query.status;
+    if (query.providerId) params.providerId = query.providerId;
+    return this.http.get<PagedList<ServiceListingSummaryDto>>(`${this.listingApiUrl}/admin`, { params });
+  }
+
+  getAllServiceRequestsAdmin(query: AdminServiceRequestQuery = {}): Observable<PagedList<ServiceRequestDto>> {
+    const params: any = {};
+    if (query.page != null) params.page = query.page;
+    if (query.pageSize != null) params.pageSize = query.pageSize;
+    if (query.status != null) params.status = query.status;
+    if (query.paymentStatus != null) params.paymentStatus = query.paymentStatus;
+    if (query.providerId) params.providerId = query.providerId;
+    if (query.requesterId) params.requesterId = query.requesterId;
+    if (query.dateFrom) params.dateFrom = query.dateFrom;
+    if (query.dateTo) params.dateTo = query.dateTo;
+    return this.http.get<PagedList<ServiceRequestDto>>(`${this.requestsApiUrl}/admin`, { params });
+  }
+
+  getProviderStats(providerId: string): Observable<ProviderStatsDto> {
+    return this.http.get<ProviderStatsDto>(`${this.listingApiUrl}/stats/provider/${providerId}`);
+  }
+
+  getPendingReports(page = 1, pageSize = 10): Observable<PagedList<ReportDto>> {
+    return this.http.get<PagedList<ReportDto>>(`${environment.apiBaseUrl}/api/reports/pending`, {
+      params: { page: page.toString(), pageSize: pageSize.toString() },
+    });
+  }
+
+  resolveReport(id: string, status: number, notes: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${environment.apiBaseUrl}/api/reports/${id}/resolve`, { status, notes });
   }
 }

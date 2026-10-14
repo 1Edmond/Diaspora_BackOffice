@@ -3,13 +3,14 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PagedList } from '../models/shared/base-response.model';
-import { NotificationListQuery, UserNotificationDto } from '../models/notification/notification.model';
+import { NotificationListQuery, UserNotificationDto, NotificationRuleDto } from '../models/notification/notification.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/notifications`;
+  private readonly rulesUrl = `${environment.apiBaseUrl}/api/notification-rules`;
 
   constructor(private http: HttpClient) {}
 
@@ -31,5 +32,24 @@ export class NotificationService {
 
   markAllAsRead(): Observable<{ updatedCount: number }> {
     return this.http.post<{ updatedCount: number }>(`${this.apiUrl}/read-all`, {});
+  }
+
+  // Notification Rules
+  getRules(pageNumber = 1, pageSize = 50): Observable<PagedList<NotificationRuleDto>> {
+    return this.http.get<PagedList<NotificationRuleDto>>(this.rulesUrl, {
+      params: { pageNumber, pageSize }
+    });
+  }
+
+  getRule(eventType: string): Observable<NotificationRuleDto> {
+    return this.http.get<NotificationRuleDto>(`${this.rulesUrl}/${eventType}`);
+  }
+
+  upsertRule(eventType: string, channels: number, isActive: boolean): Observable<NotificationRuleDto> {
+    return this.http.put<NotificationRuleDto>(`${this.rulesUrl}/${eventType}`, { channels, isActive });
+  }
+
+  deleteRule(eventType: string): Observable<void> {
+    return this.http.delete<void>(`${this.rulesUrl}/${eventType}`);
   }
 }

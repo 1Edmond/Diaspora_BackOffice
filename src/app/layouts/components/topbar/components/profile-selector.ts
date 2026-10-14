@@ -54,13 +54,13 @@ export class ProfileSelector {
 
   get selectedLabel(): string {
     const profile = this.profileState.selectedProfile
-    if (!profile) return 'No profile'
+    if (!profile) return ''
     return `${profile.firstName} ${profile.lastName}`
   }
 
   get selectedInitial(): string {
     const profile = this.profileState.selectedProfile
-    if (!profile) return '?'
-    return (profile.firstName || '?').charAt(0).toUpperCase()
+    if (!profile) return ''
+    return (profile.firstName || '').charAt(0).toUpperCase()
   }
 }

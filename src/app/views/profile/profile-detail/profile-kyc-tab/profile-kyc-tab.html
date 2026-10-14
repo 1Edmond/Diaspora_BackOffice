@@ -1,0 +1,226 @@
+<div class="p-3">
+  @if (loading) {
+  <div class="d-flex justify-content-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @else if (!kycVerification) {
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <app-icon icon="shield-alert" class="fs-1 text-muted d-block mb-3"></app-icon>
+      <h5 class="text-muted">No KYC Verification Found</h5>
+      <p class="text-muted">This user has not started a KYC verification process.</p>
+    </div>
+  </div>
+  } @else {
+  <div class="row">
+    <!-- KYC Overview Card -->
+    <div class="col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">KYC Verification</h5>
+          <span class="badge fs-sm" [class]="'bg-' + KYCStatusBadgeVariants[kycVerification.status]">
+            <app-icon [icon]="getStatusIcon(kycVerification.status)" class="me-1"></app-icon>
+            {{ KYCStatusLabels[kycVerification.status] }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Level</h6>
+            <p class="fw-medium">{{ kycVerification.level }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Status</h6>
+            <p>
+              <span class="badge" [class]="'bg-' + KYCStatusBadgeVariants[kycVerification.status]">
+                {{ KYCStatusLabels[kycVerification.status] }}
+              </span>
+            </p>
+          </div>
+          @if (kycVerification.submittedAt) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Submitted</h6>
+            <p>{{ kycVerification.submittedAt | date:'medium' }}</p>
+          </div>
+          }
+          @if (kycVerification.reviewedAt) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Reviewed</h6>
+            <p>{{ kycVerification.reviewedAt | date:'medium' }}</p>
+          </div>
+          }
+          @if (kycVerification.reviewedBy) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Reviewed By</h6>
+            <p>{{ kycVerification.reviewedBy }}</p>
+          </div>
+          }
+          @if (kycVerification.rejectionReason) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Rejection Reason</h6>
+            <p class="text-danger">{{ kycVerification.rejectionReason }}</p>
+          </div>
+          }
+          @if (kycVerification.additionalInfoRequest) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Additional Info Requested</h6>
+            <p class="text-warning">{{ kycVerification.additionalInfoRequest }}</p>
+          </div>
+          }
+          @if (kycVerification.notes) {
+          <div class="mb-3">
+            <h6 class="text-uppercase text-muted">Notes</h6>
+            <p>{{ kycVerification.notes }}</p>
+          </div>
+          }
+        </div>
+        <div class="card-footer">
+          <div class="d-flex gap-2 flex-wrap">
+            @if (kycVerification.status === KYCStatus.Pending) {
+            <button class="btn btn-primary" (click)="openActionModal(startReviewModal, 'start-review')">
+              <app-icon icon="loader" class="me-1"></app-icon> Start Review
+            </button>
+            }
+            @if (kycVerification.status === KYCStatus.UnderReview) {
+            <button class="btn btn-success" (click)="openActionModal(approveModal, 'approve')">
+              <app-icon icon="check" class="me-1"></app-icon> Approve
+            </button>
+            <button class="btn btn-danger" (click)="openActionModal(rejectModal, 'reject')">
+              <app-icon icon="x" class="me-1"></app-icon> Reject
+            </button>
+            <button class="btn btn-warning" (click)="openActionModal(requestInfoModal, 'request-info')">
+              <app-icon icon="alert-circle" class="me-1"></app-icon> Request Info
+            </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Card -->
+    <div class="col-lg-8 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">Documents ({{ (kycVerification.documents || []).length }})</h5>
+        </div>
+        <div class="card-body">
+          @if (!kycVerification.documents || kycVerification.documents.length === 0) {
+          <div class="text-center text-muted py-5">
+            <app-icon icon="file-text" class="fs-1 d-block mb-2"></app-icon>
+            No documents uploaded
+          </div>
+          } @else {
+          <div class="row g-3">
+            @for (doc of kycVerification.documents; track doc.id) {
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex align-items-start gap-3">
+                    <app-icon [icon]="getFileIcon(doc.fileType)" class="fs-2 text-primary"></app-icon>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1">{{ doc.fileName }}</h6>
+                      <p class="text-muted mb-1 small">{{ doc.documentType || 'Unspecified' }}</p>
+                      <p class="text-muted mb-0 small">{{ formatFileSize(doc.fileSize) }} • {{ doc.uploadedAt | date:'short' }}</p>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button class="btn btn-outline-primary" (click)="downloadDocument(doc.id, doc.fileName)" title="Download">
+                        <app-icon icon="download"></app-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if(success) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert" (click)="clearMessages()">
+    {{success}}
+    <button type="button" class="btn-close" (click)="clearMessages()"></button>
+  </div>
+  }
+  @if(error) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert" (click)="clearMessages()">
+    {{error}}
+    <button type="button" class="btn-close" (click)="clearMessages()"></button>
+  </div>
+  }
+  }
+
+  <!-- Modals -->
+  <ng-template #startReviewModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Start KYC Review</h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to start the review process for this KYC verification?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="executeAction()">Start Review</button>
+    </div>
+  </ng-template>
+
+  <ng-template #approveModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Approve KYC Verification</h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="modalNotes" placeholder="Add any notes about the approval..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-success" (click)="executeAction()">Approve</button>
+    </div>
+  </ng-template>
+
+  <ng-template #rejectModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Reject KYC Verification</h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label fw-medium">Rejection Reason <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [(ngModel)]="modalReason" placeholder="Explain why this verification is being rejected..."></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-control" rows="2" [(ngModel)]="modalNotes" placeholder="Additional notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-danger" (click)="executeAction()">Reject</button>
+    </div>
+  </ng-template>
+
+  <ng-template #requestInfoModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Request Additional Information</h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label fw-medium">Message <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="4" [(ngModel)]="modalReason" placeholder="Describe what additional information is needed..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-warning" (click)="executeAction()">Request Info</button>
+    </div>
+  </ng-template>
+</div>

@@ -10,9 +10,9 @@ const MODULES = [
   { label: 'Profiles', icon: 'user-round', route: '/profiles/types', children: ['Profile Types'] },
   { label: 'Documents', icon: 'file-text', route: '/documents', children: ['All Documents', 'Document Types'] },
   { label: 'Procedures', icon: 'list-checks', route: '/procedures', children: ['Definitions', 'User Progress', 'Locations'] },
-  { label: 'Marketplace', icon: 'shopping-bag', route: '/marketplace/listings', children: ['Listings', 'Pending', 'Categories', 'Requests', 'Reviews'] },
+  { label: 'Marketplace', icon: 'shopping-bag', route: '/marketplace/listings', children: ['All Listings', 'Pending', 'Categories', 'Reports', 'Reviews', 'Requests', 'Providers'] },
   { label: 'Wallet', icon: 'wallet', route: '/wallet', children: ['Wallet', 'Transactions', 'Parameters'] },
-  { label: 'Notifications', icon: 'bell', route: '/notifications', children: ['Notification Center'] },
+  { label: 'Notifications', icon: 'bell', route: '/notifications', children: ['Notification Center', 'Preferences'] },
 ]
 
 @Component({
@@ -37,7 +37,7 @@ const MODULES = [
                 </span>
                 <div class="flex-grow-1 min-w-0">
                   <span class="fw-medium d-block text-truncate">{{ module.label }}</span>
-                  <span class="text-xs text-muted">{{ module.children.join(', ') }}</span>
+                  <span class="text-xs text-muted text-truncate" style="max-width: 150px; display: inline-block;">{{ module.children.join(', ') }}</span>
                 </div>
               </a>
             </div>

@@ -38,6 +38,11 @@ export const ProcedureProfileTypeLabels: Record<ProcedureProfileType, string> = 
   [ProcedureProfileType.External]: 'External',
 }
 
+export const ProcedureProfileTypeBadgeVariants: Record<ProcedureProfileType, string> = {
+  [ProcedureProfileType.Internal]: 'primary',
+  [ProcedureProfileType.External]: 'info',
+}
+
 export enum UserProcedureStatus {
   NotStarted = 0,
   InProgress = 1,
@@ -68,6 +73,13 @@ export enum SensitiveDataType {
   BiometricData = 5,
 }
 
+export enum VerificationLevel {
+  L0_Registered = 0,
+  L1_IdentityDeclared = 1,
+  L2_IdentityVerified = 2,
+  L3_EnhancedVerified = 3,
+}
+
 export enum TransactionType {
   Deposit = 0,
   TransferOut = 1,
@@ -77,6 +89,10 @@ export enum TransactionType {
   MarketplacePayment = 5,
   MarketplaceReceipt = 6,
   Refund = 7,
+  MarketplacePaymentHold = 8,
+  MarketplacePaymentRelease = 9,
+  MarketplacePaymentRefund = 10,
+  MarketplacePlatformCommission = 11,
 }
 
 export enum TransactionDirection {
@@ -106,9 +122,11 @@ export enum PaymentMode {
 export enum PaymentStatus {
   NotApplicable = 0,
   Pending = 1,
-  Completed = 2,
-  Refunded = 3,
-  Failed = 4,
+  Processing = 2,
+  Held = 3,
+  Completed = 4,
+  Refunded = 5,
+  Failed = 6,
 }
 
 export enum ServiceRequestStatus {
@@ -117,6 +135,23 @@ export enum ServiceRequestStatus {
   Declined = 2,
   Completed = 3,
   Cancelled = 4,
+  PackageHandedOver = 5,
+  InTransit = 6,
+  ArrivedAtDestination = 7,
+  Delivered = 8,
+}
+
+export enum ReportStatus {
+  Pending = 0,
+  Reviewed = 1,
+  Dismissed = 2,
+  ActionTaken = 3,
+}
+
+export enum ReportTargetType {
+  Listing = 0,
+  Review = 1,
+  User = 2,
 }
 
 export const DefaultRoles = {
@@ -228,19 +263,37 @@ export const PaymentModeLabels: Record<PaymentMode, string> = {
   [PaymentMode.Both]: 'Both',
 }
 
+export const VerificationLevelLabels: Record<VerificationLevel, string> = {
+  [VerificationLevel.L0_Registered]: 'L0 - Enregistré',
+  [VerificationLevel.L1_IdentityDeclared]: 'L1 - Déclaré',
+  [VerificationLevel.L2_IdentityVerified]: 'L2 - Vérifié',
+  [VerificationLevel.L3_EnhancedVerified]: 'L3 - Renforcé',
+}
+
+export const VerificationLevelBadgeVariants: Record<VerificationLevel, string> = {
+  [VerificationLevel.L0_Registered]: 'secondary',
+  [VerificationLevel.L1_IdentityDeclared]: 'info',
+  [VerificationLevel.L2_IdentityVerified]: 'success',
+  [VerificationLevel.L3_EnhancedVerified]: 'primary',
+}
+
 export const PaymentStatusLabels: Record<PaymentStatus, string> = {
   [PaymentStatus.NotApplicable]: 'Not Applicable',
   [PaymentStatus.Pending]: 'Pending',
-  [PaymentStatus.Completed]: 'Completed',
-  [PaymentStatus.Refunded]: 'Refunded',
+  [PaymentStatus.Processing]: 'Processing',
+  [PaymentStatus.Held]: 'Séquestre (Bloqué)',
+  [PaymentStatus.Completed]: 'Completed (Libéré)',
+  [PaymentStatus.Refunded]: 'Refunded (Remboursé)',
   [PaymentStatus.Failed]: 'Failed',
 }
 
 export const PaymentStatusBadgeVariants: Record<PaymentStatus, string> = {
   [PaymentStatus.NotApplicable]: 'secondary',
   [PaymentStatus.Pending]: 'warning',
+  [PaymentStatus.Processing]: 'info',
+  [PaymentStatus.Held]: 'primary',
   [PaymentStatus.Completed]: 'success',
-  [PaymentStatus.Refunded]: 'info',
+  [PaymentStatus.Refunded]: 'secondary',
   [PaymentStatus.Failed]: 'danger',
 }
 
@@ -250,6 +303,10 @@ export const ServiceRequestStatusLabels: Record<ServiceRequestStatus, string> = 
   [ServiceRequestStatus.Declined]: 'Declined',
   [ServiceRequestStatus.Completed]: 'Completed',
   [ServiceRequestStatus.Cancelled]: 'Cancelled',
+  [ServiceRequestStatus.PackageHandedOver]: 'Colis Remis (OTP)',
+  [ServiceRequestStatus.InTransit]: 'En transit',
+  [ServiceRequestStatus.ArrivedAtDestination]: 'Arrivé à destination',
+  [ServiceRequestStatus.Delivered]: 'Colis Livré (OTP)',
 }
 
 export const ServiceRequestStatusBadgeVariants: Record<ServiceRequestStatus, string> = {
@@ -258,6 +315,30 @@ export const ServiceRequestStatusBadgeVariants: Record<ServiceRequestStatus, str
   [ServiceRequestStatus.Declined]: 'danger',
   [ServiceRequestStatus.Completed]: 'success',
   [ServiceRequestStatus.Cancelled]: 'secondary',
+  [ServiceRequestStatus.PackageHandedOver]: 'primary',
+  [ServiceRequestStatus.InTransit]: 'info',
+  [ServiceRequestStatus.ArrivedAtDestination]: 'primary',
+  [ServiceRequestStatus.Delivered]: 'success',
+}
+
+export const ReportStatusLabels: Record<ReportStatus, string> = {
+  [ReportStatus.Pending]: 'Pending',
+  [ReportStatus.Reviewed]: 'Reviewed',
+  [ReportStatus.Dismissed]: 'Dismissed',
+  [ReportStatus.ActionTaken]: 'Action Taken',
+}
+
+export const ReportStatusBadgeVariants: Record<ReportStatus, string> = {
+  [ReportStatus.Pending]: 'warning',
+  [ReportStatus.Reviewed]: 'success',
+  [ReportStatus.Dismissed]: 'secondary',
+  [ReportStatus.ActionTaken]: 'primary',
+}
+
+export const ReportTargetTypeLabels: Record<ReportTargetType, string> = {
+  [ReportTargetType.Listing]: 'Listing',
+  [ReportTargetType.Review]: 'Review',
+  [ReportTargetType.User]: 'User',
 }
 
 export const TransactionTypeLabels: Record<TransactionType, string> = {
@@ -269,6 +350,10 @@ export const TransactionTypeLabels: Record<TransactionType, string> = {
   [TransactionType.MarketplacePayment]: 'Marketplace Payment',
   [TransactionType.MarketplaceReceipt]: 'Marketplace Receipt',
   [TransactionType.Refund]: 'Refund',
+  [TransactionType.MarketplacePaymentHold]: 'Séquestre Colis (Hold)',
+  [TransactionType.MarketplacePaymentRelease]: 'Libération Séquestre',
+  [TransactionType.MarketplacePaymentRefund]: 'Remboursement Séquestre',
+  [TransactionType.MarketplacePlatformCommission]: 'Commission Plateforme',
 }
 
 export const TransactionDirectionLabels: Record<TransactionDirection, string> = {

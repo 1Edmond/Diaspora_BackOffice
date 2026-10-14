@@ -1,4 +1,16 @@
-import { ProcedureProfileType, UserProcedureStatus } from '../shared/enums.model'
+import {
+  ProcedureProfileType,
+  UserProcedureStatus,
+  ProcedureProfileTypeLabels,
+  ProcedureProfileTypeBadgeVariants,
+} from '../shared/enums.model'
+
+export {
+  ProcedureProfileType,
+  UserProcedureStatus,
+  ProcedureProfileTypeLabels,
+  ProcedureProfileTypeBadgeVariants,
+}
 
 export interface DayScheduleDto {
   day: number

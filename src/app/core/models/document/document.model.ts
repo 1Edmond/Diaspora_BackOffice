@@ -1,4 +1,14 @@
-import { DocumentStatus } from '../shared/enums.model'
+import {
+  DocumentStatus,
+  DocumentStatusLabels,
+  DocumentStatusBadgeVariants,
+} from '../shared/enums.model'
+
+export {
+  DocumentStatus,
+  DocumentStatusLabels,
+  DocumentStatusBadgeVariants,
+}
 
 export interface DocumentDto {
   id: string
@@ -24,6 +34,7 @@ export interface DocumentTypeDto {
   name: string
   code: string
   description?: string
+  profileTypeId?: string
   isRenewable: boolean
   renewalAlertDays: number
   isRequired: boolean

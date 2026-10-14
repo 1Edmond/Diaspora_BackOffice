@@ -62,9 +62,6 @@ export type CustomizationOptionType = {
     <div class="offcanvas-footer border-top p-3 text-center">
       <div class="row justify-content-end">
         <div class="col-6">
-          <a href="https://1.envato.market/uboldadmin" target="_blank" rel="noopener noreferrer" class="btn btn-success fw-semibold py-2 w-100"><iconify-icon icon="tabler:basket" class="me-2 fs-md"></iconify-icon> Buy Now</a>
-        </div>
-        <div class="col-6">
           <button (click)="layout.reset()" type="button" class="btn btn-danger fw-semibold py-2 w-100" id="reset-layout">
             <iconify-icon icon="tabler:refresh" class="me-2 fs-md"></iconify-icon>
             Reset

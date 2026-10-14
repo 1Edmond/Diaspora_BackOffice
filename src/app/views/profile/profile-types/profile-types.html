@@ -1,36 +1,62 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Profile Types" subTitle="Profile" />
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <app-page-breadcrumb title="Profile Types & Multi-Pays" subTitle="Profile" />
+    <button class="btn btn-outline-primary" [disabled]="republishing" (click)="republishDirectory()">
+      @if (republishing) {
+      <span class="spinner-border spinner-border-sm me-1"></span>
+      } @else {
+      <app-icon icon="refresh-cw" class="me-1"></app-icon>
+      }
+      Republier l'annuaire (RabbitMQ)
+    </button>
+  </div>
+
+  @if(successMessage) {
+  <div class="alert alert-success alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+    <span>{{successMessage}}</span>
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+  }
+  @if(error) {
+  <div class="alert alert-danger alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+    <span>{{error}}</span>
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+  }
 
   <div class="row">
     <div class="col-lg-4">
       <div class="card">
-        <div class="card-header"><h5 class="mb-0">{{editingId ? 'Edit Profile Type' : 'Add Profile Type'}}</h5></div>
+        <div class="card-header"><h5 class="mb-0">{{editingId ? 'Modifier le Pays / Type' : 'Ajouter un Pays (Profile Type)'}}</h5></div>
         <div class="card-body">
-          @if(error) {
-          <div class="alert alert-danger">{{error}}</div>
-          }
           <div class="mb-3">
-            <label class="form-label">Country Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formData.countryName" placeholder="e.g. Togo" />
+            <label class="form-label">Nom du Pays <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.countryName" placeholder="ex: Togo, Russie, France..." />
           </div>
           <div class="row g-3 mb-3">
             <div class="col-6">
-              <label class="form-label">Country Code <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" [(ngModel)]="formData.countryCode" placeholder="e.g. TG" maxlength="2" />
+              <label class="form-label">Code ISO-2 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="formData.countryCode" placeholder="TG, RU, FR..." maxlength="2" style="text-transform: uppercase;" />
             </div>
             <div class="col-6">
-              <label class="form-label">Phone Indicatif</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.phoneIndicatif" placeholder="e.g. +228" />
+              <label class="form-label">Drapeau / Emoji</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.flag" placeholder="🇹🇬, 🇷🇺, 🇫🇷..." />
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Currency</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.currency" placeholder="e.g. XOF" />
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Indicatif Téléphonique</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.phoneIndicatif" placeholder="+228, +7..." />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Devise (ISO-4217)</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.currency" placeholder="XOF, RUB, EUR..." style="text-transform: uppercase;" />
+            </div>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" [disabled]="!formData.countryName || !formData.countryCode" (click)="submit()">{{editingId ? 'Update' : 'Add Type'}}</button>
+            <button class="btn btn-primary" [disabled]="!formData.countryName || !formData.countryCode" (click)="submit()">{{editingId ? 'Mettre à jour' : 'Ajouter le Pays'}}</button>
             @if(editingId) {
-            <button class="btn btn-light" (click)="cancelEdit()">Cancel</button>
+            <button class="btn btn-light" (click)="cancelEdit()">Annuler</button>
             }
           </div>
         </div>
@@ -41,21 +67,32 @@
       <div class="row g-3">
         @for (t of types; track t.id) {
         <div class="col-md-6">
-          <div class="card mb-0">
+          <div class="card mb-0 shadow-sm">
             <div class="card-body">
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="avatar flex-shrink-0">
-                  <div class="avatar-title rounded bg-soft-primary text-primary fw-semibold">{{t.countryCode}}</div>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar flex-shrink-0">
+                    <div class="avatar-title rounded bg-soft-primary text-primary fw-semibold fs-4">
+                      {{t.flag || t.countryCode}}
+                    </div>
+                  </div>
+                  <div>
+                    <h6 class="mb-0 fw-bold">{{t.countryName}}</h6>
+                    <span class="badge bg-soft-secondary text-secondary fs-xs">{{t.countryCode}}</span>
+                  </div>
                 </div>
-                <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Active' : 'Inactive'}}</span>
+                <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Actif' : 'Inactif'}}</span>
               </div>
-              <h6 class="mb-1">{{t.countryName}}</h6>
-              <p class="text-muted mb-2 small">
-                {{t.phoneIndicatif || '—'}} &middot; {{t.currency || '—'}}
+              <p class="text-muted mb-3 small">
+                Indicatif : <strong>{{t.phoneIndicatif || '—'}}</strong> &middot; Devise : <strong>{{t.currency || '—'}}</strong>
               </p>
               <div class="d-flex gap-2">
-                <button class="btn btn-soft-primary btn-sm" (click)="startEdit(t)">Edit</button>
-                <button class="btn btn-soft-{{t.isActive ? 'danger' : 'success'}} btn-sm" (click)="toggleActive(t)">{{t.isActive ? 'Deactivate' : 'Activate'}}</button>
+                <button class="btn btn-soft-primary btn-sm" (click)="startEdit(t)">
+                  <app-icon icon="edit-2" class="me-1"></app-icon> Modifier
+                </button>
+                <button class="btn btn-soft-{{t.isActive ? 'danger' : 'success'}} btn-sm" (click)="toggleActive(t)">
+                  {{t.isActive ? 'Désactiver' : 'Activer'}}
+                </button>
               </div>
             </div>
           </div>
@@ -64,7 +101,11 @@
         <div class="col-12">
           <div class="card">
             <div class="card-body text-center text-muted p-4">
-              @if(loading) { Loading... } @else { No profile types found }
+              @if(loading) {
+              <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des pays supportés...
+              } @else {
+              Aucun profil type / pays configuré.
+              }
             </div>
           </div>
         </div>

@@ -1,64 +1,44 @@
 <div class="container-fluid">
   <app-page-breadcrumb title="All Profiles" subTitle="Profiles" />
 
-  <div class="row mb-3">
-    <div class="col-lg-12">
-      <div class="card border p-3">
-        <div class="row g-3 align-items-end">
-          <div class="col-lg-4">
-            <label class="form-label fw-medium">Search</label>
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search by name, email..."
-                [(ngModel)]="searchTerm"
-                (keyup.enter)="onSearch()"
-              />
-              <button class="btn btn-primary" type="button" (click)="onSearch()">
-                <app-icon icon="search"></app-icon>
-              </button>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex gap-2 align-items-center">
+            <div class="app-search">
+              <input type="text" class="form-control form-control-lg" placeholder="Search by name, email..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
             </div>
-          </div>
-          <div class="col-lg-3">
-            <label class="form-label fw-medium">Status Filter</label>
-            <select class="form-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+            
+            <select class="form-select" style="min-width: 150px" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
               @for (opt of statusOptions; track opt.value) {
               <option [value]="opt.value">{{opt.label}}</option>
               }
             </select>
-          </div>
-          <div class="col-lg-3">
-            <label class="form-label fw-medium">Profile Type (Country)</label>
-            <select class="form-select" [(ngModel)]="selectedProfileTypeId" (change)="onFilterChange()">
+            
+            <select class="form-select" style="min-width: 200px" [(ngModel)]="selectedProfileTypeId" (change)="onFilterChange()">
               <option value="">All Types / Countries</option>
               @for (pt of profileTypes; track pt.id) {
               <option [value]="pt.id">{{pt.countryName}} ({{pt.countryCode}})</option>
               }
             </select>
-          </div>
-          <div class="col-lg-2 text-end">
-            <button class="btn btn-outline-secondary w-100" (click)="searchTerm = ''; selectedStatus = ''; selectedProfileTypeId = ''; onFilterChange()">
-              <app-icon icon="rotate-ccw" class="me-1"></app-icon> Reset
+            
+            <button class="btn btn-default" (click)="searchTerm = ''; selectedStatus = ''; selectedProfileTypeId = ''; onFilterChange()" title="Reset Filters">
+              <app-icon icon="rotate-ccw"></app-icon>
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">Profiles List</h5>
-          <span class="badge bg-primary fs-6">{{totalCount}} total</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fs-6 me-2">{{totalCount}} profiles</span>
+          </div>
         </div>
+        
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead>
-                <tr>
+            <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+              <thead class="bg-light bg-opacity-25 thead-sm">
+                <tr class="text-uppercase fs-xxs">
                   <th class="cursor-pointer" (click)="onSort('name')">
                     Name
                     @if (sortBy === 'name') {
@@ -92,44 +72,51 @@
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-2">
-                      <div class="avatar flex-shrink-0">
-                        <div class="avatar-title rounded-circle bg-soft-primary text-primary fw-bold">
+                      <div class="avatar avatar-sm flex-shrink-0">
+                        <div class="avatar-title rounded-circle bg-primary-subtle text-primary fw-bold">
                           {{(profile.firstName || '?').charAt(0).toUpperCase()}}
                         </div>
                       </div>
                       <div>
-                        <div class="fw-medium text-body">{{profile.firstName}} {{profile.lastName}}</div>
+                        <h5 class="mb-0">
+                          <a [routerLink]="['/profiles', profile.id]" class="link-reset">{{profile.firstName}} {{profile.lastName}}</a>
+                        </h5>
                         <small class="text-muted d-block text-xs">{{profile.id}}</small>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span class="badge bg-soft-info text-info">{{profile.profileTypeName || getProfileTypeName(profile.profileTypeId)}}</span>
+                    <span class="badge bg-info-subtle text-info">{{profile.profileTypeName || getProfileTypeName(profile.profileTypeId)}}</span>
                   </td>
                   <td>
                     <span class="text-muted">{{profile.phoneNumber || '—'}}</span>
                   </td>
                   <td>
-                    <span class="badge" [class]="'bg-' + statusBadges[profile.status]">{{statusLabels[profile.status]}}</span>
+                    <span class="badge" [class]="'bg-' + statusBadges[profile.status] + '-subtle text-' + statusBadges[profile.status]">{{statusLabels[profile.status]}}</span>
+                    @if(profile.verificationLevel != null) {
+                    <span class="badge ms-1" [class]="'bg-' + verificationLevelBadges[profile.verificationLevel]">
+                      {{verificationLevelLabels[profile.verificationLevel]}}
+                    </span>
+                    }
                   </td>
                   <td>{{profile.createdAt | date:'short'}}</td>
                   <td>
-                    <div class="d-flex gap-1">
-                      <a [routerLink]="['/profiles', profile.id]" class="btn btn-soft-primary btn-sm" title="View Detail">
-                        <app-icon icon="eye"></app-icon>
+                    <div class="d-flex align-items-center gap-1">
+                      <a [routerLink]="['/profiles', profile.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="View Detail">
+                        <app-icon icon="eye" class="fs-lg"></app-icon>
                       </a>
                       @if (profile.status === ProfileStatus.PendingVerification) {
-                      <button class="btn btn-soft-success btn-sm" (click)="verifyProfile(profile)" title="Verify">
-                        <app-icon icon="check-circle"></app-icon>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-success" (click)="verifyProfile(profile)" title="Verify">
+                        <app-icon icon="check-circle" class="fs-lg"></app-icon>
                       </button>
                       }
                       @if (profile.status === ProfileStatus.Suspended) {
-                      <button class="btn btn-soft-success btn-sm" (click)="activateProfile(profile)" title="Activate">
-                        <app-icon icon="check"></app-icon>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-success" (click)="activateProfile(profile)" title="Activate">
+                        <app-icon icon="check" class="fs-lg"></app-icon>
                       </button>
                       } @else if (profile.status === ProfileStatus.Activate || profile.status === ProfileStatus.Verified) {
-                      <button class="btn btn-soft-danger btn-sm" (click)="suspendProfile(profile)" title="Suspend">
-                        <app-icon icon="slash"></app-icon>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="suspendProfile(profile)" title="Suspend">
+                        <app-icon icon="slash" class="fs-lg"></app-icon>
                       </button>
                       }
                     </div>
@@ -137,8 +124,8 @@
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="6" class="text-center text-muted p-4">
-                    @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading profiles... } @else { No profiles found matching search criteria }
+                  <td colspan="6" class="text-center text-muted py-5">
+                    @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading profiles... } @else { Nothing found. }
                   </td>
                 </tr>
                 }
@@ -146,15 +133,17 @@
             </table>
           </div>
         </div>
-        @if (totalPages > 1) {
-        <div class="card-body d-flex justify-content-between align-items-center border-top py-2">
-          <span class="text-muted small">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
-            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+        <div class="card-footer border-0">
+          @if (totalPages > 1) {
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+            </div>
           </div>
+          }
         </div>
-        }
       </div>
     </div>
   </div>

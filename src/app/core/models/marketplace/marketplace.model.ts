@@ -1,4 +1,39 @@
-import { ListingStatus, PaymentMode, PaymentStatus, ServiceRequestStatus } from '../shared/enums.model'
+import {
+  ListingStatus,
+  PaymentMode,
+  PaymentStatus,
+  ReportStatus,
+  ReportTargetType,
+  ServiceRequestStatus,
+  VerificationLevel,
+} from '../shared/enums.model'
+
+export {
+  ListingStatus,
+  PaymentMode,
+  PaymentStatus,
+  ReportStatus,
+  ReportTargetType,
+  ServiceRequestStatus,
+  VerificationLevel,
+}
+export { ListingStatusLabels, ListingStatusBadgeVariants } from '../shared/enums.model'
+export { PaymentModeLabels } from '../shared/enums.model'
+export { PaymentStatusLabels, PaymentStatusBadgeVariants } from '../shared/enums.model'
+export { ServiceRequestStatusLabels, ServiceRequestStatusBadgeVariants } from '../shared/enums.model'
+export { ReportStatusLabels, ReportStatusBadgeVariants } from '../shared/enums.model'
+export { ReportTargetTypeLabels } from '../shared/enums.model'
+export { VerificationLevelLabels, VerificationLevelBadgeVariants } from '../shared/enums.model'
+
+export interface CategoryPolicyDto {
+  minPublishLevel: VerificationLevel
+  minBookLevel: VerificationLevel
+  maxWeightKg?: number
+  maxValueAmount?: number
+  requiresEscrow: boolean
+  requiresPreModeration: boolean
+  defaultCommissionRate: number
+}
 
 export interface ServiceListingSummaryDto {
   id: string
@@ -13,6 +48,21 @@ export interface ServiceListingSummaryDto {
   reviewCount: number
   thumbnailUrl?: string
   createdAt: string
+  status: ListingStatus
+  city?: string
+  country?: string
+  departureCountryCode?: string
+  departureCity?: string
+  arrivalCountryCode?: string
+  arrivalCity?: string
+  departureDate?: string
+  arrivalDate?: string
+  pickupDeadline?: string
+  capacityKg?: number
+  remainingKg?: number
+  pricePerKg?: number
+  transportMode?: string
+  flightOrTransportNumber?: string
 }
 
 export interface ServiceListingDto {
@@ -34,6 +84,20 @@ export interface ServiceListingDto {
   reviewCount: number
   viewCount: number
   createdAt: string
+  departureCountryCode?: string
+  departureCity?: string
+  arrivalCountryCode?: string
+  arrivalCity?: string
+  departureDate?: string
+  arrivalDate?: string
+  pickupDeadline?: string
+  capacityKg?: number
+  remainingKg?: number
+  pricePerKg?: number
+  transportMode?: string
+  flightOrTransportNumber?: string
+  prohibitedItemsDescription?: string
+  meetingPoints?: string
 }
 
 export interface CategoryDto {
@@ -45,6 +109,7 @@ export interface CategoryDto {
   isActive: boolean
   displayOrder: number
   listingCount: number
+  policy?: CategoryPolicyDto
 }
 
 export interface ReviewDto {
@@ -56,6 +121,20 @@ export interface ReviewDto {
   comment: string
   isVerified: boolean
   createdAt: string
+}
+
+export interface ReportDto {
+  id: string
+  targetType: ReportTargetType
+  targetId: string
+  reporterId: string
+  reporterName: string
+  reason: string
+  status: ReportStatus
+  createdAt: string
+  reviewedAt?: string
+  reviewedBy?: string
+  resolutionNotes?: string
 }
 
 export interface ServiceRequestDto {
@@ -75,6 +154,55 @@ export interface ServiceRequestDto {
   createdAt: string
   acceptedAt?: string
   completedAt?: string
+  weightKg?: number
+  packageDescription?: string
+  packageContentCategory?: string
+  declaredValue?: number
+  handoverConfirmedAt?: string
+  deliveryConfirmedAt?: string
+  handoverProofUrl?: string
+  deliveryProofUrl?: string
+}
+
+// Admin DTOs
+export interface AdminListingListQuery {
+  page?: number
+  pageSize?: number
+  categoryId?: string
+  search?: string
+  paymentMode?: PaymentMode
+  minPrice?: number
+  maxPrice?: number
+  city?: string
+  country?: string
+  sortBy?: number
+  status?: ListingStatus
+  providerId?: string
+}
+
+export interface AdminServiceRequestQuery {
+  page?: number
+  pageSize?: number
+  status?: ServiceRequestStatus
+  paymentStatus?: PaymentStatus
+  providerId?: string
+  requesterId?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
+export interface ProviderStatsDto {
+  totalListings: number
+  activeListings: number
+  totalRequests: number
+  acceptedRequests: number
+  completedRequests: number
+  acceptanceRate: number
+  avgResponseHours: number | null
+  totalRevenue: number
+  averageRating: number
+  reviewCount: number
+  favoritesCount: number
 }
 
 export interface CreateListingRequest {
@@ -109,6 +237,16 @@ export interface UpdateCategoryRequest {
   description?: string
   iconUrl?: string
   displayOrder: number
+}
+
+export interface UpdateCategoryPolicyRequest {
+  minPublishLevel: VerificationLevel
+  minBookLevel: VerificationLevel
+  maxWeightKg?: number
+  maxValueAmount?: number
+  requiresEscrow: boolean
+  requiresPreModeration: boolean
+  defaultCommissionRate: number
 }
 
 export interface CreateReviewRequest {

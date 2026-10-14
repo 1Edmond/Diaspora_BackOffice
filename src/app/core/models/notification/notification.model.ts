@@ -8,6 +8,40 @@ export interface UserNotificationDto {
   readAt?: string
 }
 
+export enum NotificationChannel {
+  Email = 1,
+  Sms = 2,
+  Whatsapp = 4,
+  Telegram = 8,
+  Push = 16,
+  InApp = 32
+}
+
+export const NotificationChannelLabels: Record<NotificationChannel, string> = {
+  [NotificationChannel.Email]: 'Email',
+  [NotificationChannel.Sms]: 'SMS',
+  [NotificationChannel.Whatsapp]: 'WhatsApp',
+  [NotificationChannel.Telegram]: 'Telegram',
+  [NotificationChannel.Push]: 'Push',
+  [NotificationChannel.InApp]: 'In-App'
+};
+
+export const NotificationChannelIcons: Record<NotificationChannel, string> = {
+  [NotificationChannel.Email]: 'envelope',
+  [NotificationChannel.Sms]: 'chat-text',
+  [NotificationChannel.Whatsapp]: 'whatsapp',
+  [NotificationChannel.Telegram]: 'telegram',
+  [NotificationChannel.Push]: 'bell',
+  [NotificationChannel.InApp]: 'layout'
+};
+
+export interface NotificationRuleDto {
+  eventType: string
+  channels: number
+  isActive: boolean
+  channelNames: string[]
+}
+
 export interface NotificationListQuery {
   pageNumber?: number
   pageSize?: number

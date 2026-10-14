@@ -1,0 +1,179 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Providers Analytics" subTitle="Marketplace" />
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Provider Lookup</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label class="form-label">Search Provider by ID (GUID)</label>
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Enter Provider ID (e.g., 123e4567-e89b-12d3-a456-426614174000)"
+                  [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" />
+                <button class="btn btn-primary" type="button" (click)="searchProvider()" [disabled]="loading">
+                  @if (loading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                  <app-icon icon="search" class="me-1"></app-icon> Search
+                </button>
+                @if (searchedProviderId) {
+                <button class="btn btn-outline-secondary" type="button" (click)="clearSearch()">
+                  <app-icon icon="x" class="me-1"></app-icon> Clear
+                </button>
+                }
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn btn-outline-primary w-100" type="button" (click)="viewListings()" [disabled]="!searchedProviderId">
+                <app-icon icon="list" class="me-1"></app-icon> View Listings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (error) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (stats()) {
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Provider: {{ searchedProviderId }}</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-primary">
+                <div class="card-body">
+                  <h3 class="mb-1 text-primary">{{ stats()!.totalListings }}</h3>
+                  <p class="text-muted mb-0 small">Total Listings</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-success">
+                <div class="card-body">
+                  <h3 class="mb-1 text-success">{{ stats()!.activeListings }}</h3>
+                  <p class="text-muted mb-0 small">Active Listings</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-info">
+                <div class="card-body">
+                  <h3 class="mb-1 text-info">{{ stats()!.totalRequests }}</h3>
+                  <p class="text-muted mb-0 small">Total Requests</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-primary">
+                <div class="card-body">
+                  <h3 class="mb-1 text-primary">{{ stats()!.acceptedRequests }}</h3>
+                  <p class="text-muted mb-0 small">Accepted Requests</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-success">
+                <div class="card-body">
+                  <h3 class="mb-1 text-success">{{ stats()!.completedRequests }}</h3>
+                  <p class="text-muted mb-0 small">Completed Requests</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-warning">
+                <div class="card-body">
+                  <h3 class="mb-1 text-warning">{{ stats()!.acceptanceRate }}%</h3>
+                  <p class="text-muted mb-0 small">Acceptance Rate</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-info">
+                <div class="card-body">
+                  <h3 class="mb-1 text-info">{{ stats()!.avgResponseHours != null ? stats()!.avgResponseHours + 'h' : '—' }}</h3>
+                  <p class="text-muted mb-0 small">Avg Response Time</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-success">
+                <div class="card-body">
+                  <h3 class="mb-1 text-success">{{ stats()!.totalRevenue | number:'1.0-2' }}</h3>
+                  <p class="text-muted mb-0 small">Total Revenue</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-warning">
+                <div class="card-body">
+                  <h3 class="mb-1 text-warning">{{ stats()!.averageRating | number:'1.0-1' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon></h3>
+                  <p class="text-muted mb-0 small">Average Rating</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-secondary">
+                <div class="card-body">
+                  <h3 class="mb-1">{{ stats()!.reviewCount }}</h3>
+                  <p class="text-muted mb-0 small">Total Reviews</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center h-100 border-danger">
+                <div class="card-body">
+                  <h3 class="mb-1 text-danger">{{ stats()!.favoritesCount }}</h3>
+                  <p class="text-muted mb-0 small">Total Favorites</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary" (click)="viewListings()" [disabled]="!searchedProviderId">
+              <app-icon icon="list" class="me-1"></app-icon> View All Listings
+            </button>
+            <button class="btn btn-outline-primary" (click)="viewListings()" [disabled]="!searchedProviderId">
+              <app-icon icon="calendar" class="me-1"></app-icon> View Service Requests
+            </button>
+            <button class="btn btn-outline-secondary" (click)="viewListings()" [disabled]="!searchedProviderId">
+              <app-icon icon="user" class="me-1"></app-icon> View Profile
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

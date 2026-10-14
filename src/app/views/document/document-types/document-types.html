@@ -1,5 +1,16 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Document Types" subTitle="Document" />
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <app-page-breadcrumb title="Types de Documents Multi-Pays" subTitle="Document" />
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label mb-0 fs-sm text-muted">Filtrer par Pays :</label>
+      <select class="form-select form-select-sm" style="min-width: 220px;" [(ngModel)]="selectedCountryFilter" (change)="onFilterCountryChange()">
+        <option value="">Tous les types (Globaux & Pays)</option>
+        @for (pt of profileTypes; track pt.id) {
+        <option [value]="pt.id">{{pt.flag || ''}} {{pt.countryName}} ({{pt.countryCode}})</option>
+        }
+      </select>
+    </div>
+  </div>
 
   @if (errorMessage) {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -10,62 +21,63 @@
 
   <div class="row">
     <div class="col-lg-5">
-      <div class="card">
-        <div class="card-header"><h5 class="mb-0">Add New Type</h5></div>
+      <div class="card shadow-sm">
+        <div class="card-header"><h5 class="mb-0">Ajouter un Type de Document</h5></div>
         <div class="card-body">
           <div class="mb-3">
-            <label class="form-label">Profile Type <span class="text-danger">*</span></label>
+            <label class="form-label">Pays de rattachement</label>
             <select class="form-select" [(ngModel)]="formData.profileTypeId">
-              <option value="">Select profile type</option>
+              <option value="">Global (Applicable à tous les pays)</option>
               @for (pt of profileTypes; track pt.id) {
-              <option [value]="pt.id">{{pt.countryName}} ({{pt.countryCode}})</option>
+              <option [value]="pt.id">{{pt.flag || ''}} {{pt.countryName}} ({{pt.countryCode}})</option>
               }
             </select>
+            <div class="form-text">Laissez "Global" pour une pièce commune (ex: Passeport), ou choisissez un pays pour un type local.</div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="e.g. Passport" />
+            <label class="form-label">Nom du Document <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="ex: Passeport, Visa d'études, Titre de séjour..." />
           </div>
           <div class="mb-3">
-            <label class="form-label">Code <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="e.g. PASSPORT" />
+            <label class="form-label">Code Normalisé <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="ex: PASSPORT, VISA, RESIDENCE_PERMIT" style="text-transform: uppercase;" />
           </div>
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" rows="2" [(ngModel)]="formData.description" placeholder="Optional description"></textarea>
+            <label class="form-label">Description / Consignes</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="formData.description" placeholder="Instructions pour l'utilisateur..."></textarea>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label class="form-label">Renewal Alert (days)</label>
+              <label class="form-label">Alerte expiration (jours)</label>
               <input type="number" class="form-control" [(ngModel)]="formData.renewalAlertDays" min="0" />
             </div>
-            <div class="col-md-6 d-flex align-items-end gap-4">
+            <div class="col-md-6 d-flex align-items-end gap-3">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="isRenewable" [(ngModel)]="formData.isRenewable" />
-                <label class="form-check-label" for="isRenewable">Renewable</label>
+                <label class="form-check-label" for="isRenewable">Renouvelable</label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="isRequired" [(ngModel)]="formData.isRequired" />
-                <label class="form-check-label" for="isRequired">Required</label>
+                <label class="form-check-label" for="isRequired">Obligatoire</label>
               </div>
             </div>
           </div>
-          <button class="btn btn-primary" [disabled]="!formData.name || !formData.code || !formData.profileTypeId" (click)="createType()">Add Type</button>
+          <button class="btn btn-primary" [disabled]="!formData.name || !formData.code" (click)="createType()">Créer le Type</button>
         </div>
       </div>
     </div>
     <div class="col-lg-7">
-      <div class="card">
+      <div class="card shadow-sm">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover mb-0">
-              <thead>
+              <thead class="table-light">
                 <tr>
-                  <th>Name</th>
+                  <th>Nom</th>
                   <th>Code</th>
-                  <th>Renewable</th>
-                  <th>Required</th>
-                  <th>Status</th>
+                  <th>Portée / Pays</th>
+                  <th>Attributs</th>
+                  <th>Statut</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -78,23 +90,38 @@
                   </td>
                   <td><code>{{t.code}}</code></td>
                   <td>
-                    <span class="badge" [class]="t.isRenewable ? 'bg-soft-primary text-primary' : 'bg-soft-secondary text-muted'">{{t.isRenewable ? 'Yes' : 'No'}}</span>
+                    <span class="badge" [class]="t.profileTypeId ? 'bg-soft-primary text-primary' : 'bg-soft-info text-info'">
+                      {{getCountryLabel(t.profileTypeId)}}
+                    </span>
                   </td>
                   <td>
-                    <span class="badge" [class]="t.isRequired ? 'bg-soft-warning text-warning' : 'bg-soft-secondary text-muted'">{{t.isRequired ? 'Yes' : 'No'}}</span>
+                    <div class="d-flex flex-wrap gap-1">
+                      @if(t.isRequired) {
+                      <span class="badge bg-soft-warning text-warning">Obligatoire</span>
+                      }
+                      @if(t.isRenewable) {
+                      <span class="badge bg-soft-secondary text-secondary">Renouvelable ({{t.renewalAlertDays}}j)</span>
+                      }
+                    </div>
                   </td>
                   <td>
-                    <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Active' : 'Inactive'}}</span>
+                    <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Actif' : 'Inactif'}}</span>
                   </td>
                   <td>
                     @if(t.isActive) {
-                    <button class="btn btn-soft-danger btn-sm" (click)="deactivateType(t.id)">Deactivate</button>
+                    <button class="btn btn-soft-danger btn-sm" (click)="deactivateType(t.id)">Désactiver</button>
                     }
                   </td>
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="6" class="text-center text-muted p-4">No document types</td>
+                  <td colspan="6" class="text-center text-muted p-4">
+                    @if(loading) {
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des types de documents...
+                    } @else {
+                    Aucun type de document trouvé pour ce filtre.
+                    }
+                  </td>
                 </tr>
                 }
               </tbody>

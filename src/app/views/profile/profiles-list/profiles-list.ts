@@ -6,7 +6,13 @@ import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { ProfileService } from '@core/services/profile.service'
 import { ProfileDto, ProfileTypeDto } from '@core/models/profile/profile.model'
-import { ProfileStatus, ProfileStatusLabels, ProfileStatusBadgeVariants } from '@core/models/shared/enums.model'
+import {
+  ProfileStatus,
+  ProfileStatusLabels,
+  ProfileStatusBadgeVariants,
+  VerificationLevelLabels,
+  VerificationLevelBadgeVariants,
+} from '@core/models/shared/enums.model'
 
 @Component({
   selector: 'app-profiles-list',
@@ -34,6 +40,8 @@ export class ProfilesList implements OnInit {
   ProfileStatus = ProfileStatus
   statusLabels = ProfileStatusLabels
   statusBadges = ProfileStatusBadgeVariants
+  verificationLevelLabels = VerificationLevelLabels
+  verificationLevelBadges = VerificationLevelBadgeVariants
 
   statusOptions = [
     { value: '', label: 'All Statuses' },

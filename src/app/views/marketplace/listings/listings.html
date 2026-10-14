@@ -1,80 +1,343 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Listings" subTitle="Marketplace" />
+  <app-page-breadcrumb title="All Listings" subTitle="Marketplace" />
 
-  <div class="row">
-    <div class="col-lg-12">
-      <form class="card border p-3">
-        <div class="row gap-3 align-items-end">
-          <div class="col-lg-4">
-            <div class="app-search">
-              <input type="text" class="form-control" placeholder="Search listings..." [(ngModel)]="search" name="search" />
-              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
-            </div>
-          </div>
-          <div class="col">
-            <button type="button" class="btn btn-primary" (click)="onSearch()">Search</button>
-            <a routerLink="/marketplace/listings/new" class="btn btn-success ms-2">Add Listing</a>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="row">
+  <!-- Filters Card -->
+  <div class="row mb-3">
     <div class="col-12">
       <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">Service Listings</h5>
-          <span class="text-muted">{{totalCount}} total</span>
+          <h5 class="mb-0">Filters</h5>
+          <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showFilters = !showFilters">
+            <app-icon [icon]="showFilters ? 'chevron-up' : 'chevron-down'" class="me-1"></app-icon>
+            {{ showFilters ? 'Hide' : 'Show' }} Filters
+          </button>
         </div>
-        <div class="card-body">
-          @if(loading) {
-          <div class="d-flex justify-content-center p-5">
-            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-          </div>
-          } @else if(listings.length === 0) {
-          <div class="text-center text-muted p-5">No listings found</div>
-          } @else {
-          <div class="row">
-            @for (l of listings; track l.id) {
-            <div class="col-xl-4 col-md-6">
-              <div class="card product-card mb-3">
-                <div class="card-body p-3">
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="badge bg-soft-info text-info">{{PaymentModeLabels[l.paymentMode]}}</span>
-                    <span class="text-warning">
-                      @if(l.averageRating > 0) {
-                      ★ {{l.averageRating | number:'1.1-1'}} <small class="text-muted">({{l.reviewCount}})</small>
-                      } @else { — }
-                    </span>
-                  </div>
-                  <h6 class="mb-1 text-truncate">{{l.title}}</h6>
-                  <p class="text-muted mb-2 text-truncate">{{l.categoryName}} <span class="mx-1">•</span> {{l.providerName || l.providerId}}</p>
-                  <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0">{{l.price != null ? (l.price | currency: (l.currency || 'EUR')) : 'On request'}}</h5>
-                    <div class="d-flex gap-1">
-                      <a [routerLink]="['/marketplace/listings', l.id]" class="btn btn-soft-primary btn-sm"><app-icon icon="eye"></app-icon></a>
-                      <a [routerLink]="['/marketplace/listings', l.id, 'edit']" class="btn btn-soft-success btn-sm"><app-icon icon="pencil"></app-icon></a>
-                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(l.id)"><app-icon icon="trash"></app-icon></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <div class="card-body" [class.d-none]="!showFilters">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Search</label>
+              <input type="text" class="form-control" placeholder="Title, description..." [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" />
             </div>
+            <div class="col-md-2">
+              <label class="form-label">Category</label>
+              <select class="form-select" [(ngModel)]="categoryId">
+                <option value="">All</option>
+                @for (cat of categories; track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Status</label>
+              <select class="form-select" [(ngModel)]="statusFilter">
+                @for (opt of statusOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Payment Mode</label>
+              <select class="form-select" [(ngModel)]="paymentModeFilter">
+                <option value="">All</option>
+                <option [value]="0">Contact Only</option>
+                <option [value]="1">Wallet Payment</option>
+                <option [value]="2">Both</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">City</label>
+              <input type="text" class="form-control" placeholder="City" [(ngModel)]="cityFilter" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-control" placeholder="Country" [(ngModel)]="countryFilter" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Min Price</label>
+              <input type="number" class="form-control" placeholder="Min" [(ngModel)]="minPrice" step="0.01" min="0" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Max Price</label>
+              <input type="number" class="form-control" placeholder="Max" [(ngModel)]="maxPrice" step="0.01" min="0" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Provider ID</label>
+              <input type="text" class="form-control" placeholder="Provider ID" [(ngModel)]="providerFilter" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Sort By</label>
+              <select class="form-select" [(ngModel)]="sortBy">
+                <option [value]="0">Relevance</option>
+                <option [value]="1">Newest</option>
+                <option [value]="2">Rating Desc</option>
+                <option [value]="3">Price Asc</option>
+                <option [value]="4">Price Desc</option>
+                <option [value]="5">Distance</option>
+              </select>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" (click)="loadListings()" [disabled]="loading">
+                @if (loading) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                <app-icon icon="search" class="me-1"></app-icon> Apply Filters
+              </button>
+              @if (hasActiveFilters()) {
+              <button class="btn btn-outline-secondary" (click)="clearFilters()">
+                <app-icon icon="x" class="me-1"></app-icon> Clear All
+              </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  @if (error) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Listings Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-3">
+            <h5 class="mb-0">Listings ({{ totalCount }} total)</h5>
+            @if (selectedCount() > 0) {
+            <span class="badge bg-primary">{{ selectedCount() }} selected</span>
             }
           </div>
-          @if(totalPages > 1) {
-          <div class="d-flex justify-content-between align-items-center mt-2">
-            <span class="text-muted">Page {{page}} of {{totalPages}}</span>
+          @if (selectedCount() > 0) {
+          <div class="d-flex gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-success" (click)="bulkApprove()" [disabled]="bulkActionLoading || !canBulkApprove()" title="Approve selected">
+                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="check" class="me-1"></app-icon>Approve }
+              </button>
+              <button class="btn btn-danger" (click)="bulkReject()" [disabled]="bulkActionLoading || !canBulkReject()" title="Reject selected">
+                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="x" class="me-1"></app-icon>Reject }
+              </button>
+              <button class="btn btn-warning" (click)="bulkSuspend()" [disabled]="bulkActionLoading || !canBulkSuspend()" title="Suspend selected">
+                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="pause" class="me-1"></app-icon>Suspend }
+              </button>
+              <button class="btn btn-outline-danger" (click)="bulkDelete()" [disabled]="bulkActionLoading" title="Delete selected">
+                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="trash" class="me-1"></app-icon>Delete }
+              </button>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" (click)="toggleSelectAll()" [attr.aria-label]="allSelected() ? 'Deselect all' : 'Select all'">
+              <app-icon [icon]="allSelected() ? 'check-square' : 'square'" class="me-1"></app-icon>
+              {{ allSelected() ? 'Deselect All' : 'Select All' }}
+            </button>
+          </div>
+        }
+        </div>
+
+        <div class="card-body p-0">
+          @if (loading) {
+          <div class="text-center py-5">
+            <span class="spinner-border text-primary"></span>
+            <p class="text-muted mt-2">Loading listings...</p>
+          </div>
+          } @else {
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 40px;">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" [disabled]="listings().length === 0" />
+                    </div>
+                  </th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Provider</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Price</th>
+                  <th>Rating</th>
+                  <th>Created</th>
+                  <th style="width: 120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (listing of listings(); track listing.id) {
+                <tr [class.table-primary]="listing.selected">
+                  <td>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" [checked]="listing.selected" (change)="toggleSelect(listing)" />
+                    </div>
+                  </td>
+                  <td>
+                    <div class="fw-medium text-truncate" style="max-width: 250px;">{{ listing.title }}</div>
+                    @if(listing.departureCountryCode && listing.arrivalCountryCode) {
+                    <div class="fs-xs text-primary mt-1">
+                      ✈️ {{listing.departureCity || listing.departureCountryCode}} ➔ {{listing.arrivalCity || listing.arrivalCountryCode}}
+                      @if(listing.capacityKg) {
+                      &middot; <span class="badge bg-soft-primary text-primary">{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg</span>
+                      }
+                    </div>
+                    }
+                  </td>
+                  <td><span class="badge bg-soft-info text-info">{{ listing.categoryName }}</span></td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="text-muted fs-xs">{{ listing.providerId }}</span>
+                      <button class="btn btn-link p-0 text-primary" (click)="onProviderClick(listing.providerId)" title="View provider">
+                        <app-icon icon="external-link" class="fs-xs"></app-icon>
+                      </button>
+                    </div>
+                  </td>
+                  <td>{{ listing.city || '—' }}, {{ listing.country || '—' }}</td>
+                  <td>
+                    <span class="badge" [class]="'bg-' + getStatusBadge(listing.status)">
+                      {{ getStatusLabel(listing.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-soft-secondary text-secondary">{{ getPaymentModeLabel(listing.paymentMode) }}</span>
+                  </td>
+                  <td>{{ listing.price != null ? (listing.price | number:'1.0-2') + ' ' + (listing.currency || '') : '—' }}</td>
+                  <td>{{ listing.averageRating ? (listing.averageRating | number:'1.0-1') : '—' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon> ({{ listing.reviewCount }})</td>
+                  <td>{{ listing.createdAt | date:'short' }}</td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button class="btn btn-outline-primary" (click)="openDetail(listing)" title="View details">
+                        <app-icon icon="eye"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-success" (click)="approveSingle(listing.id)" [disabled]="listing.status !== 0" title="Approve">
+                        <app-icon icon="check"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-danger" (click)="rejectSingle(listing.id)" [disabled]="listing.status !== 0" title="Reject">
+                        <app-icon icon="x"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-warning" (click)="suspendSingle(listing.id)" [disabled]="listing.status !== 1" title="Suspend">
+                        <app-icon icon="pause"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-danger" (click)="deleteSingle(listing.id)" title="Delete">
+                        <app-icon icon="trash"></app-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="11" class="text-center text-muted p-5">
+                    <app-icon icon="package" class="fs-1 d-block mb-2"></app-icon>
+                    No listings found
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          @if(totalPages > 1 && !loading) {
+          <div class="card-body d-flex justify-content-between align-items-center border-top">
+            <span class="text-muted">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
             </div>
           </div>
           }
-          }
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Error Alert -->
+  @if (error) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Detail Sidebar Modal -->
+  @if (detailListing) {
+  <div class="modal-backdrop fade show" (click)="closeDetail()"></div>
+  <div class="modal fade show d-block" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 1055; max-width: 600px; margin-left: auto;">
+    <div class="modal-dialog modal-fullscreen-down modal-end">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ detailListing.title }}</h5>
+          <button type="button" class="btn-close" (click)="closeDetail()"></button>
+        </div>
+        <div class="modal-body">
+          @if (detailLoading) {
+          <div class="text-center py-4">
+            <span class="spinner-border text-primary"></span>
+            <p class="text-muted mt-2">Loading details...</p>
+          </div>
+          } @else if (detailError) {
+          <div class="alert alert-danger">{{ detailError }}</div>
+          } @else {
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Category</label>
+              <p class="mb-0">{{ detailListing.categoryName }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Provider</label>
+              <p class="mb-0">{{ detailListing.providerId }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">City / Country</label>
+              <p class="mb-0">{{ detailListing.city || '—' }}, {{ detailListing.country || '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Status</label>
+              <p class="mb-0"><span class="badge" [class]="'bg-' + getStatusBadge(detailListing.status)">{{ getStatusLabel(detailListing.status) }}</span></p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Payment Mode</label>
+              <p class="mb-0">{{ getPaymentModeLabel(detailListing.paymentMode) }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Price</label>
+              <p class="mb-0">{{ detailListing.price != null ? (detailListing.price | number:'1.0-2') + ' ' + (detailListing.currency || '') : '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Rating</label>
+              <p class="mb-0">{{ detailListing.averageRating ? (detailListing.averageRating | number:'1.0-1') : '—' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon> ({{ detailListing.reviewCount }} reviews)</p>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Created</label>
+              <p class="mb-0">{{ detailListing.createdAt | date:'medium' }}</p>
+            </div>
+          </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetail()">Close</button>
+          <button type="button" class="btn btn-success" (click)="approveSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
+            <app-icon icon="check" class="me-1"></app-icon>Approve
+          </button>
+          <button type="button" class="btn btn-danger" (click)="rejectSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
+            <app-icon icon="x" class="me-1"></app-icon>Reject
+          </button>
+          <button type="button" class="btn btn-warning" (click)="suspendSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 1">
+            <app-icon icon="pause" class="me-1"></app-icon>Suspend
+          </button>
+          <button type="button" class="btn btn-outline-danger" (click)="deleteSingle(detailListing.id); closeDetail()">
+            <app-icon icon="trash" class="me-1"></app-icon>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
 </div>

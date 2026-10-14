@@ -1,77 +1,72 @@
 <div class="container-fluid">
   <app-page-breadcrumb title="Documents" subTitle="Document" />
 
-  <div class="row mb-3">
-    <div class="col-lg-12">
-      <div class="card border p-3">
-        <div class="row g-3 align-items-end justify-content-between">
-          <div class="col-md-5">
-            <label class="form-label fw-medium">Select Profile</label>
-            <app-profile-search-dropdown [placeholder]="'Select profile...'" (onProfileSelect)="onProfileSelect($event)" />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label fw-medium">Or enter Profile ID</label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Paste Profile ID..." [(ngModel)]="manualProfileId" (keyup.enter)="applyManualProfileId()" />
-              <button class="btn btn-outline-primary" type="button" (click)="applyManualProfileId()">Apply</button>
-            </div>
-          </div>
-          @if (profileId) {
-          <div class="col-auto">
-            <button class="btn btn-success" (click)="openUploadModal(uploadModal)">
-              <app-icon icon="upload" class="me-1"></app-icon> Upload Document
-            </button>
-          </div>
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-
-  @if (profileId) {
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">Profile Documents</h5>
-          <span class="badge bg-primary">{{totalCount}} total</span>
+        <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 400px;">
+            <div class="flex-grow-1">
+              <label class="form-label fw-medium fs-sm mb-1 text-muted">Select Profile</label>
+              <app-profile-search-dropdown [placeholder]="'Search by name or email...'" (onProfileSelect)="onProfileSelect($event)" />
+            </div>
+          </div>
+          
+          <div class="d-flex align-items-center gap-2 mt-auto mb-1">
+            @if (profileId) {
+            <button class="btn btn-primary" (click)="openUploadModal(uploadModal)">
+              <app-icon icon="plus" class="me-1 fs-sm"></app-icon> Upload Document
+            </button>
+            }
+          </div>
         </div>
+
+        @if (profileId) {
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead>
-                <tr>
+            <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+              <thead class="bg-light bg-opacity-25 thead-sm">
+                <tr class="text-uppercase fs-xxs">
                   <th>File Name</th>
                   <th>Type</th>
                   <th>Size</th>
                   <th>Status</th>
                   <th>Expires</th>
                   <th>Uploaded</th>
-                  <th>Actions</th>
+                  <th class="text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 @for (doc of documents; track doc.id) {
                 <tr>
-                  <td class="fw-medium">{{doc.fileName}}</td>
-                  <td><span class="badge bg-soft-info text-info">{{doc.documentTypeName || 'N/A'}}</span></td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar avatar-sm">
+                        <div class="avatar-title bg-light text-secondary rounded">
+                          <app-icon icon="file-text" class="fs-18"></app-icon>
+                        </div>
+                      </div>
+                      <a [routerLink]="['/documents', doc.id]" class="fw-medium link-reset">{{doc.fileName}}</a>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-info-subtle text-info">{{doc.documentTypeName || 'N/A'}}</span></td>
                   <td>{{(doc.fileSize / 1024).toFixed(1)}} KB</td>
                   <td>
-                    <span class="badge" [class]="'bg-' + statusBadges[doc.status]">{{statusLabels[doc.status]}}</span>
+                    <span class="badge" [class]="'bg-' + statusBadges[doc.status] + '-subtle text-' + statusBadges[doc.status]">{{statusLabels[doc.status]}}</span>
                   </td>
                   <td>{{doc.expiresAt ? (doc.expiresAt | date:'short') : '—'}}</td>
                   <td>{{doc.createdAt | date:'short'}}</td>
                   <td>
-                    <div class="d-flex gap-1">
-                      <a [routerLink]="['/documents', doc.id]" class="btn btn-soft-primary btn-sm" title="View"><app-icon icon="eye"></app-icon></a>
-                      <button class="btn btn-soft-info btn-sm" (click)="downloadDocument(doc)" title="Download"><app-icon icon="download"></app-icon></button>
-                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(doc)" title="Delete"><app-icon icon="trash"></app-icon></button>
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                      <a [routerLink]="['/documents', doc.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="View"><app-icon icon="eye" class="fs-lg"></app-icon></a>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-primary" (click)="downloadDocument(doc)" title="Download"><app-icon icon="download" class="fs-lg"></app-icon></button>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="onDelete(doc)" title="Delete"><app-icon icon="trash-2" class="fs-lg"></app-icon></button>
                     </div>
                   </td>
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="7" class="text-center text-muted p-4">
+                  <td colspan="7" class="text-center text-muted py-5">
                     @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading... } @else { No documents found for this profile }
                   </td>
                 </tr>
@@ -80,23 +75,27 @@
             </table>
           </div>
         </div>
-        @if(totalPages > 1) {
-        <div class="card-body d-flex justify-content-between align-items-center border-top">
-          <span class="text-muted">Page {{page}} of {{totalPages}}</span>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
-            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+        <div class="card-footer border-0">
+          @if(totalPages > 1) {
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="card-body">
+          <div class="alert alert-info border-0 d-flex align-items-center mb-0">
+            <app-icon icon="info" class="fs-lg me-2"></app-icon> Select a profile from the dropdown above to view documents.
           </div>
         </div>
         }
       </div>
     </div>
   </div>
-  } @else {
-  <div class="alert alert-info">
-    <app-icon icon="info-circle" class="me-2"></app-icon> Select a profile from the dropdown above or in the topbar to view documents.
-  </div>
-  }
 
   <ng-template #uploadModal let-modal>
     <div class="modal-header">

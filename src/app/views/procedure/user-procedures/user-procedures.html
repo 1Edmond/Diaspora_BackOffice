@@ -1,19 +1,14 @@
 <div class="container-fluid">
   <app-page-breadcrumb title="User Procedures" subTitle="Procedure" />
 
-  <div class="row mb-3">
-    <div class="col-lg-12">
-      <div class="card border p-3">
-        <div class="row g-3 align-items-end">
-          <div class="col-md-6">
-            <label class="form-label fw-medium">Select Profile</label>
-            <app-profile-search-dropdown [placeholder]="'Select profile...'" (onProfileSelect)="onProfileSelect($event)" />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-medium">Or enter Profile ID</label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Paste Profile ID..." [(ngModel)]="manualProfileId" (keyup.enter)="applyManualProfileId()" />
-              <button class="btn btn-outline-primary" type="button" (click)="applyManualProfileId()">Apply</button>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 400px;">
+            <div class="flex-grow-1">
+              <label class="form-label fw-medium fs-sm mb-1 text-muted">Select Profile</label>
+              <app-profile-search-dropdown [placeholder]="'Search by name or email...'" (onProfileSelect)="onProfileSelect($event)" />
             </div>
           </div>
         </div>
@@ -22,46 +17,7 @@
   </div>
 
   @if (profileId) {
-    @if (progress) {
-      <div class="row mb-4">
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-primary h-100">
-            <h4 class="mb-1 text-primary">{{progress.total}}</h4>
-            <p class="text-muted mb-0 small">Total</p>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-success h-100">
-            <h4 class="mb-1 text-success">{{progress.completed}}</h4>
-            <p class="text-muted mb-0 small">Completed</p>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-info h-100">
-            <h4 class="mb-1 text-info">{{progress.inProgress}}</h4>
-            <p class="text-muted mb-0 small">In Progress</p>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-warning h-100">
-            <h4 class="mb-1 text-warning">{{progress.notStarted}}</h4>
-            <p class="text-muted mb-0 small">Not Started</p>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-secondary h-100">
-            <h4 class="mb-1">{{progress.skipped}}</h4>
-            <p class="text-muted mb-0 small">Skipped</p>
-          </div>
-        </div>
-        <div class="col-md-2">
-          <div class="card text-center p-3 border-primary h-100">
-            <h4 class="mb-1 text-primary">{{progress.completionPercentage | number:'1.0-1'}}%</h4>
-            <p class="text-muted mb-0 small">Completion Rate</p>
-          </div>
-        </div>
-      </div>
-    }
+
 
     <!-- Bulk Actions Bar -->
     @if (procedures.length > 0) {
@@ -101,21 +57,21 @@
       </div>
     }
 
-    <div class="row mt-3">
+    <div class="row">
       <div class="col-12">
         <div class="card">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">User Procedures</h5>
+          <div class="card-header border-light d-flex align-items-center justify-content-between">
+            <h5 class="mb-0">User Procedures List</h5>
             <span class="badge bg-primary">{{totalCount}} total</span>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th style="width: 40px;">
+              <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+                <thead class="bg-light bg-opacity-25 thead-sm">
+                  <tr class="text-uppercase fs-xxs">
+                    <th style="width: 40px;" class="ps-3">
                       <div class="form-check">
-                        <input class="form-check-input" type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll()" [disabled]="procedures.length === 0" />
+                        <input class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll()" [disabled]="procedures.length === 0" />
                       </div>
                     </th>
                     <th>Procedure</th>
@@ -124,42 +80,51 @@
                     <th>Completed By</th>
                     <th>Completed</th>
                     <th>Notes</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th class="text-center" style="width: 140px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (up of procedures; track up.id) {
                   <tr [class.table-primary]="isSelected(up.id)">
-                    <td>
+                    <td class="ps-3">
                       <div class="form-check">
-                        <input class="form-check-input" type="checkbox" [checked]="isSelected(up.id)" (change)="toggleSelect(up.id)" />
+                        <input class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" [checked]="isSelected(up.id)" (change)="toggleSelect(up.id)" />
                       </div>
                     </td>
-                    <td class="fw-medium">{{up.procedureTitle}}</td>
+                    <td class="fw-medium">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar avatar-sm flex-shrink-0">
+                          <div class="avatar-title bg-light text-secondary rounded">
+                            <app-icon icon="file-text" class="fs-18"></app-icon>
+                          </div>
+                        </div>
+                        <span class="text-body">{{up.procedureTitle}}</span>
+                      </div>
+                    </td>
                     <td>
-                      <span class="badge" [class]="'bg-' + UserProcedureStatusBadgeVariants[up.status]">{{UserProcedureStatusLabels[up.status]}}</span>
+                      <span class="badge" [class]="'bg-' + UserProcedureStatusBadgeVariants[up.status] + '-subtle text-' + UserProcedureStatusBadgeVariants[up.status]">{{UserProcedureStatusLabels[up.status]}}</span>
                     </td>
                     <td>{{up.costAmount != null ? (up.costAmount | number:'1.0-2') + ' ' + (up.costCurrency || '') : '—'}}</td>
                     <td>{{up.completedByRole || up.completedByUserId || '—'}}</td>
                     <td>{{up.completedAt ? (up.completedAt | date:'short') : '—'}}</td>
                     <td class="text-truncate" style="max-width: 200px;">{{up.notes || '—'}}</td>
                     <td>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button class="btn btn-outline-success" (click)="startSingle(up)" [disabled]="up.status !== UserProcedureStatus.NotStarted" title="Start">
-                          <app-icon icon="play"></app-icon>
+                      <div class="d-flex align-items-center justify-content-center gap-1">
+                        <button class="btn btn-default btn-icon btn-sm rounded-circle text-success" (click)="startSingle(up)" [disabled]="up.status !== UserProcedureStatus.NotStarted" title="Start">
+                          <app-icon icon="play" class="fs-lg"></app-icon>
                         </button>
-                        <button class="btn btn-outline-primary" (click)="completeSingle(up)" [disabled]="up.status !== UserProcedureStatus.InProgress" title="Complete">
-                          <app-icon icon="check"></app-icon>
+                        <button class="btn btn-default btn-icon btn-sm rounded-circle text-primary" (click)="completeSingle(up)" [disabled]="up.status !== UserProcedureStatus.InProgress" title="Complete">
+                          <app-icon icon="check" class="fs-lg"></app-icon>
                         </button>
-                        <button class="btn btn-outline-warning" (click)="skipSingle(up)" [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped" title="Skip">
-                          <app-icon icon="skip-forward"></app-icon>
+                        <button class="btn btn-default btn-icon btn-sm rounded-circle text-warning" (click)="skipSingle(up)" [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped" title="Skip">
+                          <app-icon icon="skip-forward" class="fs-lg"></app-icon>
                         </button>
                       </div>
                     </td>
                   </tr>
                   } @empty {
                   <tr>
-                    <td colspan="8" class="text-center text-muted p-4">
+                    <td colspan="8" class="text-center text-muted py-5">
                       @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading... } @else { No user procedures found for this profile }
                     </td>
                   </tr>
@@ -169,11 +134,13 @@
             </div>
           </div>
           @if(totalPages > 1) {
-          <div class="card-body d-flex justify-content-between align-items-center border-top">
-            <span class="text-muted">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+          <div class="card-footer border-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
+                <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+              </div>
             </div>
           </div>
           }
@@ -181,9 +148,13 @@
       </div>
     </div>
   } @else {
-    <div class="alert alert-info">
-      <app-icon icon="info-circle" class="me-2"></app-icon>
-      Select a profile from the dropdown above or in the topbar to view user procedures.
+    <div class="card">
+      <div class="card-body">
+        <div class="alert alert-info border-0 d-flex align-items-center mb-0">
+          <app-icon icon="info-circle" class="me-2 fs-lg"></app-icon>
+          Select a profile from the dropdown above or in the topbar to view user procedures.
+        </div>
+      </div>
     </div>
   }
 </div>

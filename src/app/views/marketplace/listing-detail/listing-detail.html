@@ -68,6 +68,50 @@
             }
           </div>
 
+          @if(listing.departureCountryCode && listing.arrivalCountryCode) {
+          <div class="card bg-soft-primary border-primary mb-4">
+            <div class="card-header bg-transparent"><h6 class="mb-0 text-primary fw-bold">✈️ Détails du Trajet & Transport de Colis</h6></div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block">Corridor</span>
+                  <strong>{{listing.departureCity || listing.departureCountryCode}} ({{listing.departureCountryCode}}) ➔ {{listing.arrivalCity || listing.arrivalCountryCode}} ({{listing.arrivalCountryCode}})</strong>
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block">Dates</span>
+                  <span>Départ: {{listing.departureDate | date:'mediumDate'}} &middot; Arrivée: {{listing.arrivalDate | date:'mediumDate'}}</span>
+                  @if(listing.pickupDeadline) {
+                  <div class="text-danger small">Dépôt max: {{listing.pickupDeadline | date:'short'}}</div>
+                  }
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block">Capacité & Tarif</span>
+                  <strong>{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg restants</strong>
+                  @if(listing.pricePerKg) {
+                  <div class="text-muted small">{{listing.pricePerKg | currency:(listing.currency || 'XOF')}}/kg</div>
+                  }
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block">Mode de transport</span>
+                  <span>{{listing.transportMode || 'Non précisé'}} {{listing.flightOrTransportNumber ? '(' + listing.flightOrTransportNumber + ')' : ''}}</span>
+                </div>
+                @if(listing.meetingPoints) {
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block">Points de rendez-vous</span>
+                  <span>{{listing.meetingPoints}}</span>
+                </div>
+                }
+                @if(listing.prohibitedItemsDescription) {
+                <div class="col-md-4">
+                  <span class="text-muted small text-uppercase d-block text-danger">Objets interdits</span>
+                  <span class="text-danger">{{listing.prohibitedItemsDescription}}</span>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+          }
+
           @if(listing.description) {
           <div class="mb-4">
             <h6 class="text-uppercase text-muted">Description</h6>

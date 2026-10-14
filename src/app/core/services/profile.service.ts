@@ -12,6 +12,9 @@ import {
   UserProfilesDto,
 } from '../models/profile/profile.model';
 import { BaseResponse } from '../models/shared/base-response.model';
+import { DocumentDto } from '../models/document/document.model';
+import { KycVerification } from '../models/kyc/kyc.model';
+import { ServiceListingSummaryDto } from '../models/marketplace/marketplace.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +22,9 @@ import { BaseResponse } from '../models/shared/base-response.model';
 export class ProfileService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/profiles`;
   private readonly typeApiUrl = `${environment.apiBaseUrl}/api/profile-types`;
+  private readonly documentApiUrl = `${environment.apiBaseUrl}/api/documents`;
+  private readonly kycApiUrl = `${environment.apiBaseUrl}/api/kyc`;
+  private readonly marketplaceApiUrl = `${environment.apiBaseUrl}/api/servicelisting`;
 
   constructor(private http: HttpClient) {}
 
@@ -84,5 +90,87 @@ export class ProfileService {
 
   activateProfileType(id: string): Observable<BaseResponse> {
     return this.http.post<BaseResponse>(`${this.typeApiUrl}/${id}/activate`, {});
+  }
+
+  republishDirectory(): Observable<{ totalProcessed: number; message: string }> {
+    return this.http.post<{ totalProcessed: number; message: string }>(`${this.apiUrl}/admin/republish-directory`, {});
+  }
+
+  // Document management
+  getDocumentsByProfile(profileId: string, pageNumber = 1, pageSize = 20): Observable<PagedList<DocumentDto>> {
+    return this.http.get<PagedList<DocumentDto>>(`${this.documentApiUrl}/profile/${profileId}`, {
+      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() },
+    });
+  }
+
+  getDocument(documentId: string): Observable<DocumentDto> {
+    return this.http.get<DocumentDto>(`${this.documentApiUrl}/${documentId}`);
+  }
+
+  validateDocument(documentId: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.documentApiUrl}/${documentId}/validate`, {});
+  }
+
+  rejectDocument(documentId: string, reason: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.documentApiUrl}/${documentId}/reject`, { reason });
+  }
+
+  deleteDocument(documentId: string): Observable<BaseResponse> {
+    return this.http.delete<BaseResponse>(`${this.documentApiUrl}/${documentId}`);
+  }
+
+  downloadDocument(documentId: string): Observable<Blob> {
+    return this.http.get(`${this.documentApiUrl}/${documentId}/download`, { responseType: 'blob' });
+  }
+
+  // KYC management
+  getKycVerificationByUser(userId: string): Observable<KycVerification> {
+    return this.http.get<KycVerification>(`${this.kycApiUrl}/my-verification`);
+  }
+
+  getKycVerification(id: string): Observable<KycVerification> {
+    return this.http.get<KycVerification>(`${this.kycApiUrl}/${id}`);
+  }
+
+  getKycVerifications(query: { pageNumber?: number; pageSize?: number; status?: number; searchTerm?: string } = {}): Observable<PagedList<KycVerification>> {
+    const params: any = {};
+    if (query.pageNumber != null) params.pageNumber = query.pageNumber.toString();
+    if (query.pageSize != null) params.pageSize = query.pageSize.toString();
+    if (query.status != null) params.status = query.status.toString();
+    if (query.searchTerm) params.searchTerm = query.searchTerm;
+    return this.http.get<PagedList<KycVerification>>(this.kycApiUrl, { params });
+  }
+
+  getPendingKycVerifications(pageNumber = 1, pageSize = 20): Observable<PagedList<KycVerification>> {
+    return this.http.get<PagedList<KycVerification>>(`${this.kycApiUrl}/pending`, {
+      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() },
+    });
+  }
+
+  approveKycVerification(id: string, notes?: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/approve`, { notes });
+  }
+
+  rejectKycVerification(id: string, reason: string, notes?: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/reject`, { reason, notes });
+  }
+
+  requestMoreInfoKyc(id: string, message: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/request-info`, { message });
+  }
+
+  startKycReview(id: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/start-review`, {});
+  }
+
+  downloadKycDocument(verificationId: string, documentId: string): Observable<Blob> {
+    return this.http.get(`${this.kycApiUrl}/${verificationId}/documents/${documentId}/download`, { responseType: 'blob' });
+  }
+
+  // Marketplace/Services
+  getListingsByProvider(providerId: string, pageNumber = 1, pageSize = 20): Observable<PagedList<ServiceListingSummaryDto>> {
+    return this.http.get<PagedList<ServiceListingSummaryDto>>(`${this.marketplaceApiUrl}`, {
+      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString(), providerId },
+    });
   }
 }

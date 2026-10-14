@@ -21,13 +21,22 @@
   <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
   }
 
-  <div class="row">
+  <div class="row g-3">
     <div class="col-xl-4">
-      <div class="card bg-primary text-white">
+      <div class="card bg-primary text-white shadow-sm mb-0">
         <div class="card-body text-center p-4">
-          <h6>Current Balance</h6>
+          <h6>Solde Disponible</h6>
           <h2 class="mb-0">{{wallet.balance | currency:wallet.currency}}</h2>
-          <p class="mb-0 mt-2 opacity-75">Profile: {{wallet.externalProfileId}}</p>
+          <p class="mb-0 mt-2 opacity-75">Profil : {{wallet.externalProfileId}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card bg-info text-white shadow-sm mb-0">
+        <div class="card-body text-center p-4">
+          <h6>Fonds sous Séquestre (Escrow Colis)</h6>
+          <h2 class="mb-0">{{(wallet.heldBalance || 0) | currency:wallet.currency}}</h2>
+          <p class="mb-0 mt-2 opacity-75">Transactions & acheminements en cours</p>
         </div>
       </div>
     </div>

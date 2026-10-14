@@ -6,6 +6,7 @@ export interface WalletDto {
   userId: string
   currency: string
   balance: number
+  heldBalance?: number
   isActive: boolean
   createdAt: string
 }

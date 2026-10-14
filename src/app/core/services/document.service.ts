@@ -64,8 +64,10 @@ export class DocumentService {
     return this.http.get(`${this.apiUrl}/${id}/download`, { responseType: 'blob' });
   }
 
-  getDocumentTypes(): Observable<DocumentTypeDto[]> {
-    return this.http.get<DocumentTypeDto[]>(this.docTypeApiUrl);
+  getDocumentTypes(profileTypeId?: string): Observable<DocumentTypeDto[]> {
+    const params: any = {};
+    if (profileTypeId) params.profileTypeId = profileTypeId;
+    return this.http.get<DocumentTypeDto[]>(this.docTypeApiUrl, { params });
   }
 
   createDocumentType(data: CreateDocumentTypeRequest): Observable<DocumentTypeDto> {

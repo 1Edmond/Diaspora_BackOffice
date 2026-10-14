@@ -1,4 +1,14 @@
-import { KYCStatus } from '../shared/enums.model'
+import {
+  KYCStatus,
+  KYCStatusLabels,
+  KYCStatusBadgeVariants,
+} from '../shared/enums.model'
+
+export {
+  KYCStatus,
+  KYCStatusLabels,
+  KYCStatusBadgeVariants,
+}
 
 export interface KycVerification {
   id: string
