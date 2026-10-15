@@ -1,11 +1,11 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="User Procedures" subTitle="Procedure" />
+  <app-page-breadcrumb title="Guichet des Démarches Consulaires" subTitle="Procedure" />
 
   <!-- Global Alerts -->
   @if (success) {
     <div class="alert alert-success alert-dismissible fade show d-flex align-items-center justify-content-between mb-3" role="alert">
       <div class="d-flex align-items-center gap-2">
-        <app-icon icon="check-circle" class="fs-lg text-success"></app-icon>
+        <i class="ri-check-line fs-18 text-success"></i>
         <span>{{ success }}</span>
       </div>
       <button type="button" class="btn-close" (click)="clearMessages()"></button>
@@ -14,48 +14,42 @@
   @if (error) {
     <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center justify-content-between mb-3" role="alert">
       <div class="d-flex align-items-center gap-2">
-        <app-icon icon="alert-circle" class="fs-lg text-danger"></app-icon>
+        <i class="ri-error-warning-line fs-18 text-danger"></i>
         <span>{{ error }}</span>
       </div>
       <button type="button" class="btn-close" (click)="clearMessages()"></button>
     </div>
   }
 
-  <!-- Tab Navigation Card -->
-  <div class="card mb-3">
-    <div class="card-header border-bottom p-0">
-      <ul class="nav nav-tabs nav-tabs-bordered px-3 pt-2" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link fs-sm fw-medium d-flex align-items-center gap-2"
-            [class.active]="activeTab === 'global'"
-            (click)="setTab('global')"
-            role="tab"
-          >
-            <app-icon icon="list" class="fs-base"></app-icon>
-            <span>File globale des démarches</span>
-            @if (globalTotalCount > 0) {
-              <span class="badge bg-primary-subtle text-primary rounded-pill fs-xxs">{{ globalTotalCount }}</span>
-            }
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link fs-sm fw-medium d-flex align-items-center gap-2"
-            [class.active]="activeTab === 'by-profile'"
-            (click)="setTab('by-profile')"
-            role="tab"
-          >
-            <app-icon icon="user" class="fs-base"></app-icon>
-            <span>Audit par profil</span>
-            @if (profileId) {
-              <span class="badge bg-info-subtle text-info rounded-pill fs-xxs">Actif</span>
-            }
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <!-- Tab Navigation Ubold nav-bordered -->
+  <ul class="nav nav-tabs nav-bordered mb-3">
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="activeTab === 'global'"
+        (click)="setTab('global')"
+        style="cursor: pointer;"
+      >
+        <i class="ri-list-check me-1"></i> File Globale des Démarches
+        @if (globalTotalCount > 0) {
+          <span class="badge bg-soft-primary text-primary ms-1.5 px-2 py-0.5 fs-11">{{ globalTotalCount }}</span>
+        }
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="activeTab === 'by-profile'"
+        (click)="setTab('by-profile')"
+        style="cursor: pointer;"
+      >
+        <i class="ri-user-search-line me-1"></i> Audit par Profil Citoyen
+        @if (profileId) {
+          <span class="badge bg-soft-info text-info ms-1.5 px-2 py-0.5 fs-11">Actif</span>
+        }
+      </a>
+    </li>
+  </ul>
 
   <!-- TAB 1: FILE GLOBALE DES DÉMARCHES -->
   @if (activeTab === 'global') {
@@ -64,13 +58,13 @@
       <div class="card-body py-2 px-3">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="fs-sm fw-medium text-muted me-1">Filtrer par statut :</span>
+            <span class="fs-12 fw-semibold text-muted me-1">Statut d'avancement :</span>
             <div class="btn-group btn-group-sm" role="group">
               <button
                 type="button"
                 class="btn"
                 [class.btn-primary]="statusFilter === 'ALL'"
-                [class.btn-outline-secondary]="statusFilter !== 'ALL'"
+                [class.btn-soft-secondary]="statusFilter !== 'ALL'"
                 (click)="onStatusFilterChange('ALL')"
               >
                 Tous
@@ -79,7 +73,7 @@
                 type="button"
                 class="btn"
                 [class.btn-warning]="statusFilter === '0'"
-                [class.btn-outline-secondary]="statusFilter !== '0'"
+                [class.btn-soft-secondary]="statusFilter !== '0'"
                 (click)="onStatusFilterChange('0')"
               >
                 Non démarrée
@@ -88,7 +82,7 @@
                 type="button"
                 class="btn"
                 [class.btn-info]="statusFilter === '1'"
-                [class.btn-outline-secondary]="statusFilter !== '1'"
+                [class.btn-soft-secondary]="statusFilter !== '1'"
                 (click)="onStatusFilterChange('1')"
               >
                 En cours
@@ -97,7 +91,7 @@
                 type="button"
                 class="btn"
                 [class.btn-success]="statusFilter === '2'"
-                [class.btn-outline-secondary]="statusFilter !== '2'"
+                [class.btn-soft-secondary]="statusFilter !== '2'"
                 (click)="onStatusFilterChange('2')"
               >
                 Terminée
@@ -106,7 +100,7 @@
                 type="button"
                 class="btn"
                 [class.btn-secondary]="statusFilter === '3'"
-                [class.btn-outline-secondary]="statusFilter !== '3'"
+                [class.btn-soft-secondary]="statusFilter !== '3'"
                 (click)="onStatusFilterChange('3')"
               >
                 Ignorée
@@ -115,13 +109,13 @@
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary" (click)="loadGlobalData()" [disabled]="globalLoading" title="Rafraîchir">
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadGlobalData()" [disabled]="globalLoading" title="Actualiser la liste">
               @if (globalLoading) {
-                <span class="spinner-border spinner-border-sm me-1"></span>
+                <span class="spinner-border spinner-border-sm"></span>
               } @else {
-                <app-icon icon="refresh-cw" class="me-1"></app-icon>
+                <i class="ri-refresh-line"></i>
               }
-              Rafraîchir
+              Actualiser
             </button>
           </div>
         </div>
@@ -129,52 +123,40 @@
     </div>
 
     <!-- Bulk Actions Toolbar -->
-    @if (globalProcedures.length > 0) {
+    @if (globalProcedures.length > 0 && getSelectedGlobalCount() > 0) {
       <div class="row mb-3">
         <div class="col-12">
-          <div class="card border-primary">
+          <div class="card border border-primary mb-0 bg-soft-primary">
             <div class="card-body py-2 px-3">
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      [checked]="isAllGlobalSelected()"
-                      (change)="toggleSelectAllGlobal()"
-                      [disabled]="globalProcedures.length === 0"
-                    />
-                    <label class="form-check-label fw-medium mb-0">
-                      Tout sélectionner ({{ getSelectedGlobalCount() }}/{{ globalProcedures.length }})
-                    </label>
-                  </div>
-                  <span class="badge bg-primary px-3 py-2 fs-6">{{ getSelectedGlobalCount() }} sélectionnée(s)</span>
+                  <span class="badge bg-primary px-3 py-2 fs-13">{{ getSelectedGlobalCount() }} démarche(s) sélectionnée(s)</span>
                 </div>
                 <div class="d-flex gap-2">
                   <button
-                    class="btn btn-sm btn-success"
+                    class="btn btn-xs btn-success d-inline-flex align-items-center gap-1"
                     (click)="bulkStartGlobal()"
                     [disabled]="globalBulkActionLoading || !canBulkStartGlobal()"
                   >
-                    @if (globalBulkActionLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                    <app-icon icon="play" class="me-1"></app-icon>Démarrer
+                    @if (globalBulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> }
+                    <i class="ri-play-line"></i> Démarrer
                   </button>
                   <button
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-xs btn-primary d-inline-flex align-items-center gap-1"
                     (click)="bulkCompleteGlobal(actionModal)"
                     [disabled]="globalBulkActionLoading || !canBulkCompleteGlobal()"
                   >
-                    <app-icon icon="check-circle" class="me-1"></app-icon>Compléter
+                    <i class="ri-check-line"></i> Compléter
                   </button>
                   <button
-                    class="btn btn-sm btn-warning"
+                    class="btn btn-xs btn-warning d-inline-flex align-items-center gap-1"
                     (click)="bulkSkipGlobal(actionModal)"
                     [disabled]="globalBulkActionLoading || !canBulkSkipGlobal()"
                   >
-                    <app-icon icon="skip-forward" class="me-1"></app-icon>Ignorer
+                    <i class="ri-skip-forward-line"></i> Ignorer
                   </button>
-                  <button class="btn btn-sm btn-outline-secondary" (click)="selectedGlobalIds.clear()">
-                    <app-icon icon="x" class="me-1"></app-icon>Effacer
+                  <button class="btn btn-xs btn-light" (click)="selectedGlobalIds.clear()">
+                    <i class="ri-close-line"></i> Désélectionner
                   </button>
                 </div>
               </div>
@@ -187,18 +169,18 @@
     <!-- Global Table -->
     <div class="card">
       <div class="card-header border-light d-flex align-items-center justify-content-between">
-        <h5 class="mb-0">File d'attente globale des démarches</h5>
-        <span class="badge bg-primary">{{ globalTotalCount }} démarches au total</span>
+        <h5 class="card-title mb-0">File d'attente globale des démarches</h5>
+        <span class="badge bg-soft-primary text-primary">{{ globalTotalCount }} démarches au total</span>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
-            <thead class="bg-light bg-opacity-25 thead-sm">
-              <tr class="text-uppercase fs-xxs">
+          <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+            <thead class="bg-light align-middle">
+              <tr>
                 <th style="width: 40px;" class="ps-3">
                   <div class="form-check">
                     <input
-                      class="form-check-input form-check-input-light fs-14 mt-0"
+                      class="form-check-input mt-0"
                       type="checkbox"
                       [checked]="isAllGlobalSelected()"
                       (change)="toggleSelectAllGlobal()"
@@ -206,14 +188,14 @@
                     />
                   </div>
                 </th>
-                <th>Citoyen / Profil</th>
-                <th>Démarche</th>
-                <th>Statut</th>
-                <th>Coût</th>
-                <th>Complété par</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th class="text-center" style="width: 140px;">Actions</th>
+                <th scope="col">Citoyen / Profil</th>
+                <th scope="col">Démarche Consulaire</th>
+                <th scope="col" class="text-center">Statut</th>
+                <th scope="col" class="text-end">Frais / Coût</th>
+                <th scope="col">Officier Traitant</th>
+                <th scope="col">Date d'Enregistrement</th>
+                <th scope="col">Notes & Instructions</th>
+                <th scope="col" class="text-end pe-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -222,7 +204,7 @@
                   <td class="ps-3">
                     <div class="form-check">
                       <input
-                        class="form-check-input form-check-input-light fs-14 mt-0"
+                        class="form-check-input mt-0"
                         type="checkbox"
                         [checked]="isGlobalSelected(up.id)"
                         (change)="toggleSelectGlobal(up.id)"
@@ -231,80 +213,87 @@
                   </td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
-                      <div class="avatar avatar-xs flex-shrink-0">
-                        <div class="avatar-title bg-primary-subtle text-primary rounded-circle fs-xs">
-                          <app-icon icon="user"></app-icon>
-                        </div>
+                      <div class="avatar-xs flex-shrink-0">
+                        <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-12 fw-bold font-monospace">
+                          {{ up.profileId ? up.profileId.slice(0, 2).toUpperCase() : 'ID' }}
+                        </span>
                       </div>
-                      <a [routerLink]="['/profiles', up.profileId]" class="text-body fw-medium text-decoration-none" title="Voir le profil">
+                      <a [routerLink]="['/profiles', up.profileId]" class="fw-semibold text-primary font-monospace text-decoration-none" title="Consulter la fiche profil">
                         {{ up.profileId.substring(0, 8) }}...
                       </a>
                     </div>
                   </td>
-                  <td class="fw-medium">
+                  <td>
                     <div class="d-flex align-items-center gap-2">
-                      <div class="avatar avatar-sm flex-shrink-0">
-                        <div class="avatar-title bg-light text-secondary rounded">
-                          <app-icon icon="file-text" class="fs-18"></app-icon>
-                        </div>
+                      <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-soft-info text-info rounded fs-18">
+                          <i class="ri-file-shield-line"></i>
+                        </span>
                       </div>
-                      <span class="text-body">{{ up.procedureTitle || 'Démarche' }}</span>
+                      <span class="fw-semibold text-dark">{{ up.procedureTitle || 'Démarche Consulaire' }}</span>
                     </div>
                   </td>
-                  <td>
+                  <td class="text-center">
                     <span
                       class="badge"
-                      [class]="'bg-' + UserProcedureStatusBadgeVariants[up.status] + '-subtle text-' + UserProcedureStatusBadgeVariants[up.status]"
+                      [class]="'bg-soft-' + UserProcedureStatusBadgeVariants[up.status] + ' text-' + UserProcedureStatusBadgeVariants[up.status]"
                     >
                       {{ UserProcedureStatusLabels[up.status] }}
                     </span>
                   </td>
-                  <td>
-                    {{ up.costAmount != null ? (up.costAmount | number:'1.0-2') + ' ' + (up.costCurrency || '') : '—' }}
+                  <td class="text-end fw-semibold fs-13">
+                    {{ up.costAmount != null ? (up.costAmount | number:'1.0-2') + ' ' + (up.costCurrency || '') : 'Gratuit' }}
                   </td>
-                  <td>{{ up.completedByRole || up.completedByUserId || '—' }}</td>
-                  <td>
-                    {{ up.completedAt ? (up.completedAt | date:'short') : (up.createdAt | date:'short') }}
+                  <td class="text-muted fs-12">{{ up.completedByRole || up.completedByUserId || '—' }}</td>
+                  <td class="text-muted fs-12">
+                    {{ up.completedAt ? (up.completedAt | date:'dd/MM/yyyy HH:mm') : (up.createdAt | date:'dd/MM/yyyy HH:mm') }}
                   </td>
-                  <td class="text-truncate" style="max-width: 200px;" [title]="up.notes || ''">
-                    {{ up.notes || '—' }}
+                  <td class="text-truncate" style="max-width: 180px;" [title]="up.notes || ''">
+                    <span class="text-muted fs-12">{{ up.notes || '—' }}</span>
                   </td>
-                  <td>
-                    <div class="d-flex align-items-center justify-content-center gap-1">
+                  <td class="text-end pe-3">
+                    <div class="d-flex align-items-center justify-content-end gap-1">
                       <button
-                        class="btn btn-default btn-icon btn-sm rounded-circle text-success"
+                        class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
                         (click)="startSingle(up)"
                         [disabled]="up.status !== UserProcedureStatus.NotStarted"
-                        title="Démarrer"
+                        title="Démarrer la démarche"
                       >
-                        <app-icon icon="play" class="fs-lg"></app-icon>
+                        <i class="ri-play-line"></i> Démarrer
                       </button>
                       <button
-                        class="btn btn-default btn-icon btn-sm rounded-circle text-primary"
+                        class="btn btn-xs btn-soft-primary d-inline-flex align-items-center gap-1"
                         (click)="openActionModal(actionModal, up, 'complete')"
                         [disabled]="up.status !== UserProcedureStatus.InProgress"
-                        title="Compléter"
+                        title="Valider la démarche"
                       >
-                        <app-icon icon="check" class="fs-lg"></app-icon>
+                        <i class="ri-check-line"></i> Valider
                       </button>
                       <button
-                        class="btn btn-default btn-icon btn-sm rounded-circle text-warning"
+                        class="btn btn-xs btn-soft-warning d-inline-flex align-items-center gap-1"
                         (click)="openActionModal(actionModal, up, 'skip')"
                         [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped"
-                        title="Ignorer"
+                        title="Ignorer cette démarche"
                       >
-                        <app-icon icon="skip-forward" class="fs-lg"></app-icon>
+                        <i class="ri-skip-forward-line"></i> Ignorer
                       </button>
                     </div>
                   </td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="9" class="text-center text-muted py-5">
+                  <td colspan="9" class="text-center text-muted p-5">
                     @if (globalLoading) {
-                      <span class="spinner-border spinner-border-sm me-2"></span> Chargement des démarches...
+                      <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                      <span>Chargement des démarches administratives...</span>
                     } @else {
-                      Aucune démarche trouvée dans la file d'attente globale.
+                      <div class="avatar-md mx-auto mb-3">
+                        <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                          <i class="ri-shield-check-line"></i>
+                        </span>
+                      </div>
+                      <h6 class="text-dark">Aucune démarche trouvée</h6>
+                      <p class="text-muted fs-13 mb-0">Aucune démarche ne correspond aux critères de filtre appliqués.</p>
                     }
                   </td>
                 </tr>
@@ -314,25 +303,23 @@
         </div>
       </div>
       @if (globalTotalPages > 1) {
-        <div class="card-footer border-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted small">Page {{ globalPage }} sur {{ globalTotalPages }} ({{ globalTotalCount }} démarches)</span>
-            <div class="d-flex gap-2">
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                [disabled]="globalPage <= 1 || globalLoading"
-                (click)="onGlobalPageChange(globalPage - 1)"
-              >
-                Précédent
-              </button>
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                [disabled]="globalPage >= globalTotalPages || globalLoading"
-                (click)="onGlobalPageChange(globalPage + 1)"
-              >
-                Suivant
-              </button>
-            </div>
+        <div class="card-footer border-light d-flex justify-content-between align-items-center">
+          <span class="text-muted fs-12">Page {{ globalPage }} sur {{ globalTotalPages }} ({{ globalTotalCount }} démarches au total)</span>
+          <div class="d-flex gap-1">
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="globalPage <= 1 || globalLoading"
+              (click)="onGlobalPageChange(globalPage - 1)"
+            >
+              <i class="ri-arrow-left-s-line me-1"></i>Précédent
+            </button>
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="globalPage >= globalTotalPages || globalLoading"
+              (click)="onGlobalPageChange(globalPage + 1)"
+            >
+              Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+            </button>
           </div>
         </div>
       }
@@ -342,26 +329,22 @@
   <!-- TAB 2: AUDIT PAR PROFIL -->
   @if (activeTab === 'by-profile') {
     <!-- Profile Selection Header -->
-    <div class="row mb-3">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 500px;">
-              <div class="flex-grow-1">
-                <label class="form-label fw-medium fs-sm mb-1 text-muted">Sélectionner un profil citoyen</label>
-                <app-profile-search-dropdown [placeholder]="'Rechercher par nom, email ou ID...'" (onProfileSelect)="onProfileSelect($event)" />
-              </div>
-            </div>
-            @if (profileId) {
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light text-dark px-2 py-1 fs-xs border">Profil: {{ profileId }}</span>
-                <a [routerLink]="['/profiles', profileId]" class="btn btn-sm btn-outline-primary">
-                  <app-icon icon="external-link" class="me-1"></app-icon>Fiche profil
-                </a>
-              </div>
-            }
+    <div class="card mb-3">
+      <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 500px;">
+          <div class="flex-grow-1">
+            <label class="form-label fw-semibold fs-12 mb-1 text-muted">Sélectionner un profil citoyen</label>
+            <app-profile-search-dropdown [placeholder]="'Rechercher par nom, email ou ID...'" (onProfileSelect)="onProfileSelect($event)" />
           </div>
         </div>
+        @if (profileId) {
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-soft-dark text-dark px-2.5 py-1.5 fs-12 border">Profil: {{ profileId }}</span>
+            <a [routerLink]="['/profiles', profileId]" class="btn btn-sm btn-soft-primary d-inline-flex align-items-center gap-1">
+              <i class="ri-external-link-line"></i> Consulter Fiche Profil
+            </a>
+          </div>
+        }
       </div>
     </div>
 
@@ -371,10 +354,10 @@
         <div class="card mb-3">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <h6 class="card-title mb-0">Progression des démarches du citoyen</h6>
-              <span class="fs-sm fw-bold text-primary">{{ progress.completionPercentage | number:'1.0-0' }}% complété</span>
+              <h6 class="card-title mb-0">Taux d'accomplissement des formalités consulaires</h6>
+              <span class="fs-14 fw-bold text-primary">{{ progress.completionPercentage | number:'1.0-0' }}% complété</span>
             </div>
-            <div class="progress mb-3" style="height: 10px;">
+            <div class="progress progress-sm mb-3" style="height: 8px;">
               <div
                 class="progress-bar bg-success"
                 role="progressbar"
@@ -384,82 +367,26 @@
                 aria-valuemax="100"
               ></div>
             </div>
-            <div class="d-flex align-items-center justify-content-around text-center flex-wrap gap-2 pt-2 border-top">
-              <div>
-                <span class="text-muted fs-xs d-block text-uppercase">Total</span>
-                <span class="fs-base fw-bold">{{ progress.total }}</span>
+            <div class="row text-center pt-2 border-top g-2">
+              <div class="col">
+                <span class="text-muted fs-11 d-block text-uppercase">Total</span>
+                <span class="fs-15 fw-bold text-dark">{{ progress.total }}</span>
               </div>
-              <div>
-                <span class="text-muted fs-xs d-block text-uppercase">Terminées</span>
-                <span class="fs-base fw-bold text-success">{{ progress.completed }}</span>
+              <div class="col border-start">
+                <span class="text-muted fs-11 d-block text-uppercase">Terminées</span>
+                <span class="fs-15 fw-bold text-success">{{ progress.completed }}</span>
               </div>
-              <div>
-                <span class="text-muted fs-xs d-block text-uppercase">En cours</span>
-                <span class="fs-base fw-bold text-info">{{ progress.inProgress }}</span>
+              <div class="col border-start">
+                <span class="text-muted fs-11 d-block text-uppercase">En cours</span>
+                <span class="fs-15 fw-bold text-info">{{ progress.inProgress }}</span>
               </div>
-              <div>
-                <span class="text-muted fs-xs d-block text-uppercase">Non démarrées</span>
-                <span class="fs-base fw-bold text-warning">{{ progress.notStarted }}</span>
+              <div class="col border-start">
+                <span class="text-muted fs-11 d-block text-uppercase">Non démarrées</span>
+                <span class="fs-15 fw-bold text-warning">{{ progress.notStarted }}</span>
               </div>
-              <div>
-                <span class="text-muted fs-xs d-block text-uppercase">Ignorées</span>
-                <span class="fs-base fw-bold text-secondary">{{ progress.skipped }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Bulk Actions Bar Profile -->
-      @if (profileProcedures.length > 0) {
-        <div class="row mb-3">
-          <div class="col-12">
-            <div class="card border-primary">
-              <div class="card-body py-2 px-3">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="form-check">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        [checked]="isAllProfileSelected()"
-                        (change)="toggleSelectAllProfile()"
-                        [disabled]="profileProcedures.length === 0"
-                      />
-                      <label class="form-check-label fw-medium mb-0">
-                        Tout sélectionner ({{ getSelectedProfileCount() }}/{{ profileProcedures.length }})
-                      </label>
-                    </div>
-                    <span class="badge bg-primary px-3 py-2 fs-6">{{ getSelectedProfileCount() }} sélectionnée(s)</span>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <button
-                      class="btn btn-sm btn-success"
-                      (click)="bulkStartProfile()"
-                      [disabled]="profileBulkActionLoading || !canBulkStartProfile()"
-                    >
-                      @if (profileBulkActionLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                      <app-icon icon="play" class="me-1"></app-icon>Démarrer
-                    </button>
-                    <button
-                      class="btn btn-sm btn-primary"
-                      (click)="bulkCompleteGlobal(actionModal)"
-                      [disabled]="profileBulkActionLoading || !canBulkCompleteProfile()"
-                    >
-                      <app-icon icon="check-circle" class="me-1"></app-icon>Compléter
-                    </button>
-                    <button
-                      class="btn btn-sm btn-warning"
-                      (click)="bulkSkipGlobal(actionModal)"
-                      [disabled]="profileBulkActionLoading || !canBulkSkipProfile()"
-                    >
-                      <app-icon icon="skip-forward" class="me-1"></app-icon>Ignorer
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" (click)="selectedProfileIds.clear()">
-                      <app-icon icon="x" class="me-1"></app-icon>Effacer
-                    </button>
-                  </div>
-                </div>
+              <div class="col border-start">
+                <span class="text-muted fs-11 d-block text-uppercase">Ignorées</span>
+                <span class="fs-15 fw-bold text-secondary">{{ progress.skipped }}</span>
               </div>
             </div>
           </div>
@@ -469,18 +396,18 @@
       <!-- Profile Procedures Table -->
       <div class="card">
         <div class="card-header border-light d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">Démarches pour ce profil</h5>
-          <span class="badge bg-primary">{{ profileProcedures.length }} démarches</span>
+          <h5 class="card-title mb-0">Parcours des Démarches du Citoyen</h5>
+          <span class="badge bg-soft-primary text-primary">{{ profileProcedures.length }} démarches répertoriées</span>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
-              <thead class="bg-light bg-opacity-25 thead-sm">
-                <tr class="text-uppercase fs-xxs">
+            <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+              <thead class="bg-light align-middle">
+                <tr>
                   <th style="width: 40px;" class="ps-3">
                     <div class="form-check">
                       <input
-                        class="form-check-input form-check-input-light fs-14 mt-0"
+                        class="form-check-input mt-0"
                         type="checkbox"
                         [checked]="isAllProfileSelected()"
                         (change)="toggleSelectAllProfile()"
@@ -488,13 +415,13 @@
                       />
                     </div>
                   </th>
-                  <th>Démarche</th>
-                  <th>Statut</th>
-                  <th>Coût</th>
-                  <th>Complété par</th>
-                  <th>Date</th>
-                  <th>Notes</th>
-                  <th class="text-center" style="width: 140px;">Actions</th>
+                  <th scope="col">Démarche</th>
+                  <th scope="col" class="text-center">Statut</th>
+                  <th scope="col" class="text-end">Frais</th>
+                  <th scope="col">Officier</th>
+                  <th scope="col">Date de Clôture</th>
+                  <th scope="col">Notes</th>
+                  <th scope="col" class="text-end pe-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -503,75 +430,82 @@
                     <td class="ps-3">
                       <div class="form-check">
                         <input
-                          class="form-check-input form-check-input-light fs-14 mt-0"
+                          class="form-check-input mt-0"
                           type="checkbox"
                           [checked]="isProfileSelected(up.id)"
                           (change)="toggleSelectProfile(up.id)"
                         />
                       </div>
                     </td>
-                    <td class="fw-medium">
+                    <td>
                       <div class="d-flex align-items-center gap-2">
-                        <div class="avatar avatar-sm flex-shrink-0">
-                          <div class="avatar-title bg-light text-secondary rounded">
-                            <app-icon icon="file-text" class="fs-18"></app-icon>
-                          </div>
+                        <div class="avatar-sm flex-shrink-0">
+                          <span class="avatar-title bg-soft-primary text-primary rounded fs-18">
+                            <i class="ri-article-line"></i>
+                          </span>
                         </div>
-                        <span class="text-body">{{ up.procedureTitle }}</span>
+                        <span class="fw-semibold text-dark">{{ up.procedureTitle }}</span>
                       </div>
                     </td>
-                    <td>
+                    <td class="text-center">
                       <span
                         class="badge"
-                        [class]="'bg-' + UserProcedureStatusBadgeVariants[up.status] + '-subtle text-' + UserProcedureStatusBadgeVariants[up.status]"
+                        [class]="'bg-soft-' + UserProcedureStatusBadgeVariants[up.status] + ' text-' + UserProcedureStatusBadgeVariants[up.status]"
                       >
                         {{ UserProcedureStatusLabels[up.status] }}
                       </span>
                     </td>
-                    <td>
-                      {{ up.costAmount != null ? (up.costAmount | number:'1.0-2') + ' ' + (up.costCurrency || '') : '—' }}
+                    <td class="text-end fw-semibold fs-13">
+                      {{ up.costAmount != null ? (up.costAmount | number:'1.0-2') + ' ' + (up.costCurrency || '') : 'Gratuit' }}
                     </td>
-                    <td>{{ up.completedByRole || up.completedByUserId || '—' }}</td>
-                    <td>{{ up.completedAt ? (up.completedAt | date:'short') : '—' }}</td>
-                    <td class="text-truncate" style="max-width: 200px;" [title]="up.notes || ''">
-                      {{ up.notes || '—' }}
+                    <td class="text-muted fs-12">{{ up.completedByRole || up.completedByUserId || '—' }}</td>
+                    <td class="text-muted fs-12">{{ up.completedAt ? (up.completedAt | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                    <td class="text-truncate" style="max-width: 180px;" [title]="up.notes || ''">
+                      <span class="text-muted fs-12">{{ up.notes || '—' }}</span>
                     </td>
-                    <td>
-                      <div class="d-flex align-items-center justify-content-center gap-1">
+                    <td class="text-end pe-3">
+                      <div class="d-flex align-items-center justify-content-end gap-1">
                         <button
-                          class="btn btn-default btn-icon btn-sm rounded-circle text-success"
+                          class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
                           (click)="startSingle(up)"
                           [disabled]="up.status !== UserProcedureStatus.NotStarted"
-                          title="Démarrer"
+                          title="Démarrer la démarche"
                         >
-                          <app-icon icon="play" class="fs-lg"></app-icon>
+                          <i class="ri-play-line"></i> Démarrer
                         </button>
                         <button
-                          class="btn btn-default btn-icon btn-sm rounded-circle text-primary"
+                          class="btn btn-xs btn-soft-primary d-inline-flex align-items-center gap-1"
                           (click)="openActionModal(actionModal, up, 'complete')"
                           [disabled]="up.status !== UserProcedureStatus.InProgress"
-                          title="Compléter"
+                          title="Valider la démarche"
                         >
-                          <app-icon icon="check" class="fs-lg"></app-icon>
+                          <i class="ri-check-line"></i> Valider
                         </button>
                         <button
-                          class="btn btn-default btn-icon btn-sm rounded-circle text-warning"
+                          class="btn btn-xs btn-soft-warning d-inline-flex align-items-center gap-1"
                           (click)="openActionModal(actionModal, up, 'skip')"
                           [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped"
-                          title="Ignorer"
+                          title="Ignorer cette démarche"
                         >
-                          <app-icon icon="skip-forward" class="fs-lg"></app-icon>
+                          <i class="ri-skip-forward-line"></i> Ignorer
                         </button>
                       </div>
                     </td>
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="8" class="text-center text-muted py-5">
+                    <td colspan="8" class="text-center text-muted p-5">
                       @if (profileLoading) {
-                        <span class="spinner-border spinner-border-sm me-2"></span> Chargement des démarches...
+                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                        <span>Chargement des démarches du profil...</span>
                       } @else {
-                        Aucune démarche trouvée pour ce profil.
+                        <div class="avatar-md mx-auto mb-3">
+                          <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                            <i class="ri-survey-line"></i>
+                          </span>
+                        </div>
+                        <h6 class="text-dark">Aucune démarche associée</h6>
+                        <p class="text-muted fs-13 mb-0">Ce profil n'a aucune démarche prescrite pour le moment.</p>
                       }
                     </td>
                   </tr>
@@ -583,11 +517,16 @@
       </div>
     } @else {
       <div class="card">
-        <div class="card-body">
-          <div class="alert alert-info border-0 d-flex align-items-center mb-0">
-            <app-icon icon="info" class="me-2 fs-lg"></app-icon>
-            Sélectionnez un profil citoyen dans la liste déroulante ci-dessus pour afficher l'audit pas-à-pas de ses démarches et sa jauge de complétion.
+        <div class="card-body p-5 text-center">
+          <div class="avatar-lg mx-auto mb-3">
+            <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-28">
+              <i class="ri-user-search-line"></i>
+            </span>
           </div>
+          <h5 class="fs-15">Sélectionnez un profil citoyen</h5>
+          <p class="text-muted fs-13 mb-0" style="max-width: 450px; margin: 0 auto;">
+            Sélectionnez un usager ci-dessus pour consulter la jauge d'avancement globale de son parcours et auditer chaque démarche consulaire.
+          </p>
         </div>
       </div>
     }
@@ -595,50 +534,57 @@
 
   <!-- Action Modal (Complete / Skip with Notes) -->
   <ng-template #actionModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">
-        {{ modalAction === 'complete' ? 'Valider et compléter la démarche' : 'Ignorer la démarche' }}
+    <div class="modal-header" [class.bg-primary]="modalAction === 'complete'" [class.bg-warning]="modalAction === 'skip'" class="text-white">
+      <h5 class="modal-title text-white d-flex align-items-center gap-2">
+        <i [class]="modalAction === 'complete' ? 'ri-checkbox-circle-line' : 'ri-skip-forward-line'"></i>
+        {{ modalAction === 'complete' ? 'Valider et Compléter la Démarche' : 'Ignorer et Clôturer la Démarche' }}
       </h5>
-      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body p-4">
       @if (selectedProc) {
-        <div class="mb-3">
-          <div class="text-muted fs-xs text-uppercase mb-1">Démarche sélectionnée</div>
-          <div class="fw-semibold text-body fs-base">{{ selectedProc.procedureTitle }}</div>
-          <div class="text-muted fs-xs mt-1">ID Citoyen: {{ selectedProc.profileId }}</div>
+        <div class="card bg-light border mb-3">
+          <div class="card-body p-3">
+            <span class="text-muted fs-12 text-uppercase d-block mb-1">Démarche sélectionnée :</span>
+            <div class="fw-semibold text-dark fs-14">{{ selectedProc.procedureTitle }}</div>
+            <div class="text-muted fs-11 mt-1 font-monospace">Citoyen: {{ selectedProc.profileId }}</div>
+          </div>
         </div>
       } @else {
-        <div class="alert alert-warning mb-3">
-          <app-icon icon="alert-triangle" class="me-1"></app-icon>
-          Cette action s'appliquera à toutes les démarches sélectionnées.
+        <div class="alert alert-warning mb-3 d-flex align-items-center">
+          <i class="ri-alert-line fs-18 me-2"></i>
+          <span>Cette action s'appliquera collectivement à l'ensemble des démarches sélectionnées.</span>
         </div>
       }
 
-      <div class="mb-3">
-        <label class="form-label fw-medium">Notes administratives (optionnelles)</label>
+      <div class="mb-2">
+        <label class="form-label fs-13 fw-semibold">Notes d'instruction administrative (optionnelles)</label>
         <textarea
           class="form-control"
           rows="3"
-          placeholder="Saisissez des notes justificatives, références de dossier ou observations administratives..."
+          placeholder="Saisissez des observations consulaires, références de dossier ou dérogations accordées..."
           [(ngModel)]="actionNotes"
         ></textarea>
+        <small class="text-muted fs-11">Ces notes resteront archivées dans le grand livre de suivi de la démarche.</small>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer border-top">
       <button type="button" class="btn btn-light" (click)="modal.dismiss()" [disabled]="actionLoading">Annuler</button>
       <button
         type="button"
-        class="btn"
+        class="btn d-inline-flex align-items-center gap-1"
         [class.btn-primary]="modalAction === 'complete'"
         [class.btn-warning]="modalAction === 'skip'"
         (click)="submitModalAction(modal)"
         [disabled]="actionLoading"
       >
         @if (actionLoading) {
-          <span class="spinner-border spinner-border-sm me-1"></span>
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Traitement...
+        } @else {
+          <i class="ri-check-line"></i>
+          {{ modalAction === 'complete' ? 'Confirmer la Validation' : 'Confirmer l\'Abandon' }}
         }
-        {{ modalAction === 'complete' ? 'Confirmer la complétion' : 'Confirmer l\'abandon' }}
       </button>
     </div>
   </ng-template>

@@ -9,12 +9,11 @@ import { ProfileStateService } from '@core/services/profile-state.service'
 import { DocumentDto, DocumentTypeDto } from '@core/models/document/document.model'
 import { DocumentStatus, DocumentStatusLabels, DocumentStatusBadgeVariants } from '@core/models/shared/enums.model'
 import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdown/profile-search-dropdown'
-import { Icon } from '@app/components/icon/icon'
 
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, ProfileSearchDropdown, Icon],
+  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, ProfileSearchDropdown],
   templateUrl: './document-list.html',
   styles: ``,
 })

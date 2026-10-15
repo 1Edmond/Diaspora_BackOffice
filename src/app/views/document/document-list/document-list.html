@@ -1,82 +1,84 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Documents" subTitle="Document" />
+  <app-page-breadcrumb title="Gestion des Documents" subTitle="Document" />
 
   @if (actionSuccessMessage) {
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{actionSuccessMessage}}
+  <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+    <i class="ri-check-line fs-18 me-2"></i>
+    <div class="flex-grow-1">{{actionSuccessMessage}}</div>
     <button type="button" class="btn-close" (click)="actionSuccessMessage = ''"></button>
   </div>
   }
 
   @if (actionErrorMessage) {
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{actionErrorMessage}}
+  <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <div class="flex-grow-1">{{actionErrorMessage}}</div>
     <button type="button" class="btn-close" (click)="actionErrorMessage = ''"></button>
   </div>
   }
 
   <div class="row">
     <div class="col-12">
-      <!-- Tabs Navigation -->
-      <ul class="nav nav-pills mb-3 gap-2">
+      <!-- Tabs Navigation Ubold nav-bordered -->
+      <ul class="nav nav-tabs nav-bordered mb-3">
         <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')">
-            <app-icon icon="clock" class="me-1 fs-sm"></app-icon> En attente
+          <a class="nav-link" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')" style="cursor: pointer;">
+            <i class="ri-time-line me-1"></i> En Attente de Validation
             @if (activeTab === 'pending' && totalCount > 0) {
-            <span class="badge bg-warning text-dark ms-1">{{totalCount}}</span>
+            <span class="badge bg-soft-warning text-warning ms-1.5 px-2 py-0.5 fs-11">{{totalCount}}</span>
             }
-          </button>
+          </a>
         </li>
         <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'expiring'" (click)="switchTab('expiring')">
-            <app-icon icon="alert-triangle" class="me-1 fs-sm"></app-icon> Expirant bientôt
+          <a class="nav-link" [class.active]="activeTab === 'expiring'" (click)="switchTab('expiring')" style="cursor: pointer;">
+            <i class="ri-alarm-warning-line me-1"></i> Documents Expirants (&lt; 30j)
             @if (activeTab === 'expiring' && totalCount > 0) {
-            <span class="badge bg-danger text-white ms-1">{{totalCount}}</span>
+            <span class="badge bg-soft-danger text-danger ms-1.5 px-2 py-0.5 fs-11">{{totalCount}}</span>
             }
-          </button>
+          </a>
         </li>
         <li class="nav-item">
-          <button class="nav-link" [class.active]="activeTab === 'by-profile'" (click)="switchTab('by-profile')">
-            <app-icon icon="user" class="me-1 fs-sm"></app-icon> Par profil
-          </button>
+          <a class="nav-link" [class.active]="activeTab === 'by-profile'" (click)="switchTab('by-profile')" style="cursor: pointer;">
+            <i class="ri-user-search-line me-1"></i> Recherche par Citoyen
+          </a>
         </li>
       </ul>
 
       <div class="card">
         <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
           @if (activeTab === 'by-profile') {
-          <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 400px;">
+          <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 450px;">
             <div class="flex-grow-1">
-              <label class="form-label fw-medium fs-sm mb-1 text-muted">Sélectionner un profil</label>
-              <app-profile-search-dropdown [placeholder]="'Rechercher par nom ou email...'" (onProfileSelect)="onProfileSelect($event)" />
+              <label class="form-label fw-semibold fs-12 mb-1 text-muted">Sélectionner un profil citoyen</label>
+              <app-profile-search-dropdown [placeholder]="'Rechercher par nom, prénom ou email...'" (onProfileSelect)="onProfileSelect($event)" />
             </div>
           </div>
 
           <div class="d-flex align-items-center gap-2 mt-auto mb-1">
             @if (profileId) {
-            <button class="btn btn-primary" (click)="openUploadModal(uploadModal)">
-              <app-icon icon="plus" class="me-1 fs-sm"></app-icon> Téléverser un document
+            <button class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm" (click)="openUploadModal(uploadModal)">
+              <i class="ri-upload-2-line fs-14"></i> Téléverser un Document
             </button>
             }
           </div>
           } @else if (activeTab === 'pending') {
-          <div class="d-flex align-items-center gap-2">
-            <h5 class="card-title mb-0">File d'Attente Globale des Documents</h5>
-            <span class="badge bg-light text-muted border">{{totalCount}} document(s) à valider</span>
+          <div>
+            <h5 class="card-title mb-1">File d'Attente Globale des Documents</h5>
+            <span class="text-muted fs-12">{{totalCount}} document(s) citoyen(s) en attente d'approbation</span>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
-              <app-icon icon="refresh-cw" class="fs-sm me-1"></app-icon> Actualiser
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
+              <i class="ri-refresh-line"></i> Actualiser
             </button>
           </div>
           } @else if (activeTab === 'expiring') {
-          <div class="d-flex align-items-center gap-2">
-            <h5 class="card-title mb-0">Alertes — Documents Expirant dans les 30 Jours</h5>
-            <span class="badge bg-danger-subtle text-danger">{{totalCount}} document(s)</span>
+          <div>
+            <h5 class="card-title mb-1 text-danger">Alertes d'Expiration Documentaire</h5>
+            <span class="text-muted fs-12">{{totalCount}} document(s) expirant dans les 30 prochains jours</span>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
-              <app-icon icon="refresh-cw" class="fs-sm me-1"></app-icon> Actualiser
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
+              <i class="ri-refresh-line"></i> Actualiser
             </button>
           </div>
           }
@@ -85,104 +87,127 @@
         @if (activeTab !== 'by-profile' || profileId) {
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
-              <thead class="bg-light bg-opacity-25 thead-sm">
-                <tr class="text-uppercase fs-xxs">
-                  <th>Nom du fichier</th>
+            <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+              <thead class="bg-light align-middle">
+                <tr>
+                  <th scope="col" class="ps-3">Document</th>
                   @if (activeTab !== 'by-profile') {
-                  <th>Profil</th>
+                  <th scope="col">Profil Citoyen</th>
                   }
-                  <th>Type</th>
-                  <th>Taille</th>
-                  <th>Statut</th>
-                  <th>Expiration</th>
-                  <th>Date d'ajout</th>
-                  <th class="text-center">Actions</th>
+                  <th scope="col">Catégorie</th>
+                  <th scope="col">Taille</th>
+                  <th scope="col" class="text-center">Statut</th>
+                  <th scope="col">Date d'Expiration</th>
+                  <th scope="col">Date de Dépôt</th>
+                  <th scope="col" class="text-end pe-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 @for (doc of documents; track doc.id) {
                 <tr>
-                  <td>
+                  <td class="ps-3">
                     <div class="d-flex align-items-center gap-2">
-                      <div class="avatar avatar-sm">
-                        <div class="avatar-title bg-light text-secondary rounded">
-                          <app-icon icon="file-text" class="fs-18"></app-icon>
-                        </div>
+                      <div class="avatar-sm flex-shrink-0">
+                        <span class="avatar-title bg-soft-primary text-primary rounded fs-18">
+                          <i class="ri-file-text-line"></i>
+                        </span>
                       </div>
                       <div>
-                        <a [routerLink]="['/documents', doc.id]" class="fw-medium link-reset">{{doc.fileName}}</a>
+                        <a [routerLink]="['/documents', doc.id]" class="fw-semibold text-primary text-decoration-none d-block">
+                          {{doc.fileName}}
+                        </a>
                         @if (doc.rejectionReason) {
-                        <div class="text-danger small fs-xxs">Rejet: {{doc.rejectionReason}}</div>
+                        <div class="text-danger fs-11 mt-0.5"><i class="ri-error-warning-line me-1"></i>Rejet: {{doc.rejectionReason}}</div>
                         }
                       </div>
                     </div>
                   </td>
                   @if (activeTab !== 'by-profile') {
                   <td>
-                    <span class="font-monospace fs-xs text-muted" [title]="doc.profileId">
-                      {{doc.profileId.substring(0, 8)}}...
+                    <span class="font-monospace fs-12 text-muted" [title]="doc.profileId">
+                      <i class="ri-user-line me-1"></i>{{doc.profileId.substring(0, 8)}}...
                     </span>
                   </td>
                   }
-                  <td><span class="badge bg-info-subtle text-info">{{doc.documentTypeName || 'N/A'}}</span></td>
-                  <td>{{(doc.fileSize / 1024).toFixed(1)}} KB</td>
                   <td>
-                    <span class="badge" [class]="'bg-' + statusBadges[doc.status] + '-subtle text-' + statusBadges[doc.status]">
+                    <span class="badge bg-soft-info text-info fs-12">{{doc.documentTypeName || 'Général'}}</span>
+                  </td>
+                  <td class="text-muted fs-12">
+                    {{(doc.fileSize / 1024).toFixed(1)}} KB
+                  </td>
+                  <td class="text-center">
+                    <span class="badge" [class]="'bg-soft-' + statusBadges[doc.status] + ' text-' + statusBadges[doc.status]">
                       {{statusLabels[doc.status]}}
                     </span>
                   </td>
                   <td>
                     @if (doc.expiresAt) {
-                    <span [class.text-danger]="activeTab === 'expiring'">{{doc.expiresAt | date:'short'}}</span>
+                    <span [class.badge]="activeTab === 'expiring'" [class.bg-soft-danger]="activeTab === 'expiring'" [class.text-danger]="activeTab === 'expiring'" class="fs-12">
+                      {{doc.expiresAt | date:'dd/MM/yyyy'}}
+                    </span>
                     } @else {
-                    <span class="text-muted">—</span>
+                    <span class="text-muted fs-12">—</span>
                     }
                   </td>
-                  <td>{{doc.createdAt | date:'short'}}</td>
-                  <td>
-                    <div class="d-flex align-items-center justify-content-center gap-1">
+                  <td class="text-muted fs-12">{{doc.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                  <td class="text-end pe-3">
+                    <div class="d-flex align-items-center justify-content-end gap-1">
                       <!-- Validation Actions for Pending Documents -->
                       @if (doc.status === DocumentStatus.Pending) {
                       <button
-                        class="btn btn-default btn-icon btn-sm rounded-circle text-success"
+                        class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
                         (click)="validateDocument(doc)"
                         [disabled]="validatingDocId === doc.id"
-                        title="Valider">
+                        title="Valider ce document">
                         @if (validatingDocId === doc.id) {
-                        <span class="spinner-border spinner-border-sm"></span>
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
                         } @else {
-                        <app-icon icon="check-circle" class="fs-lg"></app-icon>
+                        <i class="ri-check-line"></i> Valider
                         }
                       </button>
                       <button
-                        class="btn btn-default btn-icon btn-sm rounded-circle text-danger"
+                        class="btn btn-xs btn-soft-danger d-inline-flex align-items-center gap-1"
                         (click)="openRejectModal(rejectModal, doc)"
-                        title="Rejeter">
-                        <app-icon icon="x-circle" class="fs-lg"></app-icon>
+                        title="Rejeter avec motif">
+                        <i class="ri-close-line"></i> Rejeter
                       </button>
                       }
 
                       <!-- Standard Actions -->
-                      <a [routerLink]="['/documents', doc.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="Consulter"><app-icon icon="eye" class="fs-lg"></app-icon></a>
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-primary" (click)="downloadDocument(doc)" title="Télécharger"><app-icon icon="download" class="fs-lg"></app-icon></button>
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="onDelete(doc)" title="Supprimer"><app-icon icon="trash-2" class="fs-lg"></app-icon></button>
+                      <a [routerLink]="['/documents', doc.id]" class="btn btn-xs btn-soft-secondary" title="Consulter la fiche">
+                        <i class="ri-eye-line"></i>
+                      </a>
+                      <button class="btn btn-xs btn-soft-primary" (click)="downloadDocument(doc)" title="Télécharger le fichier">
+                        <i class="ri-download-2-line"></i>
+                      </button>
+                      <button class="btn btn-xs btn-soft-danger" (click)="onDelete(doc)" title="Supprimer">
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
                 } @empty {
                 <tr>
-                  <td [attr.colspan]="activeTab !== 'by-profile' ? 8 : 7" class="text-center text-muted py-5">
+                  <td [attr.colspan]="activeTab !== 'by-profile' ? 8 : 7" class="text-center text-muted p-5">
                     @if (loading) {
-                      <span class="spinner-border spinner-border-sm me-2"></span> Chargement en cours...
+                      <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                      <span>Chargement du registre documentaire...</span>
                     } @else {
-                      @if (activeTab === 'pending') {
-                        Aucun document en attente de validation.
-                      } @else if (activeTab === 'expiring') {
-                        Aucun document expirant bientôt.
-                      } @else {
-                        Aucun document trouvé pour ce profil.
-                      }
+                      <div class="avatar-md mx-auto mb-3">
+                        <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                          <i class="ri-folder-open-line"></i>
+                        </span>
+                      </div>
+                      <h6 class="text-dark">Aucun document à afficher</h6>
+                      <p class="text-muted fs-13 mb-0">
+                        @if (activeTab === 'pending') {
+                          Tous les documents soumis ont été examinés et validés.
+                        } @else if (activeTab === 'expiring') {
+                          Aucun document n'arrive à expiration dans les 30 jours.
+                        } @else {
+                          Aucun document trouvé pour ce profil citoyen.
+                        }
+                      </p>
                     }
                   </td>
                 </tr>
@@ -192,22 +217,30 @@
           </div>
         </div>
 
-        <div class="card-footer border-0">
-          @if(totalPages > 1) {
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted small">Page {{page}} sur {{totalPages}} ({{totalCount}} total)</span>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Précédent</button>
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Suivant</button>
-            </div>
+        @if(totalPages > 1) {
+        <div class="card-footer border-light d-flex justify-content-between align-items-center">
+          <span class="text-muted fs-12">Page {{page}} sur {{totalPages}} ({{totalCount}} documents au total)</span>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
+              <i class="ri-arrow-left-s-line me-1"></i>Précédent
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
+              Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+            </button>
           </div>
-          }
         </div>
+        }
         } @else {
-        <div class="card-body">
-          <div class="alert alert-info border-0 d-flex align-items-center mb-0">
-            <app-icon icon="info" class="fs-lg me-2"></app-icon> Sélectionnez un profil dans le menu déroulant ci-dessus pour consulter ses documents.
+        <div class="card-body p-4 text-center">
+          <div class="avatar-lg mx-auto mb-3">
+            <span class="avatar-title bg-soft-info text-info rounded-circle fs-28">
+              <i class="ri-user-search-line"></i>
+            </span>
           </div>
+          <h5 class="fs-15">Sélectionnez un profil citoyen</h5>
+          <p class="text-muted fs-13 mb-0" style="max-width: 450px; margin: 0 auto;">
+            Utilisez la barre de recherche ci-dessus pour charger l'ensemble des pièces d'identité et justificatifs d'un usager.
+          </p>
         </div>
         }
       </div>
@@ -216,39 +249,45 @@
 
   <!-- Rejection Modal -->
   <ng-template #rejectModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Rejeter le document</h5>
-      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    <div class="modal-header bg-danger text-white">
+      <h5 class="modal-title text-white d-flex align-items-center gap-2">
+        <i class="ri-close-circle-line"></i> Rejeter le Document Citoyen
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body p-4">
       @if (rejectError) {
       <div class="alert alert-danger mb-3">{{rejectError}}</div>
       }
-      <div class="mb-3">
-        <label class="form-label text-muted small mb-1">Document concerné</label>
-        <div class="fw-semibold">{{selectedDocumentForReject?.fileName}}</div>
+      <div class="card bg-light border mb-3">
+        <div class="card-body p-3">
+          <span class="text-muted fs-12 d-block mb-1">Document concerné :</span>
+          <div class="fw-semibold text-dark fs-14 font-monospace">{{selectedDocumentForReject?.fileName}}</div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label" for="rejectReason">Motif de rejet <span class="text-danger">*</span></label>
+      <div class="mb-2">
+        <label class="form-label fs-13 fw-semibold" for="rejectReason">Motif obligatoire du rejet <span class="text-danger">*</span></label>
         <textarea
           id="rejectReason"
           class="form-control"
           rows="3"
-          placeholder="Précisez le motif du rejet (ex: document illisible, expiré, non conforme...)"
+          placeholder="Précisez le motif légitime (ex: Pièce illisible, document expiré, recto manquant...)"
           [(ngModel)]="rejectReason"></textarea>
+        <small class="text-muted fs-11">Ce motif sera notifié au citoyen pour lui permettre de soumettre une nouvelle pièce.</small>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer border-top">
       <button type="button" class="btn btn-light" (click)="modal.dismiss()" [disabled]="rejecting">Annuler</button>
       <button
         type="button"
-        class="btn btn-danger"
+        class="btn btn-danger d-inline-flex align-items-center gap-1"
         [disabled]="rejecting || !rejectReason.trim()"
         (click)="confirmReject()">
         @if (rejecting) {
-        <span class="spinner-border spinner-border-sm me-1"></span> Rejet en cours...
+        <span class="spinner-border spinner-border-sm" role="status"></span>
+        Rejet en cours...
         } @else {
-        Confirmer le rejet
+        <i class="ri-check-line"></i> Confirmer le Rejet
         }
       </button>
     </div>
@@ -256,16 +295,18 @@
 
   <!-- Upload Modal -->
   <ng-template #uploadModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Téléverser un document</h5>
-      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    <div class="modal-header bg-primary text-white">
+      <h5 class="modal-title text-white d-flex align-items-center gap-2">
+        <i class="ri-upload-2-line"></i> Téléverser un Document Administratif
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body p-4">
       @if (uploadError) {
       <div class="alert alert-danger mb-3">{{uploadError}}</div>
       }
       <div class="mb-3">
-        <label class="form-label">Type de document <span class="text-danger">*</span></label>
+        <label class="form-label fs-13 fw-semibold">Type de document <span class="text-danger">*</span></label>
         <select class="form-select" [(ngModel)]="selectedDocumentTypeId">
           <option value="">Sélectionner un type...</option>
           @for (dt of documentTypes; track dt.id) {
@@ -273,15 +314,21 @@
           }
         </select>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Fichier <span class="text-danger">*</span></label>
+      <div class="mb-2">
+        <label class="form-label fs-13 fw-semibold">Fichier numérique <span class="text-danger">*</span></label>
         <input type="file" class="form-control" (change)="onFileChange($event)" />
+        <small class="text-muted fs-11">Formats acceptés : PDF, PNG, JPG (Max: 10 Mo)</small>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer border-top">
       <button type="button" class="btn btn-light" (click)="modal.dismiss()">Annuler</button>
-      <button type="button" class="btn btn-primary" [disabled]="uploading || !selectedDocumentTypeId || !selectedFile" (click)="uploadDocument()">
-        @if (uploading) { <span class="spinner-border spinner-border-sm me-1"></span> Téléversement... } @else { Téléverser }
+      <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" [disabled]="uploading || !selectedDocumentTypeId || !selectedFile" (click)="uploadDocument()">
+        @if (uploading) {
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Téléversement...
+        } @else {
+          <i class="ri-upload-cloud-line"></i> Téléverser
+        }
       </button>
     </div>
   </ng-template>

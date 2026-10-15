@@ -3,7 +3,6 @@ import { DatePipe, DecimalPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
 import { forkJoin, of } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
@@ -27,7 +26,7 @@ import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdow
 @Component({
   selector: 'app-user-procedures',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, RouterLink, Icon, ProfileSearchDropdown],
+  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, RouterLink, ProfileSearchDropdown],
   templateUrl: './user-procedures.html',
   styles: ``,
 })
