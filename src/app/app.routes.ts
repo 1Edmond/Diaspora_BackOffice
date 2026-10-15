@@ -271,8 +271,8 @@ export const routes: Routes = [
       },
       {
         path: 'notifications/templates',
-        loadComponent: () => import('./views/notification/template-manager/template-manager').then((m) => m.TemplateManagerComponent),
-        data: { title: 'Notification Templates' },
+        redirectTo: 'notifications/preferences',
+        pathMatch: 'full',
       },
       {
         path: 'chat/moderation',

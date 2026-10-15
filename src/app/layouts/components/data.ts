@@ -280,7 +280,7 @@ export const menuItems: MenuItemType[] = [
       {
         'url': '/notifications/preferences',
         'slug': 'pages:notification-preferences',
-        'label': 'Preferences',
+        'label': 'Règles & Modèles (Templates)',
         'icon': 'settings',
       },
       {
@@ -288,12 +288,6 @@ export const menuItems: MenuItemType[] = [
         'slug': 'pages:notifications-broadcast',
         'label': 'Broadcast Campaigns',
         'icon': 'send',
-      },
-      {
-        'url': '/notifications/templates',
-        'slug': 'pages:notifications-templates',
-        'label': 'Templates & Rules',
-        'icon': 'file-text',
       },
     ],
   },
