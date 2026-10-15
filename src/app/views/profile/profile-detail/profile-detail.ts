@@ -200,20 +200,14 @@ export class ProfileDetail implements OnInit {
         this.loadProfile(this.profile!.id)
       },
       error: (err: any) => {
-        // Fallback automatique sur activateProfile si l'endpoint reactivate n'est pas routé directement
-        this.profileService.activateProfile(this.profile!.id).subscribe({
-          next: () => {
-            this.success = 'Profil réactivé avec succès.'
-            this.loadProfile(this.profile!.id)
-          },
-          error: (fallbackErr: any) => {
-            this.error =
-              fallbackErr.error?.error ||
-              fallbackErr.error?.message ||
-              err.error?.error ||
-              'Erreur lors de la réactivation du profil.'
-          },
-        })
+        console.error('Reactivate profile error:', err)
+        const errorMsg =
+          err.error?.error ||
+          err.error?.Error ||
+          err.error?.message ||
+          err.error?.title ||
+          (err.status ? `Erreur HTTP ${err.status}` : 'Erreur lors de la réactivation du profil.')
+        this.error = errorMsg
       },
     })
   }

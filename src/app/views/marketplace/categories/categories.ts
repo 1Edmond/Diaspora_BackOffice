@@ -168,6 +168,8 @@ export class Categories implements OnInit {
         }
       }
     }
+    this.model.displayOrder = Number(this.model.displayOrder) || 0
+    this.model.iconUrl = this.model.iconUrl?.trim() || undefined
     this.model.translations = dynamicTranslations
 
     this.saving = true
@@ -187,8 +189,16 @@ export class Categories implements OnInit {
       },
       error: (err: any) => {
         this.saving = false
-        this.error =
-          err.error?.error || err.error?.message || "Erreur lors de l'enregistrement de la catégorie."
+        console.error('Save category error:', err)
+        const serverError =
+          err.error?.error ||
+          err.error?.Error ||
+          err.error?.message ||
+          err.error?.title ||
+          (err.error?.errors ? Object.values(err.error.errors).flat().join(', ') : '') ||
+          (typeof err.error === 'string' ? err.error : '') ||
+          (err.status ? `Erreur HTTP ${err.status} (${err.statusText || 'Échec'})` : '')
+        this.error = serverError || "Erreur lors de l'enregistrement de la catégorie."
       },
     })
   }
