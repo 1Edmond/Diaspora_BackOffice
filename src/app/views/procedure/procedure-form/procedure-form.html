@@ -1,103 +1,197 @@
 <div class="container-fluid">
-  <app-page-breadcrumb [title]="isEdit ? 'Edit Procedure' : 'New Procedure'" subTitle="Procedure" />
+  <app-page-breadcrumb [title]="isEdit ? 'Modifier la Démarche' : 'Nouvelle Démarche Administrative'" subTitle="Démarches & Procédures" />
 
   <div class="row">
-    <div class="col-lg-8">
-      <div class="card">
+    <!-- Left column: Procedure Details & Multilingual Content -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">{{ isEdit ? 'Modifier' : 'Définition de' }} la démarche</h5>
+        </div>
         <div class="card-body">
           @if(error) {
           <div class="alert alert-danger">{{error}}</div>
           }
 
-          <div class="row">
-            <div class="col-md-8">
-              <div class="mb-3">
-                <label class="form-label">Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" [(ngModel)]="model.title" required />
-              </div>
+          <!-- Country / Profile Type & Procedure Kind -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-7">
+              <label class="form-label fw-semibold">Pays / Profil cible <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="model.profileTypeId" (change)="onProfileTypeChange()" [disabled]="isEdit">
+                <option value="">Sélectionner le pays...</option>
+                @for (pt of profileTypes; track pt.id) {
+                <option [value]="pt.id">
+                  {{ pt.flag ? pt.flag + ' ' : '' }}{{ pt.countryName }} ({{ pt.countryCode }})
+                </option>
+                }
+              </select>
             </div>
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Profile Type <span class="text-danger">*</span></label>
-                <select class="form-select" [(ngModel)]="model.profileType" [disabled]="isEdit">
-                  <option [ngValue]="ProcedureProfileType.Internal">Internal</option>
-                  <option [ngValue]="ProcedureProfileType.External">External</option>
-                </select>
-              </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Portée <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="model.profileType" [disabled]="isEdit" (change)="loadDependencies()">
+                <option [ngValue]="ProcedureProfileType.Internal">Interne (Consulat / Ambassade)</option>
+                <option [ngValue]="ProcedureProfileType.External">Externe (Administration locale)</option>
+              </select>
             </div>
           </div>
 
+          <!-- Multilingual Tabs: Title & Description -->
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="model.description"></textarea>
-          </div>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <label class="form-label fw-semibold mb-0">Titre & Description multilingues :</label>
+              <div class="dropdown">
+                <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 280px; overflow-y: auto;">
+                  <li><h6 class="dropdown-header">Langues usuelles</h6></li>
+                  @for (lang of commonLanguages; track lang.code) {
+                    @if (!formLanguages.includes(lang.code)) {
+                      <li>
+                        <button class="dropdown-item fs-sm py-1" (click)="addLanguage(lang.code)">
+                          {{ lang.flag }} {{ lang.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider"></li>
+                  <li class="px-3 py-1">
+                    <label class="form-label fs-xs text-muted mb-1">Code ISO libre (ex: it, tr, pl...)</label>
+                    <div class="input-group input-group-sm">
+                      <input type="text" class="form-control" placeholder="Code (ex: it)" [(ngModel)]="customLangInput" (keyup.enter)="addLanguage(customLangInput)" />
+                      <button class="btn btn-primary" (click)="addLanguage(customLangInput)" [disabled]="!customLangInput.trim()">OK</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
 
-          <div class="row">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Cost Amount</label>
-                <input type="number" class="form-control" [(ngModel)]="model.costAmount" min="0" step="0.01" />
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Currency</label>
-                <input type="text" class="form-control" [(ngModel)]="model.costCurrency" placeholder="EUR" />
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label">Estimated Duration (days)</label>
-                <input type="number" class="form-control" [(ngModel)]="model.estimatedDurationDays" min="1" />
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Profile Type (Country) <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="model.profileTypeId" [disabled]="isEdit">
-              <option value="">Select a profile type...</option>
-              @for (pt of profileTypes; track pt.id) {
-              <option [value]="pt.id">{{pt.countryName}}</option>
+            <ul class="nav nav-pills gap-1 mb-2 bg-light p-1 rounded flex-wrap">
+              @for (code of formLanguages; track code) {
+              <li class="nav-item">
+                <button class="nav-link py-1 px-2 fs-xs d-flex align-items-center gap-1" [class.active]="formLanguage === code" (click)="formLanguage = code" type="button">
+                  <span>{{ getLangInfo(code).flag }} {{ getLangInfo(code).label }}</span>
+                  @if (translations[code]?.Title?.trim()) {
+                    <span class="badge bg-success ms-1">✓</span>
+                  }
+                  @if (formLanguages.length > 1 && code !== 'fr') {
+                    <span class="badge bg-danger-subtle text-danger ms-1 px-1 py-0 rounded" (click)="removeLanguage(code, $event)" title="Supprimer cette langue">&times;</span>
+                  }
+                </button>
+              </li>
               }
-            </select>
+            </ul>
+
+            <div class="p-3 border rounded bg-light mb-3">
+              <div class="mb-3">
+                <label class="form-label fs-sm fw-medium">
+                  Titre de la démarche ({{ formLanguage.toUpperCase() }} — {{ getLangInfo(formLanguage).label }})
+                  @if (formLanguage === 'fr') { <span class="text-danger">*</span> }
+                </label>
+                <input type="text" class="form-control" [(ngModel)]="translations[formLanguage].Title"
+                       [placeholder]="'Titre de la démarche en ' + getLangInfo(formLanguage).label + '...'" />
+              </div>
+              <div>
+                <label class="form-label fs-sm fw-medium">Description & Modalités ({{ formLanguage.toUpperCase() }})</label>
+                <textarea class="form-control" rows="3" [(ngModel)]="translations[formLanguage].Description"
+                          [placeholder]="'Expliquez les étapes, conditions et modalités en ' + getLangInfo(formLanguage).label + '...'"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost and Duration -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Frais de dossier</label>
+              <input type="number" class="form-control" [(ngModel)]="model.costAmount" min="0" step="0.01" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Devise</label>
+              <input type="text" class="form-control" [(ngModel)]="model.costCurrency" placeholder="EUR, XOF..." />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Délai estimé (jours)</label>
+              <input type="number" class="form-control" [(ngModel)]="model.estimatedDurationDays" min="1" />
+            </div>
           </div>
 
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" [disabled]="!model.title || !model.profileTypeId || saving" (click)="save()">
-              @if(saving) { Saving... } @else { Save }
+            <button class="btn btn-primary px-4" [disabled]="saving" (click)="save()">
+              @if(saving) { <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement... } @else { {{ isEdit ? 'Enregistrer les modifications' : 'Créer la démarche' }} }
             </button>
-            <a routerLink="/procedures" class="btn btn-outline-secondary">Cancel</a>
+            <a routerLink="/procedures" class="btn btn-outline-secondary">Annuler</a>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-lg-4">
-      <div class="card mb-3">
-        <div class="card-header"><h6 class="mb-0">Locations</h6></div>
-        <div class="card-body">
-          @for (loc of locations; track loc.id) {
+    <!-- Right column: Dependencies, Documents, and Locations -->
+    <div class="col-lg-5">
+      <!-- 1. Dépendances / Démarches préalables -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+          <h6 class="mb-0"><app-icon icon="git-merge" class="text-primary me-1"></app-icon> Démarches préalables (Dépendances)</h6>
+          <span class="badge bg-secondary">{{ model.dependencyIds.length }} sélectionnée(s)</span>
+        </div>
+        <div class="card-body" style="max-height: 240px; overflow-y: auto;">
+          <small class="text-muted d-block mb-2">Sélectionnez les démarches que l'usager doit avoir complétées avant de pouvoir démarrer celle-ci :</small>
+          @for (dep of availableProcedures; track dep.id) {
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [id]="'loc-' + loc.id" [checked]="model.locationIds.includes(loc.id)" (change)="toggleLocation(loc.id)" />
-            <label class="form-check-label" [for]="'loc-' + loc.id">{{loc.name}} <span class="text-muted">— {{loc.city}}</span></label>
+            <input class="form-check-input" type="checkbox" [id]="'dep-' + dep.id" [checked]="model.dependencyIds.includes(dep.id)" (change)="toggleDependency(dep.id)" />
+            <label class="form-check-label fs-sm" [for]="'dep-' + dep.id">
+              {{ dep.title }}
+              @if (dep.costAmount > 0) {
+                <span class="badge bg-light text-muted ms-1">{{ dep.costAmount }} {{ dep.costCurrency }}</span>
+              }
+            </label>
           </div>
           } @empty {
-          <p class="text-muted mb-0">No locations available. Add them in the Locations page.</p>
+          <p class="text-muted mb-0 fs-sm">Aucune autre démarche disponible pour ce profil type.</p>
           }
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h6 class="mb-0">Required Documents</h6></div>
-        <div class="card-body">
+      <!-- 2. Documents requis -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+          <h6 class="mb-0"><app-icon icon="file-text" class="text-primary me-1"></app-icon> Pièces & Documents requis</h6>
+          <span class="badge bg-secondary">{{ model.requiredDocumentTypeIds.length }} requis</span>
+        </div>
+        <div class="card-body" style="max-height: 240px; overflow-y: auto;">
+          <small class="text-muted d-block mb-2">Pièces justificatives obligatoires que l'usager doit fournir :</small>
           @for (dt of documentTypes; track dt.id) {
           <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" [id]="'doc-' + dt.id" [checked]="model.requiredDocumentTypeIds.includes(dt.id)" (change)="toggleDocumentType(dt.id)" />
-            <label class="form-check-label" [for]="'doc-' + dt.id">{{dt.name}}</label>
+            <label class="form-check-label fs-sm" [for]="'doc-' + dt.id">
+              {{ dt.name }}
+              @if (dt.code) {
+                <span class="text-muted fs-xs">({{ dt.code }})</span>
+              }
+            </label>
           </div>
           } @empty {
-          <p class="text-muted mb-0">No document types available.</p>
+          <p class="text-muted mb-0 fs-sm">Aucun type de document configuré.</p>
+          }
+        </div>
+      </div>
+
+      <!-- 3. Lieux & Guichets physiques -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+          <h6 class="mb-0"><app-icon icon="map-pin" class="text-primary me-1"></app-icon> Lieux & Guichets physiques</h6>
+          <span class="badge bg-secondary">{{ model.locationIds.length }} lieu(x)</span>
+        </div>
+        <div class="card-body" style="max-height: 240px; overflow-y: auto;">
+          @for (loc of locations; track loc.id) {
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [id]="'loc-' + loc.id" [checked]="model.locationIds.includes(loc.id)" (change)="toggleLocation(loc.id)" />
+            <label class="form-check-label fs-sm" [for]="'loc-' + loc.id">
+              <strong>{{ loc.name }}</strong>
+              <span class="text-muted d-block fs-xs">{{ loc.street }}, {{ loc.city }} ({{ loc.country }})</span>
+            </label>
+          </div>
+          } @empty {
+          <p class="text-muted mb-0 fs-sm">Aucun guichet configuré.</p>
           }
         </div>
       </div>

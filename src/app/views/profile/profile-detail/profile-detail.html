@@ -1,6 +1,19 @@
 <div class="container-fluid">
   <app-page-breadcrumb title="Profile Detail" subTitle="Profile" />
 
+  @if(success) {
+    <div class="alert alert-success alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+      <span>{{ success }}</span>
+      <button type="button" class="btn-close" (click)="clearMessages()"></button>
+    </div>
+  }
+  @if(error) {
+    <div class="alert alert-danger alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="btn-close" (click)="clearMessages()"></button>
+    </div>
+  }
+
   @if(loading) {
     <div class="d-flex justify-content-center p-5">
       <div class="spinner-border text-primary" role="status">
@@ -76,16 +89,16 @@
             @if (activeTab() === 'overview') {
               <div class="p-3">
                 <div class="d-flex gap-2 flex-wrap mt-3">
-                  @if(profile.status === ProfileStatus.PendingVerification) { <button class="btn btn-success" (click)="verify()">Verify Profile</button> }
-                  @if(profile.status === ProfileStatus.Suspended) {
+                  @if(isPendingVerification()) { <button class="btn btn-success" (click)="verify()">Vérifier le Profil</button> }
+                  @if(isSuspended()) {
                     <button class="btn btn-warning" (click)="reactivate()">
                       <app-icon icon="refresh-cw" class="me-1"></app-icon> Réactiver le Profil
                     </button>
-                  } @else if(profile.status !== ProfileStatus.Activate) {
-                    <button class="btn btn-primary" (click)="activate()">Activate</button>
+                  } @else if(!isActivated()) {
+                    <button class="btn btn-primary" (click)="activate()">Activer le Profil</button>
                   }
-                  @if(profile.status !== ProfileStatus.Suspended) { <button class="btn btn-danger" (click)="suspend()">Suspend</button> }
-                  <a routerLink="/profiles/pending" class="btn btn-outline-secondary">Back</a>
+                  @if(!isSuspended()) { <button class="btn btn-danger" (click)="suspend()">Suspendre</button> }
+                  <a routerLink="/profiles/pending" class="btn btn-outline-secondary">Retour</a>
                 </div>
               </div>
             } @else if (activeTab() === 'documents') {

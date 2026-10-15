@@ -85,4 +85,20 @@ export class ProcedureService {
   createLocation(data: CreateLocationRequest): Observable<LocationDto> {
     return this.http.post<LocationDto>(this.locationApiUrl, data);
   }
+
+  getProcedureTranslations(id: string): Observable<{ cultureCode: string; fields: { Title?: string; Description?: string }; createdAt?: string }[]> {
+    return this.http.get<{ cultureCode: string; fields: { Title?: string; Description?: string }; createdAt?: string }[]>(`${this.apiUrl}/${id}/translations`);
+  }
+
+  setProcedureTranslation(id: string, cultureCode: string, fields: { Title: string; Description: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/translations`, {
+      entityId: id,
+      cultureCode,
+      fields
+    });
+  }
+
+  deleteProcedureTranslation(id: string, cultureCode: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/translations/${cultureCode}`);
+  }
 }

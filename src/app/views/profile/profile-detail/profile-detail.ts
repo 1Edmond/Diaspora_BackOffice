@@ -129,54 +129,89 @@ export class ProfileDetail implements OnInit {
     })
   }
 
+  isSuspended(): boolean {
+    if (!this.profile) return false
+    const s: any = this.profile.status
+    return s === ProfileStatus.Suspended || s === 2 || s === 'Suspended'
+  }
+
+  isActivated(): boolean {
+    if (!this.profile) return false
+    const s: any = this.profile.status
+    return s === ProfileStatus.Activate || s === 3 || s === 'Activate' || s === 'Active'
+  }
+
+  isPendingVerification(): boolean {
+    if (!this.profile) return false
+    const s: any = this.profile.status
+    return s === ProfileStatus.PendingVerification || s === 0 || s === 'PendingVerification'
+  }
+
   verify() {
     if (!this.profile) return
+    this.clearMessages()
     this.profileService.verifyProfile(this.profile.id).subscribe({
       next: () => {
-        this.success = 'Profile verified'
+        this.success = 'Profil vérifié avec succès.'
         this.loadProfile(this.profile!.id)
       },
       error: (err: any) => {
-        this.error = err.error?.error || err.error?.message || 'Failed to verify'
+        this.error = err.error?.error || err.error?.message || 'Échec de la vérification'
       },
     })
   }
 
   activate() {
     if (!this.profile) return
+    this.clearMessages()
     this.profileService.activateProfile(this.profile.id).subscribe({
       next: () => {
-        this.success = 'Profile activated'
+        this.success = 'Profil activé avec succès.'
         this.loadProfile(this.profile!.id)
       },
       error: (err: any) => {
-        this.error = err.error?.error || err.error?.message || 'Failed to activate'
+        this.error = err.error?.error || err.error?.message || "Échec de l'activation"
       },
     })
   }
 
   suspend() {
     if (!this.profile) return
+    this.clearMessages()
     this.profileService.suspendProfile(this.profile.id).subscribe({
       next: () => {
-        this.success = 'Profile suspended'
+        this.success = 'Profil suspendu avec succès.'
         this.loadProfile(this.profile!.id)
       },
       error: (err: any) => {
-        this.error = err.error?.error || err.error?.message || 'Failed to suspend'
+        this.error = err.error?.error || err.error?.message || 'Échec de la suspension'
       },
     })
   }
 
   reactivate() {
     if (!this.profile) return
+    this.clearMessages()
     this.profileService.reactivateProfile(this.profile.id).subscribe({
       next: () => {
         this.success = 'Profil réactivé avec succès.'
         this.loadProfile(this.profile!.id)
       },
       error: (err: any) => {
-        this.error = err.error?.error || err.error?.message || 'Erreur lors de la réactivation'
+        // Fallback automatique sur activateProfile si l'endpoint reactivate n'est pas routé directement
+        this.profileService.activateProfile(this.profile!.id).subscribe({
+          next: () => {
+            this.success = 'Profil réactivé avec succès.'
+            this.loadProfile(this.profile!.id)
+          },
+          error: (fallbackErr: any) => {
+            this.error =
+              fallbackErr.error?.error ||
+              fallbackErr.error?.message ||
+              err.error?.error ||
+              'Erreur lors de la réactivation du profil.'
+          },
+        })
       },
     })
   }

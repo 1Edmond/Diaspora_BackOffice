@@ -91,14 +91,45 @@
           }
           <!-- Multilingual Tabs for Name & Description -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">Intitulé & Traduction par langue :</label>
-            <ul class="nav nav-pills nav-fill mb-2 bg-light p-1 rounded">
-              @for (lang of formLanguages; track lang.code) {
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <label class="form-label fw-semibold mb-0">Langues & Traductions :</label>
+              <div class="dropdown">
+                <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 280px; overflow-y: auto;">
+                  <li><h6 class="dropdown-header">Langues usuelles</h6></li>
+                  @for (lang of commonLanguages; track lang.code) {
+                    @if (!formLanguages.includes(lang.code)) {
+                      <li>
+                        <button class="dropdown-item fs-sm py-1" (click)="addFormLanguage(lang.code)">
+                          {{ lang.flag }} {{ lang.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider"></li>
+                  <li class="px-3 py-1">
+                    <label class="form-label fs-xs text-muted mb-1">Code ISO libre (ex: it, tr, pl...)</label>
+                    <div class="input-group input-group-sm">
+                      <input type="text" class="form-control" placeholder="Code (ex: it)" [(ngModel)]="customLangInput" (keyup.enter)="addFormLanguage(customLangInput)" />
+                      <button class="btn btn-primary" (click)="addFormLanguage(customLangInput)" [disabled]="!customLangInput.trim()">OK</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <ul class="nav nav-pills gap-1 mb-2 bg-light p-1 rounded flex-wrap">
+              @for (code of formLanguages; track code) {
               <li class="nav-item">
-                <button class="nav-link py-1 px-2 fs-xs" [class.active]="formLanguage === lang.code" (click)="formLanguage = lang.code" type="button">
-                  {{ lang.flag }} {{ lang.label }}
-                  @if (formTranslations[lang.code].Name) {
+                <button class="nav-link py-1 px-2 fs-xs d-flex align-items-center gap-1" [class.active]="formLanguage === code" (click)="formLanguage = code" type="button">
+                  <span>{{ getLangInfo(code).flag }} {{ getLangInfo(code).label }}</span>
+                  @if (formTranslations[code]?.Name?.trim()) {
                     <span class="badge bg-success ms-1">✓</span>
+                  }
+                  @if (formLanguages.length > 1 && code !== 'fr') {
+                    <span class="badge bg-danger-subtle text-danger ms-1 px-1 py-0 rounded" (click)="removeFormLanguage(code, $event)" title="Supprimer cette langue">&times;</span>
                   }
                 </button>
               </li>
@@ -108,16 +139,16 @@
             <div class="p-3 border rounded bg-light mb-2">
               <div class="mb-2">
                 <label class="form-label fs-sm fw-medium">
-                  Nom ({{ formLanguage.toUpperCase() }})
-                  @if (formLanguage === 'fr') { <span class="text-danger">* (Principal)</span> }
+                  Nom ({{ formLanguage.toUpperCase() }} — {{ getLangInfo(formLanguage).label }})
+                  @if (formLanguage === 'fr') { <span class="text-danger">*</span> }
                 </label>
                 <input type="text" class="form-control" [(ngModel)]="formTranslations[formLanguage].Name"
-                       [placeholder]="formLanguage === 'fr' ? 'ex: Transport & Colis, Traduction...' : 'Category name in ' + formLanguage.toUpperCase()" />
+                       [placeholder]="'Nom de la catégorie en ' + getLangInfo(formLanguage).label + '...'" />
               </div>
               <div>
                 <label class="form-label fs-sm fw-medium">Description ({{ formLanguage.toUpperCase() }})</label>
                 <textarea class="form-control" rows="2" [(ngModel)]="formTranslations[formLanguage].Description"
-                          [placeholder]="'Description in ' + formLanguage.toUpperCase() + '...'"></textarea>
+                          [placeholder]="'Description en ' + getLangInfo(formLanguage).label + '...'"></textarea>
               </div>
             </div>
           </div>
@@ -131,7 +162,7 @@
             <input type="number" class="form-control" [(ngModel)]="model.displayOrder" />
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" [disabled]="(!formTranslations['fr'].Name && !formTranslations['en'].Name && !formTranslations['ru'].Name) || saving" (click)="save()">
+            <button class="btn btn-primary" [disabled]="saving" (click)="save()">
               @if(saving) { <span class="spinner-border spinner-border-sm me-1"></span> Enregistrement... } @else { {{editId ? 'Mettre à jour avec Traductions' : 'Ajouter la Catégorie'}} }
             </button>
             @if(editId) {
@@ -265,11 +296,41 @@
         </div>
         }
 
-        <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded">
-          @for (lang of translatingLanguages; track lang.code) {
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <label class="form-label fw-semibold mb-0">Langues de traduction :</label>
+          <div class="dropdown">
+            <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 250px; overflow-y: auto;">
+              @for (lang of commonLanguages; track lang.code) {
+                @if (!translatingLanguages.includes(lang.code)) {
+                  <li>
+                    <button class="dropdown-item fs-sm py-1" (click)="addModalLanguage(lang.code)">
+                      {{ lang.flag }} {{ lang.label }}
+                    </button>
+                  </li>
+                }
+              }
+              <li><hr class="dropdown-divider"></li>
+              <li class="px-3 py-1">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" placeholder="Code ISO" [(ngModel)]="customModalLangInput" (keyup.enter)="addModalLanguage(customModalLangInput)" />
+                  <button class="btn btn-primary" (click)="addModalLanguage(customModalLangInput)" [disabled]="!customModalLangInput.trim()">OK</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <ul class="nav nav-pills gap-1 mb-3 bg-light p-1 rounded flex-wrap">
+          @for (code of translatingLanguages; track code) {
           <li class="nav-item">
-            <button class="nav-link" [class.active]="selectedCulture === lang.code" (click)="selectedCulture = lang.code">
-              {{ lang.flag }} {{ lang.label }}
+            <button class="nav-link py-1 px-2 fs-xs" [class.active]="selectedCulture === code" (click)="selectedCulture = code">
+              {{ getLangInfo(code).flag }} {{ getLangInfo(code).label }}
+              @if (translationData[code]?.Name?.trim()) {
+                <span class="badge bg-success ms-1">✓</span>
+              }
             </button>
           </li>
           }
@@ -277,15 +338,15 @@
 
         <div class="p-3 border rounded bg-white shadow-sm">
           <div class="mb-3">
-            <label class="form-label fw-medium">Nom de la catégorie ({{ selectedCulture.toUpperCase() }}) <span class="text-danger">*</span></label>
+            <label class="form-label fw-medium">Nom de la catégorie ({{ selectedCulture.toUpperCase() }} — {{ getLangInfo(selectedCulture).label }}) <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="translationData[selectedCulture].Name" placeholder="Nom traduit..." />
           </div>
           <div class="mb-3">
-            <label class="form-label fw-medium">Description ({{ selectedCulture.toUpperCase() }})</label>
+            <label class="form-label fw-medium">Description ({{ selectedCulture.toUpperCase() }} — {{ getLangInfo(selectedCulture).label }})</label>
             <textarea class="form-control" rows="3" [(ngModel)]="translationData[selectedCulture].Description" placeholder="Description traduite..."></textarea>
           </div>
           <div class="d-flex justify-content-end">
-            <button class="btn btn-primary" [disabled]="translationSaving || !translationData[selectedCulture].Name" (click)="saveTranslation(selectedCulture)">
+            <button class="btn btn-primary" [disabled]="translationSaving || !translationData[selectedCulture]?.Name?.trim()" (click)="saveTranslation(selectedCulture)">
               @if(translationSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
               Enregistrer pour {{ selectedCulture.toUpperCase() }}
             </button>

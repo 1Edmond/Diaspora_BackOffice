@@ -16,6 +16,12 @@ import {
   VerificationLevelBadgeVariants,
 } from '@core/models/marketplace/marketplace.model'
 
+import {
+  COMMON_LANGUAGES,
+  LanguageOption,
+  getLanguageDisplay,
+} from '@core/constants/languages.constant'
+
 @Component({
   selector: 'app-categories',
   standalone: true,
@@ -33,18 +39,14 @@ export class Categories implements OnInit {
   successMessage = ''
   editId: string | null = null
 
-  // Creation & Edition Translations
+  // Dynamic multilingual languages for creation & edition
   formLanguage = 'fr'
-  formLanguages = [
-    { code: 'fr', label: 'Français (FR)', flag: '🇫🇷' },
-    { code: 'en', label: 'English (EN)', flag: '🇬🇧' },
-    { code: 'ru', label: 'Русский (RU)', flag: '🇷🇺' },
-  ]
+  formLanguages: string[] = ['fr']
   formTranslations: { [culture: string]: { Name: string; Description: string } } = {
     fr: { Name: '', Description: '' },
-    en: { Name: '', Description: '' },
-    ru: { Name: '', Description: '' },
   }
+  customLangInput = ''
+  commonLanguages = COMMON_LANGUAGES
 
   // Category Policy management
   editingPolicyCat: CategoryDto | null = null
@@ -62,18 +64,13 @@ export class Categories implements OnInit {
     defaultCommissionRate: 10, // In percentage 10%
   }
 
-  // Translation management
+  // Translation management modal
   translatingCat: CategoryDto | null = null
-  translatingLanguages = [
-    { code: 'fr', label: 'Français (FR)', flag: '🇫🇷' },
-    { code: 'en', label: 'English (EN)', flag: '🇬🇧' },
-    { code: 'ru', label: 'Русский (RU)', flag: '🇷🇺' },
-  ]
+  translatingLanguages: string[] = ['fr', 'en', 'ru']
   selectedCulture = 'fr'
+  customModalLangInput = ''
   translationData: { [culture: string]: { Name?: string; Description?: string } } = {
     fr: { Name: '', Description: '' },
-    en: { Name: '', Description: '' },
-    ru: { Name: '', Description: '' }
   }
   translationLoading = false
   translationSaving = false
@@ -99,6 +96,33 @@ export class Categories implements OnInit {
     this.loadCategories()
   }
 
+  getLangInfo(code: string): LanguageOption {
+    return getLanguageDisplay(code)
+  }
+
+  addFormLanguage(code: string) {
+    const normalized = (code || '').trim().toLowerCase()
+    if (!normalized) return
+    if (!this.formLanguages.includes(normalized)) {
+      this.formLanguages.push(normalized)
+      if (!this.formTranslations[normalized]) {
+        this.formTranslations[normalized] = { Name: '', Description: '' }
+      }
+    }
+    this.formLanguage = normalized
+    this.customLangInput = ''
+  }
+
+  removeFormLanguage(code: string, event: Event) {
+    event.stopPropagation()
+    if (this.formLanguages.length <= 1) return
+    this.formLanguages = this.formLanguages.filter((l) => l !== code)
+    delete this.formTranslations[code]
+    if (this.formLanguage === code) {
+      this.formLanguage = this.formLanguages[0]
+    }
+  }
+
   loadCategories() {
     this.loading = true
     this.marketplaceService.getCategories(false).subscribe({
@@ -111,18 +135,38 @@ export class Categories implements OnInit {
   }
 
   save() {
-    this.model.name = this.formTranslations['fr'].Name || this.formTranslations['en'].Name || this.formTranslations['ru'].Name
-    if (!this.model.name) {
-      this.error = 'Le nom de la catégorie (au moins en français) est obligatoire.'
+    // Find primary name from 'fr' or current or any filled language
+    const primaryName =
+      this.formTranslations['fr']?.Name?.trim() ||
+      this.formTranslations[this.formLanguage]?.Name?.trim() ||
+      Object.values(this.formTranslations).find((t) => !!t.Name?.trim())?.Name?.trim() ||
+      ''
+
+    if (!primaryName) {
+      this.error = 'Veuillez saisir un nom pour la catégorie dans au moins une langue.'
       return
     }
-    this.model.description = this.formTranslations['fr'].Description || this.formTranslations['en'].Description || this.formTranslations['ru'].Description
 
-    this.model.translations = {
-      fr: { Name: this.formTranslations['fr'].Name || this.model.name, Description: this.formTranslations['fr'].Description || '' },
-      en: { Name: this.formTranslations['en'].Name || '', Description: this.formTranslations['en'].Description || '' },
-      ru: { Name: this.formTranslations['ru'].Name || '', Description: this.formTranslations['ru'].Description || '' },
+    const primaryDesc =
+      this.formTranslations['fr']?.Description?.trim() ||
+      this.formTranslations[this.formLanguage]?.Description?.trim() ||
+      ''
+
+    this.model.name = primaryName
+    this.model.description = primaryDesc
+
+    // Build dynamic translations dictionary
+    const dynamicTranslations: { [culture: string]: { Name: string; Description: string } } = {}
+    for (const lang of this.formLanguages) {
+      const trans = this.formTranslations[lang]
+      if (trans && (trans.Name?.trim() || trans.Description?.trim())) {
+        dynamicTranslations[lang] = {
+          Name: trans.Name?.trim() || primaryName,
+          Description: trans.Description?.trim() || '',
+        }
+      }
     }
+    this.model.translations = dynamicTranslations
 
     this.saving = true
     this.error = ''
@@ -133,24 +177,31 @@ export class Categories implements OnInit {
 
     obs.subscribe({
       next: () => {
-        this.successMessage = this.editId ? 'Catégorie mise à jour avec ses traductions.' : 'Catégorie créée avec succès.'
+        this.successMessage = this.editId
+          ? 'Catégorie mise à jour avec ses traductions multilingues.'
+          : 'Catégorie créée avec succès.'
         this.resetForm()
         this.loadCategories()
       },
       error: (err: any) => {
         this.saving = false
-        this.error = err.error?.error || err.error?.message || 'Erreur lors de l\'enregistrement de la catégorie.'
+        this.error =
+          err.error?.error || err.error?.message || "Erreur lors de l'enregistrement de la catégorie."
       },
     })
   }
 
   edit(cat: CategoryDto) {
     this.editId = cat.id
-    this.model = { name: cat.name, description: cat.description || '', iconUrl: cat.iconUrl || '', displayOrder: cat.displayOrder }
+    this.model = {
+      name: cat.name,
+      description: cat.description || '',
+      iconUrl: cat.iconUrl || '',
+      displayOrder: cat.displayOrder,
+    }
+    this.formLanguages = ['fr']
     this.formTranslations = {
       fr: { Name: cat.name, Description: cat.description || '' },
-      en: { Name: '', Description: '' },
-      ru: { Name: '', Description: '' },
     }
     this.formLanguage = 'fr'
     this.editingPolicyCat = null
@@ -158,17 +209,19 @@ export class Categories implements OnInit {
     this.marketplaceService.getCategoryTranslations(cat.id).subscribe({
       next: (trans) => {
         if (trans) {
-          for (const lang of ['fr', 'en', 'ru']) {
-            if (trans[lang]) {
-              this.formTranslations[lang] = {
-                Name: trans[lang]['Name'] || this.formTranslations[lang].Name,
-                Description: trans[lang]['Description'] || this.formTranslations[lang].Description,
-              }
+          Object.keys(trans).forEach((lang) => {
+            const culture = lang.toLowerCase()
+            if (!this.formLanguages.includes(culture)) {
+              this.formLanguages.push(culture)
             }
-          }
+            this.formTranslations[culture] = {
+              Name: trans[lang]['Name'] || '',
+              Description: trans[lang]['Description'] || '',
+            }
+          })
         }
       },
-      error: () => {}
+      error: () => {},
     })
   }
 
@@ -242,13 +295,13 @@ export class Categories implements OnInit {
   resetForm() {
     this.editId = null
     this.model = { name: '', description: '', iconUrl: '', displayOrder: 0 }
+    this.formLanguages = ['fr']
     this.formTranslations = {
       fr: { Name: '', Description: '' },
-      en: { Name: '', Description: '' },
-      ru: { Name: '', Description: '' },
     }
     this.formLanguage = 'fr'
     this.saving = false
+    this.customLangInput = ''
   }
 
   openTranslations(cat: CategoryDto, content: any) {
@@ -257,10 +310,9 @@ export class Categories implements OnInit {
     this.translationSuccess = ''
     this.translationError = ''
     this.translationLoading = true
+    this.translatingLanguages = ['fr']
     this.translationData = {
       fr: { Name: cat.name, Description: cat.description || '' },
-      en: { Name: '', Description: '' },
-      ru: { Name: '', Description: '' }
     }
 
     this.translationModalRef = this.modalService.open(content, { centered: true, size: 'lg' })
@@ -269,21 +321,36 @@ export class Categories implements OnInit {
       next: (translations) => {
         this.translationLoading = false
         if (translations) {
-          for (const lang of ['fr', 'en', 'ru']) {
-            if (translations[lang]) {
-              this.translationData[lang] = {
-                Name: translations[lang]['Name'] || this.translationData[lang].Name,
-                Description: translations[lang]['Description'] || this.translationData[lang].Description
-              }
+          Object.keys(translations).forEach((lang) => {
+            const culture = lang.toLowerCase()
+            if (!this.translatingLanguages.includes(culture)) {
+              this.translatingLanguages.push(culture)
             }
-          }
+            this.translationData[culture] = {
+              Name: translations[lang]['Name'] || '',
+              Description: translations[lang]['Description'] || '',
+            }
+          })
         }
       },
       error: (err) => {
         this.translationLoading = false
         console.error('Error loading translations:', err)
-      }
+      },
     })
+  }
+
+  addModalLanguage(code: string) {
+    const normalized = (code || '').trim().toLowerCase()
+    if (!normalized) return
+    if (!this.translatingLanguages.includes(normalized)) {
+      this.translatingLanguages.push(normalized)
+      if (!this.translationData[normalized]) {
+        this.translationData[normalized] = { Name: '', Description: '' }
+      }
+    }
+    this.selectedCulture = normalized
+    this.customModalLangInput = ''
   }
 
   saveTranslation(culture: string) {
@@ -294,7 +361,7 @@ export class Categories implements OnInit {
 
     const fields: { [field: string]: string } = {
       Name: this.translationData[culture]?.Name || '',
-      Description: this.translationData[culture]?.Description || ''
+      Description: this.translationData[culture]?.Description || '',
     }
 
     this.marketplaceService.updateCategoryTranslation(this.translatingCat.id, culture, fields).subscribe({
@@ -305,8 +372,9 @@ export class Categories implements OnInit {
       },
       error: (err: any) => {
         this.translationSaving = false
-        this.translationError = err.error?.error || err.error?.message || 'Erreur lors de l\'enregistrement de la traduction.'
-      }
+        this.translationError =
+          err.error?.error || err.error?.message || "Erreur lors de l'enregistrement de la traduction."
+      },
     })
   }
 
