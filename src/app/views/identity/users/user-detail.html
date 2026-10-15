@@ -1,5 +1,22 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="User Detail" subTitle="Users" />
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <app-page-breadcrumb title="User Detail" subTitle="Users" />
+    <a routerLink="/identity/users" class="btn btn-outline-secondary btn-sm">
+      <app-icon icon="arrow-left" class="me-1"></app-icon> Retour à la liste
+    </a>
+  </div>
+
+  @if (successMessage) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <app-icon icon="check-circle" class="me-2"></app-icon> {{ successMessage }}
+  </div>
+  }
+  @if (errorMessage) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <app-icon icon="alert-circle" class="me-2"></app-icon> {{ errorMessage }}
+  </div>
+  }
+
   @if(loading) {
   <div class="d-flex justify-content-center p-5">
     <div class="spinner-border text-primary" role="status">
@@ -7,77 +24,213 @@
     </div>
   </div>
   } @else if(user) {
+
+  @if (user.status === 'Suspended') {
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+    <app-icon icon="alert-triangle" class="fs-4 flex-shrink-0"></app-icon>
+    <div>
+      <strong>Compte Suspendu :</strong> Cet utilisateur a été suspendu par l'administration. Ses jetons d'accès ont été invalidés et toute interaction sur l'application mobile lui est refusée.
+    </div>
+  </div>
+  } @else if (user.status === 'Deleted') {
+  <div class="alert alert-dark d-flex align-items-center gap-2 mb-3">
+    <app-icon icon="trash-2" class="fs-4 flex-shrink-0"></app-icon>
+    <div>
+      <strong>Compte Supprimé :</strong> Ce compte a fait l'objet d'un soft-delete. Les données sont archivées.
+    </div>
+  </div>
+  }
+
   <div class="row">
     <div class="col-12">
       <div class="card">
         <div class="card-body">
           <div class="row">
-            <div class="col-xl-4 text-center mb-4 mb-xl-0">
-              <div class="avatar avatar-lg">
-                <div class="avatar-title rounded-circle bg-soft-primary text-primary fs-2">{{user.firstName?user.firstName.charAt(0):user.email.charAt(0).toUpperCase()}}</div>
+            <div class="col-xl-4 text-center mb-4 mb-xl-0 border-end">
+              <div class="avatar avatar-lg mx-auto">
+                <div class="avatar-title rounded-circle bg-soft-primary text-primary fs-2">
+                  {{user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}}
+                </div>
               </div>
-              <h5 class="mt-2">{{user.firstName}} {{user.lastName}}</h5>
-              <p class="text-muted">{{user.email}}</p>
-              <span class="badge" [class]="'bg-' + (user.status === 'Active' ? 'success' : user.status === 'Suspended' ? 'danger' : user.status === 'Deleted' ? 'dark' : 'secondary')">{{user.status}}</span>
+              <h5 class="mt-2 mb-1">{{user.firstName || ''}} {{user.lastName || ''}}</h5>
+              <p class="text-muted mb-2">{{user.email}}</p>
+              
+              <div class="d-flex justify-content-center gap-2 mb-3">
+                <span class="badge" [class]="'bg-' + (user.status === 'Active' ? 'success' : user.status === 'Suspended' ? 'danger' : user.status === 'Deleted' ? 'dark' : 'secondary')">
+                  {{user.status}}
+                </span>
+                <span class="badge bg-soft-info text-info">KYC: {{user.kycLevel}}</span>
+              </div>
+
+              <!-- Administrative Action Buttons -->
+              <div class="d-grid gap-2 text-start p-3 bg-light rounded">
+                <span class="text-uppercase text-muted fw-bold fs-xs">Actions Administratives</span>
+
+                @if (user.status === 'Active') {
+                <button type="button" class="btn btn-outline-danger btn-sm text-start" [disabled]="actionLoading" (click)="openSuspendModal()">
+                  <app-icon icon="slash" class="me-1"></app-icon> Suspendre le compte
+                </button>
+                } @else if (user.status === 'Suspended') {
+                <button type="button" class="btn btn-outline-success btn-sm text-start" [disabled]="actionLoading" (click)="confirmActivate()">
+                  <app-icon icon="check-circle" class="me-1"></app-icon> Réactiver le compte
+                </button>
+                }
+
+                <button type="button" class="btn btn-outline-warning btn-sm text-start" [disabled]="actionLoading" (click)="confirmRevokeAllTokens()">
+                  <app-icon icon="log-out" class="me-1"></app-icon> Révoquer toutes les sessions
+                </button>
+
+                @if (user.status !== 'Deleted') {
+                <button type="button" class="btn btn-outline-secondary btn-sm text-start" [disabled]="actionLoading" (click)="confirmDelete()">
+                  <app-icon icon="trash-2" class="me-1"></app-icon> Supprimer (Soft Delete)
+                </button>
+                } @else {
+                <button type="button" class="btn btn-outline-info btn-sm text-start" [disabled]="actionLoading" (click)="confirmRestore()">
+                  <app-icon icon="rotate-ccw" class="me-1"></app-icon> Restaurer le compte
+                </button>
+                }
+              </div>
             </div>
+
             <div class="col-xl-8">
               <ul class="nav nav-tabs nav-tabs-bordered">
                 <li class="nav-item">
-                  <a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a>
+                  <a class="nav-link" [class.active]="activeTab === 'overview'" href="javascript:void(0)" (click)="activeTab = 'overview'">
+                    <app-icon icon="user" class="me-1"></app-icon> Vue Générale
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" data-bs-toggle="tab" href="#security">Security</a>
+                  <a class="nav-link" [class.active]="activeTab === 'security'" href="javascript:void(0)" (click)="activeTab = 'security'">
+                    <app-icon icon="shield" class="me-1"></app-icon> Sécurité & Sessions ({{ refreshTokens.length }})
+                  </a>
                 </li>
               </ul>
+
               <div class="tab-content p-3">
-                <div class="tab-pane active" id="overview">
-                  <div class="row">
+                @if (activeTab === 'overview') {
+                <div class="tab-pane active">
+                  <div class="row g-3">
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Email</span></p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Identifiant Système (ID)</p>
+                      <p class="font-monospace fs-sm">{{user.id}}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Email</p>
                       <p>{{user.email}}</p>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Phone</span></p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Téléphone</p>
                       <p>{{user.phoneNumber ? (user.phoneNumber.countryCode + ' ' + user.phoneNumber.value) : 'N/A'}}</p>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Role</span></p>
-                      <p>{{user.role.join(', ')}}</p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Rôles Attribués</p>
+                      <div>
+                        @for (r of user.role; track r) {
+                        <span class="badge bg-light text-dark border me-1">{{r}}</span>
+                        }
+                      </div>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Email Verified</span></p>
-                      <p>{{user.emailVerified ? 'Yes' : 'No'}}</p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Email Vérifié</p>
+                      <p>
+                        @if (user.emailVerified) {
+                        <span class="text-success"><app-icon icon="check" class="me-1"></app-icon> Oui</span>
+                        } @else {
+                        <span class="text-muted"><app-icon icon="x" class="me-1"></app-icon> Non</span>
+                        }
+                      </p>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">KYC Level</span></p>
-                      <p>{{user.kycLevel}}</p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Niveau KYC</p>
+                      <p><span class="badge bg-primary">{{user.kycLevel}}</span></p>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Last Login</span></p>
-                      <p>{{user.lastLoginAt || 'N/A'}}</p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Dernière Connexion</p>
+                      <p>{{user.lastLoginAt ? (user.lastLoginAt | date:'medium') : 'Aucune session enregistrée'}}</p>
                     </div>
                     <div class="col-md-6">
-                      <p class=" mb-1"><span class="text-muted fw-semibold">Created</span></p>
+                      <p class="mb-1 text-muted fw-semibold fs-xs text-uppercase">Date d'Inscription</p>
                       <p>{{user.createdAt | date:'medium'}}</p>
                     </div>
                   </div>
                 </div>
-                <div class="tab-pane" id="security">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Status</span></p>
-                      <p>{{user.kycLevel}}</p>
-                    </div>
-                    <div class="col-md-6">
-                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Submitted</span></p>
-                      <p>{{user.kycSubmittedAt || 'N/A'}}</p>
-                    </div>
-                    <div class="col-md-6">
-                      <p class="mb-1"><span class="text-muted fw-semibold">KYC Approved</span></p>
-                      <p>{{user.kycApprovedAt || 'N/A'}}</p>
+                }
+
+                @if (activeTab === 'security') {
+                <div class="tab-pane active">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Sessions Actives & Jetons de Rafraîchissement</h6>
+                    @if (refreshTokens.length > 0) {
+                    <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="actionLoading" (click)="confirmRevokeAllTokens()">
+                      <app-icon icon="log-out" class="me-1"></app-icon> Révoquer tous les jetons
+                    </button>
+                    }
+                  </div>
+
+                  @if (loadingTokens) {
+                  <div class="d-flex justify-content-center p-3">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                  </div>
+                  } @else if (refreshTokens.length === 0) {
+                  <div class="text-center p-4 text-muted bg-light rounded">
+                    <app-icon icon="shield-check" class="fs-1 d-block mb-2 text-success"></app-icon>
+                    Aucune session active ou jeton valide en cours.
+                  </div>
+                  } @else {
+                  <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Jeton</th>
+                          <th>Créé le / IP</th>
+                          <th>Expire le</th>
+                          <th>Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (tok of refreshTokens; track tok.id) {
+                        <tr>
+                          <td>
+                            <code class="fs-xs">{{ tok.token.substring(0, 16) }}...</code>
+                          </td>
+                          <td>
+                            <div class="fs-xs">{{ tok.createdAt | date:'short' }}</div>
+                            <small class="text-muted">{{ tok.createdByIp || 'Inconnue' }}</small>
+                          </td>
+                          <td>
+                            <div class="fs-xs">{{ tok.expires | date:'short' }}</div>
+                          </td>
+                          <td>
+                            @if (tok.isActive) {
+                            <span class="badge bg-success">Actif</span>
+                            } @else if (tok.isRevoked) {
+                            <span class="badge bg-danger" [title]="tok.revokedAt ? ('Révoqué le ' + (tok.revokedAt | date:'short')) : ''">Révoqué</span>
+                            } @else if (tok.isExpired) {
+                            <span class="badge bg-secondary">Expiré</span>
+                            }
+                          </td>
+                        </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  }
+
+                  <div class="mt-4 pt-3 border-top">
+                    <h6 class="mb-2">Informations d'Audit KYC</h6>
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <span class="text-muted fs-xs text-uppercase d-block">Dépôt KYC</span>
+                        <span>{{ user.kycSubmittedAt ? (user.kycSubmittedAt | date:'medium') : 'Non soumis' }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <span class="text-muted fs-xs text-uppercase d-block">Approbation KYC</span>
+                        <span>{{ user.kycApprovedAt ? (user.kycApprovedAt | date:'medium') : 'Non approuvé' }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
+                }
               </div>
             </div>
           </div>
@@ -87,5 +240,39 @@
   </div>
   } @else {
   <div class="alert alert-danger">User not found</div>
+  }
+
+  <!-- Modal de Suspension -->
+  @if (showSuspendModal) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <app-icon icon="slash" class="me-1"></app-icon> Suspendre l'utilisateur
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeSuspendModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">
+            Vous vous apprêtez à suspendre l'accès de <strong>{{ user?.email }}</strong>. Cette action révoque immédiatement tous ses accès.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Motif de la suspension <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="3" [(ngModel)]="suspendReason" placeholder="Précisez la raison de la suspension administrative..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeSuspendModal()" [disabled]="actionLoading">Annuler</button>
+          <button type="button" class="btn btn-danger" [disabled]="!suspendReason.trim() || actionLoading" (click)="confirmSuspend()">
+            @if (actionLoading) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            Confirmer la suspension
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   }
 </div>
