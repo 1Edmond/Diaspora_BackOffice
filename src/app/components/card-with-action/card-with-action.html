@@ -1,0 +1,40 @@
+@if (isVisible) {
+<div class="card {{isCollapsed ? 'card-collapse' : ''}} {{className}}">
+  <div class="card-header justify-content-between align-items-center" [class]="isCollapsed ?'border-0':''">
+    <h5 class="card-title">
+      {{ title }}
+      <ng-content select="[badge-text]"></ng-content>
+    </h5>
+    <div>
+      @if (isTogglable || isReloadable || isCloseable) {
+      <div class="card-action">
+        @if (isTogglable) {
+        <button (click)="isCollapsed = !isCollapsed" class="card-action-item border-0">
+          @if (!isCollapsed) {
+          <iconify-icon icon="tabler:chevron-up"></iconify-icon>
+          } @if (isCollapsed) {
+          <iconify-icon icon="tabler:chevron-down"></iconify-icon>
+          }
+        </button>
+        } @if (isReloadable) {
+        <button (click)="reload()" class="card-action-item border-0"><iconify-icon icon="tabler:refresh"></iconify-icon></button>
+        } @if (isCloseable) {
+        <button (click)="close()" class="card-action-item border-0"><iconify-icon icon="tabler:x"></iconify-icon></button>
+        }
+      </div>
+      }
+      <ng-content select="[helper-text]"></ng-content>
+    </div>
+  </div>
+
+  <div class="card-body {{bodyClass}}" #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed">
+    <ng-content select="[card-body]"></ng-content>
+  </div>
+
+  @if (isReloading) {
+  <div class="card-overlay d-flex">
+    <div class="spinner-border text-primary"></div>
+  </div>
+  }
+</div>
+}

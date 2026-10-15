@@ -1,38 +1,233 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="eCommerce" subTitle="Dashboards" />
-  <div class="row row-cols-xxl-4 row-cols-md-2 row-cols-1">
-    @for (item of stateData; track $index) {
-    <div class="col">
-      <statistics-widget [item]="item" />
-    </div>
-    }
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <app-page-breadcrumb title="Tableau de Bord Général" subTitle="Diaspora Plateforme" />
+    <button class="btn btn-outline-primary btn-sm" (click)="loadDashboardData()" [disabled]="loading">
+      <app-icon icon="rotate-ccw" class="me-1"></app-icon> Actualiser les données
+    </button>
   </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body p-0">
-          <div class="row g-0">
-            <div class="col-xxl-3 col-xl-6 order-xl-1 order-xxl-0">
-              <app-total-sales />
-            </div>
+  <!-- Widgets Statistiques Principaux Ubold -->
+  <div class="row row-cols-xxl-4 row-cols-md-2 row-cols-1 g-3 mb-4">
+    <div class="col">
+      <app-statistics-widget
+        title="Citoyens Inscrits"
+        [value]="totalUsers"
+        icon="solar:users-group-two-rounded-bold-duotone"
+        avatarClass="bg-soft-primary text-primary"
+        [trend]="{ value: 12, isUp: true, text: 'croissance' }"
+      />
+    </div>
+    <div class="col">
+      <app-statistics-widget
+        title="Fonds sous Séquestre"
+        [value]="totalHeldXof"
+        suffix=" XOF"
+        icon="solar:shield-check-bold-duotone"
+        avatarClass="bg-soft-info text-info"
+      />
+    </div>
+    <div class="col">
+      <app-statistics-widget
+        title="Commissions Trésorerie"
+        [value]="totalCommissionXof"
+        suffix=" XOF"
+        icon="solar:wallet-money-bold-duotone"
+        avatarClass="bg-soft-success text-success"
+        [trend]="{ value: 8, isUp: true, text: 'revenus plateforme' }"
+      />
+    </div>
+    <div class="col">
+      <app-statistics-widget
+        title="Documents à Valider"
+        [value]="pendingDocsCount"
+        icon="solar:document-text-bold-duotone"
+        avatarClass="bg-soft-danger text-danger"
+      />
+    </div>
+  </div>
 
-            <div class="col-xxl-9 order-xl-3 order-xxl-1">
-              <app-sales-analytics />
-            </div>
+  <!-- Barre de KPIs secondaires & Opérations en direct -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card h-100 border-start border-4 border-warning">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted fs-xs text-uppercase mb-1">Litiges Marketplace en attente</h6>
+            <h3 class="fw-bold mb-0" [class.text-danger]="openDisputesCount > 0">{{ openDisputesCount }}</h3>
           </div>
+          <a routerLink="/marketplace/disputes" class="btn btn-soft-warning btn-sm">
+            Arbitrer <app-icon icon="arrow-right" class="ms-1"></app-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-start border-4 border-info">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted fs-xs text-uppercase mb-1">Démarches Consulaires en cours</h6>
+            <h3 class="fw-bold mb-0 text-info">{{ activeProceduresCount }}</h3>
+          </div>
+          <a routerLink="/procedures/user-procedures" class="btn btn-soft-info btn-sm">
+            Consulter <app-icon icon="arrow-right" class="ms-1"></app-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-start border-4 border-success">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted fs-xs text-uppercase mb-1">Missions Freelance Actives</h6>
+            <h3 class="fw-bold mb-0 text-success">{{ activeMissionsCount }}</h3>
+          </div>
+          <a routerLink="/freelance/job-postings" class="btn btn-soft-success btn-sm">
+            Superviser <app-icon icon="arrow-right" class="ms-1"></app-icon>
+          </a>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-xxl-6">
-      <app-product-inventory />
+  <!-- Alertes Opérationnelles & Tables Récentes -->
+  <div class="row g-3">
+    <!-- Documents récents en attente -->
+    <div class="col-xl-6">
+      <div class="card h-100">
+        <div class="card-header border-light d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <app-icon icon="file-text" class="me-1 text-danger"></app-icon> Documents en Attente de Vérification
+          </h5>
+          <a routerLink="/documents" class="btn btn-soft-primary btn-sm">Voir tout ({{ pendingDocsCount }})</a>
+        </div>
+        <div class="card-body p-0">
+          @if (pendingDocuments.length === 0) {
+          <div class="text-center p-4 text-muted fs-sm">
+            <app-icon icon="check-circle" class="text-success fs-2 d-block mb-2"></app-icon>
+            Aucun document en attente. Tout est à jour !
+          </div>
+          } @else {
+          <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0">
+              <thead class="bg-light thead-sm text-uppercase fs-xxs">
+                <tr>
+                  <th>Citoyen</th>
+                  <th>Type de Document</th>
+                  <th>Date</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (doc of pendingDocuments; track doc.id) {
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ doc.citizenName || 'Citoyen Diaspora' }}</div>
+                    <small class="text-muted font-monospace fs-xxs">{{ doc.profileId?.substring(0, 8) }}...</small>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{ doc.documentTypeName || 'Justificatif' }}</span>
+                  </td>
+                  <td>
+                    <span class="fs-xs text-muted">{{ doc.createdAt | date:'shortDate' }}</span>
+                  </td>
+                  <td class="text-end">
+                    <a routerLink="/documents" class="btn btn-soft-primary btn-xs">
+                      Traiter
+                    </a>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+        </div>
+      </div>
     </div>
 
-    <div class="col-xxl-6">
-      <app-recent-orders />
+    <!-- Litiges Récents -->
+    <div class="col-xl-6">
+      <div class="card h-100">
+        <div class="card-header border-light d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <app-icon icon="alert-triangle" class="me-1 text-warning"></app-icon> Litiges Marketplace à Arbitrer
+          </h5>
+          <a routerLink="/marketplace/disputes" class="btn btn-soft-warning btn-sm">Voir tout ({{ openDisputesCount }})</a>
+        </div>
+        <div class="card-body p-0">
+          @if (urgentDisputes.length === 0) {
+          <div class="text-center p-4 text-muted fs-sm">
+            <app-icon icon="shield-check" class="text-success fs-2 d-block mb-2"></app-icon>
+            Aucun litige ouvert sur la plateforme.
+          </div>
+          } @else {
+          <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0">
+              <thead class="bg-light thead-sm text-uppercase fs-xxs">
+                <tr>
+                  <th>Réf / Motif</th>
+                  <th>Montant</th>
+                  <th>Date</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (disp of urgentDisputes; track disp.id) {
+                <tr>
+                  <td>
+                    <div class="fw-semibold text-danger">{{ disp.reason }}</div>
+                    <small class="text-muted font-monospace fs-xxs">{{ disp.id.substring(0, 8) }}...</small>
+                  </td>
+                  <td>
+                    <span class="fw-bold">{{ disp.serviceRequestAgreedPrice | number:'1.2-2' }} {{ disp.serviceRequestCurrency }}</span>
+                  </td>
+                  <td>
+                    <span class="fs-xs text-muted">{{ disp.createdAt | date:'shortDate' }}</span>
+                  </td>
+                  <td class="text-end">
+                    <a routerLink="/marketplace/disputes" class="btn btn-soft-warning btn-xs">
+                      Arbitrer
+                    </a>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raccourcis d'actions rapides -->
+  <div class="row g-3 mt-1">
+    <div class="col-12">
+      <div class="card bg-light border">
+        <div class="card-body p-3">
+          <h6 class="fs-xs text-uppercase fw-bold text-muted mb-3">Raccourcis Administrateur</h6>
+          <div class="d-flex flex-wrap gap-2">
+            <a routerLink="/wallet/all" class="btn btn-white btn-sm border">
+              <app-icon icon="wallet" class="me-1 text-primary"></app-icon> Portefeuilles & Trésorerie
+            </a>
+            <a routerLink="/wallet/transactions" class="btn btn-white btn-sm border">
+              <app-icon icon="arrow-left-right" class="me-1 text-success"></app-icon> Grand Livre Financier
+            </a>
+            <a routerLink="/identity/users" class="btn btn-white btn-sm border">
+              <app-icon icon="users" class="me-1 text-info"></app-icon> Gestion des Utilisateurs
+            </a>
+            <a routerLink="/kyc/requirements" class="btn btn-white btn-sm border">
+              <app-icon icon="shield" class="me-1 text-warning"></app-icon> Exigences KYC par Pays
+            </a>
+            <a routerLink="/notifications/broadcast" class="btn btn-white btn-sm border">
+              <app-icon icon="send" class="me-1 text-danger"></app-icon> Diffuser une Campagne
+            </a>
+            <a routerLink="/chat/moderation" class="btn btn-white btn-sm border">
+              <app-icon icon="message-square" class="me-1 text-dark"></app-icon> Modération du Chat
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
