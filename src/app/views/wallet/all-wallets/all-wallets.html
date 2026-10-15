@@ -1,0 +1,270 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Tous les Portefeuilles" subTitle="Wallet" />
+
+  @if (success) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ success }}
+    <button type="button" class="btn-close" (click)="clearAlerts()"></button>
+  </div>
+  }
+
+  @if (error) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="clearAlerts()"></button>
+  </div>
+  }
+
+  <!-- Cartes KPI Trésorerie Plateforme -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="card-title mb-0">Trésorerie & Séquestre Consolidés</h5>
+        @if (loadingRevenue) {
+        <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+        }
+      </div>
+    </div>
+
+    @if (revenue?.currencies && revenue!.currencies.length > 0) {
+      @for (curr of revenue!.currencies; track curr.currency) {
+      <div class="col-xl-4 col-md-6">
+        <div class="card border mb-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge bg-primary fs-6">{{ curr.currency }}</span>
+              <span class="text-muted small">Devise système</span>
+            </div>
+            <div class="row">
+              <div class="col-6 border-end">
+                <span class="text-muted d-block small mb-1">Commissions Plateforme</span>
+                <h4 class="mb-0 text-success fw-bold">{{ curr.platformBalance | number:'1.2-2' }}</h4>
+                <small class="text-muted">{{ curr.currency }}</small>
+              </div>
+              <div class="col-6 ps-3">
+                <span class="text-muted d-block small mb-1">Fonds sous Séquestre</span>
+                <h4 class="mb-0 text-info fw-bold">{{ curr.totalEscrowHeld | number:'1.2-2' }}</h4>
+                <small class="text-muted">{{ curr.currency }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    } @else if (!loadingRevenue) {
+      <div class="col-12">
+        <div class="alert alert-light border text-center mb-0">
+          Aucune donnée de trésorerie disponible pour le moment.
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Filtres & Tableau des Portefeuilles -->
+  <div class="card border">
+    <div class="card-header bg-transparent border-bottom">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+          <h5 class="mb-0">Portefeuilles Citoyens</h5>
+          <small class="text-muted">{{ totalCount }} portefeuilles enregistrés</small>
+        </div>
+        <div class="col-md-8">
+          <div class="row g-2 justify-content-md-end">
+            <div class="col-sm-4 col-md-3">
+              <select class="form-select form-select-sm" [(ngModel)]="currencyFilter" (change)="onFilterChange()">
+                <option value="">Toutes Devises</option>
+                @for (c of availableCurrencies; track c) {
+                <option [value]="c">{{ c }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-sm-4 col-md-3">
+              <select class="form-select form-select-sm" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+                <option value="">Tous Statuts</option>
+                <option value="active">Actifs</option>
+                <option value="inactive">Inactifs</option>
+              </select>
+            </div>
+            <div class="col-sm-4 col-md-4">
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Rechercher par profil..."
+                [(ngModel)]="searchQuery"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Identifiant Profil</th>
+              <th>Devise</th>
+              <th class="text-end">Solde Disponible</th>
+              <th class="text-end">Solde Séquestré</th>
+              <th class="text-center">Statut</th>
+              <th>Date de Création</th>
+              <th class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loadingWallets) {
+            <tr>
+              <td colspan="7" class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Chargement...</span>
+                </div>
+              </td>
+            </tr>
+            } @else {
+              @for (w of filteredWallets; track w.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/profiles', w.externalProfileId]" class="fw-semibold font-monospace text-decoration-none">
+                    {{ w.externalProfileId }}
+                  </a>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ w.currency }}</span>
+                </td>
+                <td class="text-end fw-semibold text-success">
+                  {{ w.balance | number:'1.2-2' }} {{ w.currency }}
+                </td>
+                <td class="text-end fw-semibold" [class.text-info]="(w.heldBalance || 0) > 0" [class.text-muted]="!(w.heldBalance && w.heldBalance > 0)">
+                  {{ (w.heldBalance || 0) | number:'1.2-2' }} {{ w.currency }}
+                </td>
+                <td class="text-center">
+                  @if (w.isActive) {
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">Actif</span>
+                  } @else {
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactif</span>
+                  }
+                </td>
+                <td class="small text-muted">
+                  {{ w.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                <td class="text-end pe-3">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="openDepositModal(w, depositModal)"
+                  >
+                    <i class="ri-add-circle-line me-1"></i>Déposer
+                  </button>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-muted p-5">
+                  Aucun portefeuille trouvé avec les critères sélectionnés.
+                </td>
+              </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (totalPages > 1) {
+    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+      <span class="text-muted small">
+        Page {{ page }} sur {{ totalPages }} ({{ totalCount }} résultats)
+      </span>
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          [disabled]="page <= 1"
+          (click)="onPageChange(page - 1)"
+        >
+          Précédent
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          [disabled]="page >= totalPages"
+          (click)="onPageChange(page + 1)"
+        >
+          Suivant
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Dépôt Administratif -->
+<ng-template #depositModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Dépôt Administratif de Fonds</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    @if (selectedWallet) {
+    <div class="alert alert-light border mb-3">
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-muted">Profil Cible :</span>
+        <span class="font-monospace fw-semibold">{{ selectedWallet.externalProfileId }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-muted">Devise :</span>
+        <span class="badge bg-secondary">{{ selectedWallet.currency }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span class="text-muted">Solde Actuel :</span>
+        <span class="fw-bold text-success">{{ selectedWallet.balance | number:'1.2-2' }} {{ selectedWallet.currency }}</span>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Montant à créditer <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="depositAmount"
+          min="0.01"
+          step="0.01"
+          placeholder="Ex: 50.00"
+          required
+        />
+        <span class="input-group-text">{{ selectedWallet.currency }}</span>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Motif ou Description</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="depositDescription"
+        placeholder="Ex: Crédit exceptionnel, ajustement de solde..."
+      />
+    </div>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()" [disabled]="submittingDeposit">
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="submittingDeposit || !depositAmount || depositAmount <= 0"
+      (click)="confirmDeposit()"
+    >
+      @if (submittingDeposit) {
+      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+      En cours...
+      } @else {
+      Confirmer le Dépôt
+      }
+    </button>
+  </div>
+</ng-template>

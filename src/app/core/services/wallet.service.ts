@@ -7,6 +7,7 @@ import {
   DepositRequest,
   DepositResponse,
   MarketplacePaymentRequest,
+  PlatformRevenueDto,
   ProcedurePaymentRequest,
   TransactionDto,
   TransactionListQuery,
@@ -24,6 +25,22 @@ export class WalletService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/wallet`;
 
   constructor(private http: HttpClient) {}
+
+  getWalletsAdmin(
+    currency?: string,
+    isActive?: boolean,
+    pageNumber: number = 1,
+    pageSize: number = 20
+  ): Observable<PagedList<WalletDto>> {
+    const params: any = { pageNumber, pageSize };
+    if (currency) params.currency = currency;
+    if (isActive !== undefined && isActive !== null) params.isActive = isActive;
+    return this.http.get<PagedList<WalletDto>>(`${this.apiUrl}/admin`, { params });
+  }
+
+  getPlatformRevenue(): Observable<PlatformRevenueDto> {
+    return this.http.get<PlatformRevenueDto>(`${this.apiUrl}/platform-revenue`);
+  }
 
   getWallet(profileId: string): Observable<WalletDto> {
     return this.http.get<WalletDto>(`${this.apiUrl}/profile/${profileId}`);

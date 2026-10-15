@@ -214,6 +214,12 @@ export const menuItems: MenuItemType[] = [
     'isTitle': true,
     'children': [
       {
+        'url': '/wallet/all',
+        'slug': 'pages:wallet-all',
+        'label': 'All Wallets',
+        'icon': 'layout-grid',
+      },
+      {
         'url': '/wallet',
         'slug': 'pages:wallet',
         'label': 'Wallet',

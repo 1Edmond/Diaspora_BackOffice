@@ -220,6 +220,11 @@ export const routes: Routes = [
         data: { title: 'Disputes' },
       },
       {
+        path: 'wallet/all',
+        loadComponent: () => import('./views/wallet/all-wallets/all-wallets').then((m) => m.AllWallets),
+        data: { title: 'All Wallets' },
+      },
+      {
         path: 'wallet',
         loadComponent: () => import('./views/wallet/wallet/wallet').then((m) => m.WalletComponent),
         data: { title: 'Wallet' },

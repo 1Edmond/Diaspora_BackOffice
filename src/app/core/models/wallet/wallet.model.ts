@@ -86,3 +86,15 @@ export interface TransactionListQuery {
 export interface UpdateWalletParameterRequest {
   value: string
 }
+
+export interface PlatformRevenueCurrencySummary {
+  currency: string
+  platformBalance: number
+  totalEscrowHeld: number
+}
+
+export interface PlatformRevenueDto {
+  currencies: PlatformRevenueCurrencySummary[]
+  platformWallets: WalletDto[]
+}
+
