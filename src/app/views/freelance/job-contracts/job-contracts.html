@@ -1,0 +1,168 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Missions, Contrats & Pointages" subTitle="Freelance" />
+
+  <!-- Onglets de sélection -->
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <button
+        class="nav-link"
+        [class.active]="activeTab === 'applications'"
+        (click)="activeTab = 'applications'"
+      >
+        <app-icon icon="file-text" class="me-1"></app-icon> Candidatures & Contrats ({{ totalApps }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button
+        class="nav-link"
+        [class.active]="activeTab === 'checkins'"
+        (click)="activeTab = 'checkins'"
+      >
+        <app-icon icon="clock" class="me-1"></app-icon> Historique des Pointages ({{ totalCheckIns }})
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab 1: Candidatures & Contrats -->
+  @if (activeTab === 'applications') {
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Titre de la Mission</th>
+                  <th>Candidat (Freelance)</th>
+                  <th>Employeur</th>
+                  <th>Message / Proposition</th>
+                  <th>Statut</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (loadingApps) {
+                <tr>
+                  <td colspan="6" class="text-center p-4">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des candidatures...
+                  </td>
+                </tr>
+                } @else if (applications.length === 0) {
+                <tr>
+                  <td colspan="6" class="text-center p-4 text-muted">
+                    Aucune candidature ou contrat enregistré.
+                  </td>
+                </tr>
+                } @else {
+                  @for (app of applications; track app.id) {
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">{{ app.jobPostingTitle }}</div>
+                      <small class="text-muted font-monospace fs-xs">{{ app.jobPostingId.substring(0, 8) }}...</small>
+                    </td>
+                    <td>
+                      <div class="fw-semibold">{{ app.workerName }}</div>
+                      <small class="text-muted font-monospace fs-xs">{{ app.workerId.substring(0, 8) }}...</small>
+                    </td>
+                    <td>
+                      <div>{{ app.employerName }}</div>
+                      <small class="text-muted font-monospace fs-xs">{{ app.employerId.substring(0, 8) }}...</small>
+                    </td>
+                    <td>
+                      <span class="text-muted fs-sm">{{ app.message || 'Aucun message' }}</span>
+                      @if (app.rejectionReason) {
+                      <div class="text-danger fs-xs">Motif rejet : {{ app.rejectionReason }}</div>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge" [class]="getApplicationStatusBadgeClass(app.status)">
+                        {{ getApplicationStatusLabel(app.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="fs-xs">{{ app.createdAt | date:'short' }}</span>
+                    </td>
+                  </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Tab 2: Pointages Horaires -->
+  @if (activeTab === 'checkins') {
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Mission</th>
+                  <th>Freelance</th>
+                  <th>Méthode</th>
+                  <th>Pointage Arrivée</th>
+                  <th>Pointage Départ</th>
+                  <th>Statut</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (loadingCheckIns) {
+                <tr>
+                  <td colspan="7" class="text-center p-4">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des pointages...
+                  </td>
+                </tr>
+                } @else if (checkIns.length === 0) {
+                <tr>
+                  <td colspan="7" class="text-center p-4 text-muted">
+                    Aucun pointage horaire enregistré.
+                  </td>
+                </tr>
+                } @else {
+                  @for (chk of checkIns; track chk.id) {
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">{{ chk.jobPostingTitle }}</div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold">{{ chk.workerName }}</div>
+                      <small class="text-muted font-monospace fs-xs">{{ chk.workerId.substring(0, 8) }}...</small>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark border">{{ chk.method }}</span>
+                    </td>
+                    <td>
+                      <span class="fs-xs">{{ chk.checkedInAt ? (chk.checkedInAt | date:'medium') : '-' }}</span>
+                    </td>
+                    <td>
+                      <span class="fs-xs">{{ chk.checkedOutAt ? (chk.checkedOutAt | date:'medium') : '-' }}</span>
+                    </td>
+                    <td>
+                      <span class="badge" [class]="getCheckInStatusBadgeClass(chk.status)">
+                        {{ getCheckInStatusLabel(chk.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ chk.notes || '-' }}</small>
+                    </td>
+                  </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

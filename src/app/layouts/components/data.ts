@@ -208,6 +208,32 @@ export const menuItems: MenuItemType[] = [
     ],
   },
   {
+    'icon': 'briefcase',
+    'slug': 'freelance',
+    'label': 'Freelance',
+    'isTitle': true,
+    'children': [
+      {
+        'url': '/freelance/job-postings',
+        'slug': 'pages:freelance-postings',
+        'label': 'Job Postings',
+        'icon': 'briefcase',
+      },
+      {
+        'url': '/freelance/job-categories',
+        'slug': 'pages:freelance-categories',
+        'label': 'Categories',
+        'icon': 'layers',
+      },
+      {
+        'url': '/freelance/job-contracts',
+        'slug': 'pages:freelance-contracts',
+        'label': 'Contracts & Check-ins',
+        'icon': 'clock',
+      },
+    ],
+  },
+  {
     'icon': 'wallet',
     'slug': 'wallet',
     'label': 'Wallet',

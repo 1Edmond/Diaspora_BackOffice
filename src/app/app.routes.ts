@@ -220,6 +220,21 @@ export const routes: Routes = [
         data: { title: 'Disputes' },
       },
       {
+        path: 'freelance/job-postings',
+        loadComponent: () => import('./views/freelance/job-postings/job-postings').then((m) => m.JobPostingsComponent),
+        data: { title: 'Offres Freelance' },
+      },
+      {
+        path: 'freelance/job-categories',
+        loadComponent: () => import('./views/freelance/job-categories/job-categories').then((m) => m.JobCategoriesComponent),
+        data: { title: 'Catégories Freelance' },
+      },
+      {
+        path: 'freelance/job-contracts',
+        loadComponent: () => import('./views/freelance/job-contracts/job-contracts').then((m) => m.JobContractsComponent),
+        data: { title: 'Missions & Pointages' },
+      },
+      {
         path: 'wallet/all',
         loadComponent: () => import('./views/wallet/all-wallets/all-wallets').then((m) => m.AllWallets),
         data: { title: 'All Wallets' },
