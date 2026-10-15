@@ -230,6 +230,7 @@ export interface CreateCategoryRequest {
   description?: string
   iconUrl?: string
   displayOrder: number
+  translations?: { [culture: string]: { [field: string]: string } }
 }
 
 export interface UpdateCategoryRequest {
@@ -237,6 +238,7 @@ export interface UpdateCategoryRequest {
   description?: string
   iconUrl?: string
   displayOrder: number
+  translations?: { [culture: string]: { [field: string]: string } }
 }
 
 export interface UpdateCategoryPolicyRequest {

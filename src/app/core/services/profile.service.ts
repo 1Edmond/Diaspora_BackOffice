@@ -72,6 +72,10 @@ export class ProfileService {
     return this.http.post<BaseResponse>(`${this.apiUrl}/${profileId}/suspend`, {});
   }
 
+  reactivateProfile(profileId: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.apiUrl}/${profileId}/reactivate`, {});
+  }
+
   getProfileTypes(): Observable<ProfileTypeDto[]> {
     return this.http.get<ProfileTypeDto[]>(this.typeApiUrl);
   }

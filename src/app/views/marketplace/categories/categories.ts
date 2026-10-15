@@ -33,6 +33,19 @@ export class Categories implements OnInit {
   successMessage = ''
   editId: string | null = null
 
+  // Creation & Edition Translations
+  formLanguage = 'fr'
+  formLanguages = [
+    { code: 'fr', label: 'Français (FR)', flag: '🇫🇷' },
+    { code: 'en', label: 'English (EN)', flag: '🇬🇧' },
+    { code: 'ru', label: 'Русский (RU)', flag: '🇷🇺' },
+  ]
+  formTranslations: { [culture: string]: { Name: string; Description: string } } = {
+    fr: { Name: '', Description: '' },
+    en: { Name: '', Description: '' },
+    ru: { Name: '', Description: '' },
+  }
+
   // Category Policy management
   editingPolicyCat: CategoryDto | null = null
   policySaving = false
@@ -98,7 +111,19 @@ export class Categories implements OnInit {
   }
 
   save() {
-    if (!this.model.name) return
+    this.model.name = this.formTranslations['fr'].Name || this.formTranslations['en'].Name || this.formTranslations['ru'].Name
+    if (!this.model.name) {
+      this.error = 'Le nom de la catégorie (au moins en français) est obligatoire.'
+      return
+    }
+    this.model.description = this.formTranslations['fr'].Description || this.formTranslations['en'].Description || this.formTranslations['ru'].Description
+
+    this.model.translations = {
+      fr: { Name: this.formTranslations['fr'].Name || this.model.name, Description: this.formTranslations['fr'].Description || '' },
+      en: { Name: this.formTranslations['en'].Name || '', Description: this.formTranslations['en'].Description || '' },
+      ru: { Name: this.formTranslations['ru'].Name || '', Description: this.formTranslations['ru'].Description || '' },
+    }
+
     this.saving = true
     this.error = ''
     this.successMessage = ''
@@ -108,13 +133,13 @@ export class Categories implements OnInit {
 
     obs.subscribe({
       next: () => {
-        this.successMessage = this.editId ? 'Catégorie mise à jour.' : 'Catégorie créée avec succès.'
+        this.successMessage = this.editId ? 'Catégorie mise à jour avec ses traductions.' : 'Catégorie créée avec succès.'
         this.resetForm()
         this.loadCategories()
       },
       error: (err: any) => {
         this.saving = false
-        this.error = err.error?.error || err.error?.message || 'Failed to save'
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de l\'enregistrement de la catégorie.'
       },
     })
   }
@@ -122,7 +147,29 @@ export class Categories implements OnInit {
   edit(cat: CategoryDto) {
     this.editId = cat.id
     this.model = { name: cat.name, description: cat.description || '', iconUrl: cat.iconUrl || '', displayOrder: cat.displayOrder }
+    this.formTranslations = {
+      fr: { Name: cat.name, Description: cat.description || '' },
+      en: { Name: '', Description: '' },
+      ru: { Name: '', Description: '' },
+    }
+    this.formLanguage = 'fr'
     this.editingPolicyCat = null
+
+    this.marketplaceService.getCategoryTranslations(cat.id).subscribe({
+      next: (trans) => {
+        if (trans) {
+          for (const lang of ['fr', 'en', 'ru']) {
+            if (trans[lang]) {
+              this.formTranslations[lang] = {
+                Name: trans[lang]['Name'] || this.formTranslations[lang].Name,
+                Description: trans[lang]['Description'] || this.formTranslations[lang].Description,
+              }
+            }
+          }
+        }
+      },
+      error: () => {}
+    })
   }
 
   openPolicy(cat: CategoryDto) {
@@ -195,6 +242,12 @@ export class Categories implements OnInit {
   resetForm() {
     this.editId = null
     this.model = { name: '', description: '', iconUrl: '', displayOrder: 0 }
+    this.formTranslations = {
+      fr: { Name: '', Description: '' },
+      en: { Name: '', Description: '' },
+      ru: { Name: '', Description: '' },
+    }
+    this.formLanguage = 'fr'
     this.saving = false
   }
 

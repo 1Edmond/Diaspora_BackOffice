@@ -168,6 +168,19 @@ export class ProfileDetail implements OnInit {
     })
   }
 
+  reactivate() {
+    if (!this.profile) return
+    this.profileService.reactivateProfile(this.profile.id).subscribe({
+      next: () => {
+        this.success = 'Profil réactivé avec succès.'
+        this.loadProfile(this.profile!.id)
+      },
+      error: (err: any) => {
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de la réactivation'
+      },
+    })
+  }
+
   clearMessages() {
     this.error = ''
     this.success = ''
