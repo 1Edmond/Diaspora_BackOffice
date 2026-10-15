@@ -1,14 +1,16 @@
 import { Component, OnInit, signal, computed } from '@angular/core'
-import { DatePipe } from '@angular/common'
+import { DatePipe, CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { ProfileService } from '@core/services/profile.service'
-import { ProfileDto } from '@core/models/profile/profile.model'
+import { ProfileDto, ProfileTypeDto } from '@core/models/profile/profile.model'
 import {
   ProfileStatus,
   ProfileStatusLabels,
   ProfileStatusBadgeVariants,
+  VerificationLevel,
   VerificationLevelLabels,
   VerificationLevelBadgeVariants,
 } from '@core/models/shared/enums.model'
@@ -24,6 +26,8 @@ type TabType = 'overview' | 'documents' | 'kyc' | 'services' | 'procedures' | 'w
   selector: 'app-profile-detail',
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
     PageBreadcrumb,
     DatePipe,
     RouterLink,
@@ -39,9 +43,12 @@ type TabType = 'overview' | 'documents' | 'kyc' | 'services' | 'procedures' | 'w
 })
 export class ProfileDetail implements OnInit {
   profile: ProfileDto | null = null
+  profileTypes = signal<ProfileTypeDto[]>([])
   loading = true
   error = ''
   success = ''
+  levelUpdating = false
+  selectedLevel: number = 2
 
   activeTab = signal<TabType>('overview')
 
@@ -68,7 +75,27 @@ export class ProfileDetail implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!
+    this.loadProfileTypes()
     this.loadProfile(id)
+  }
+
+  loadProfileTypes() {
+    this.profileService.getProfileTypes().subscribe({
+      next: (types) => this.profileTypes.set(types),
+      error: () => {}
+    })
+  }
+
+  getProfileTypeDisplay(profileTypeId?: string): string {
+    if (!profileTypeId) return 'Non spécifié';
+    const found = this.profileTypes().find(t => t.id === profileTypeId);
+    if (found) {
+      return `${found.flag ? found.flag + ' ' : ''}${found.countryName} (${found.countryCode})`;
+    }
+    if (this.profile?.profileTypeName) {
+      return `${this.profile.flag ? this.profile.flag + ' ' : ''}${this.profile.profileTypeName}`;
+    }
+    return profileTypeId;
   }
 
   loadProfile(id: string) {
@@ -76,12 +103,29 @@ export class ProfileDetail implements OnInit {
     this.profileService.getProfile(id).subscribe({
       next: (p) => {
         this.profile = p
+        this.selectedLevel = p.verificationLevel ?? 0
         this.loading = false
       },
       error: () => {
         this.loading = false
         this.router.navigate(['/profiles/pending'])
       },
+    })
+  }
+
+  updateVerificationLevel(level: number) {
+    if (!this.profile) return
+    this.levelUpdating = true
+    this.profileService.setVerificationLevel(this.profile.id, level).subscribe({
+      next: () => {
+        this.levelUpdating = false
+        this.success = `Niveau de vérification mis à jour : ${this.verificationLevelLabels[level as VerificationLevel]}`
+        this.loadProfile(this.profile!.id)
+      },
+      error: (err: any) => {
+        this.levelUpdating = false
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de la mise à jour du niveau'
+      }
     })
   }
 

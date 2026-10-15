@@ -21,6 +21,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 })
 export class ProfileKycTab implements OnInit {
   @Input() userId!: string
+  @Input() profileId!: string
 
   kycVerification: KycVerification | null = null
   loading = false
@@ -33,6 +34,7 @@ export class ProfileKycTab implements OnInit {
   modalAction: 'approve' | 'reject' | 'request-info' | 'start-review' = 'approve'
   modalNotes = ''
   modalReason = ''
+  modalLevel = 'Intermediate'
 
   KYCStatus = KYCStatus
   KYCStatusLabels = KYCStatusLabels
@@ -87,7 +89,7 @@ export class ProfileKycTab implements OnInit {
 
     switch (this.modalAction) {
       case 'approve':
-        action$ = this.profileService.approveKycVerification(this.kycVerification.id, this.modalNotes)
+        action$ = this.profileService.approveKycVerification(this.kycVerification.id, this.modalLevel, this.modalNotes)
         break
       case 'reject':
         if (!this.modalReason.trim()) {
@@ -116,6 +118,19 @@ export class ProfileKycTab implements OnInit {
       },
       error: (err: any) => {
         this.error = err.error?.error || err.error?.message || `Failed to ${this.modalAction}`
+      }
+    })
+  }
+
+  manualVerifyProfile(level: number) {
+    if (!this.profileId) return
+    this.profileService.setVerificationLevel(this.profileId, level).subscribe({
+      next: () => {
+        this.success = `Niveau de vérification défini à L${level} avec succès.`
+        this.loadKycVerification()
+      },
+      error: (err: any) => {
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de la mise à jour.'
       }
     })
   }

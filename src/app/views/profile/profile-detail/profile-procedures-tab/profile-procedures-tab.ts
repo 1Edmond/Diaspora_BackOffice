@@ -2,25 +2,13 @@ import { Component, OnInit, Input, signal } from '@angular/core'
 import { DatePipe, CommonModule } from '@angular/common'
 import { Icon } from '@app/components/icon/icon'
 import { RouterLink } from '@angular/router'
-import { ProfileService } from '@core/services/profile.service'
+import { ProcedureService } from '@core/services/procedure.service'
+import { UserProcedureDto } from '@core/models/procedure/procedure.model'
 import {
-  ProcedureProfileType,
-  ProcedureProfileTypeLabels,
-  ProcedureProfileTypeBadgeVariants,
+  UserProcedureStatus,
+  UserProcedureStatusLabels,
+  UserProcedureStatusBadgeVariants,
 } from '@core/models/shared/enums.model'
-import { BaseResponse, PagedList } from '@core/models/shared/base-response.model'
-
-interface ProcedureSummary {
-  id: string
-  title: string
-  reference: string
-  type: ProcedureProfileType
-  status: number
-  currentStep: string
-  progress: number
-  createdAt: string
-  updatedAt: string
-}
 
 @Component({
   selector: 'app-profile-procedures-tab',
@@ -33,60 +21,45 @@ export class ProfileProceduresTab implements OnInit {
   @Input() profileId!: string
   @Input() userId!: string
 
-  procedures = signal<ProcedureSummary[]>([])
+  procedures = signal<UserProcedureDto[]>([])
   loading = false
   error = ''
 
-  ProcedureProfileType = ProcedureProfileType
-  ProcedureProfileTypeLabels = ProcedureProfileTypeLabels
-  ProcedureProfileTypeBadgeVariants = ProcedureProfileTypeBadgeVariants
+  UserProcedureStatus = UserProcedureStatus
+  UserProcedureStatusLabels = UserProcedureStatusLabels
+  UserProcedureStatusBadgeVariants = UserProcedureStatusBadgeVariants
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private procedureService: ProcedureService) {}
 
   ngOnInit() {
-    this.loadProcedures()
+    if (this.profileId) {
+      this.loadProcedures()
+    }
   }
 
   loadProcedures() {
     this.loading = true
     this.error = ''
 
-    // TODO: Implement actual API call when backend endpoint is available
-    // For now, mock data
-    setTimeout(() => {
-      this.procedures.set([
-        {
-          id: '1',
-          title: 'Passport Renewal',
-          reference: 'PROC-2024-001',
-          type: ProcedureProfileType.Internal,
-          status: 2,
-          currentStep: 'Document Verification',
-          progress: 60,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: 'Visa Application',
-          reference: 'PROC-2024-002',
-          type: ProcedureProfileType.External,
-          status: 1,
-          currentStep: 'Payment Pending',
-          progress: 30,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ])
-      this.loading = false
-    }, 500)
+    this.procedureService.getUserProcedures(this.profileId, 1, 20).subscribe({
+      next: (res) => {
+        this.procedures.set(res.items || [])
+        this.loading = false
+      },
+      error: (err: any) => {
+        this.loading = false
+        if (err.status !== 404) {
+          this.error = err.error?.error || err.error?.message || 'Impossible de charger les démarches'
+        }
+      }
+    })
   }
 
-  getTypeBadge(type: number): string {
-    return this.ProcedureProfileTypeBadgeVariants[type as ProcedureProfileType] || 'secondary'
+  getStatusBadge(status: number): string {
+    return this.UserProcedureStatusBadgeVariants[status as UserProcedureStatus] || 'secondary'
   }
 
-  getTypeLabel(type: number): string {
-    return this.ProcedureProfileTypeLabels[type as ProcedureProfileType] || 'Unknown'
+  getStatusLabel(status: number): string {
+    return this.UserProcedureStatusLabels[status as UserProcedureStatus] || 'Inconnu'
   }
 }

@@ -25,6 +25,8 @@ export interface ProfileDto {
   userId: string
   profileTypeId: string
   profileTypeName?: string
+  countryCode?: string
+  flag?: string
   phoneNumber: string
   firstName: string
   lastName: string

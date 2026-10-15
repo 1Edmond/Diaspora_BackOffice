@@ -6,11 +6,22 @@
     </div>
   </div>
   } @else if (!kycVerification) {
-  <div class="card">
+  <div class="card border-dashed">
     <div class="card-body text-center py-5">
       <app-icon icon="shield-alert" class="fs-1 text-muted d-block mb-3"></app-icon>
-      <h5 class="text-muted">No KYC Verification Found</h5>
-      <p class="text-muted">This user has not started a KYC verification process.</p>
+      <h5 class="text-muted">Aucun dossier KYC soumis en ligne</h5>
+      <p class="text-muted mb-4">Cet utilisateur n'a pas encore soumis de documents via le formulaire KYC mobile.</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button class="btn btn-outline-info btn-sm" (click)="manualVerifyProfile(1)">
+          <app-icon icon="check" class="me-1"></app-icon> Valider L1 (Identité Déclarée)
+        </button>
+        <button class="btn btn-outline-primary btn-sm" (click)="manualVerifyProfile(2)">
+          <app-icon icon="shield-check" class="me-1"></app-icon> Valider L2 (Identité Vérifiée / KYC)
+        </button>
+        <button class="btn btn-outline-success btn-sm" (click)="manualVerifyProfile(3)">
+          <app-icon icon="award" class="me-1"></app-icon> Valider L3 (Renforcé / Marketplace Colis)
+        </button>
+      </div>
     </div>
   </div>
   } @else {
@@ -175,6 +186,15 @@
       <button type="button" class="btn-close" (click)="closeModal()"></button>
     </div>
     <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label fw-medium">Niveau d'approbation KYC</label>
+        <select class="form-select" [(ngModel)]="modalLevel">
+          <option value="Basic">Niveau 1 - Identité Déclarée (L1)</option>
+          <option value="Intermediate">Niveau 2 - Identité Vérifiée / KYC (L2)</option>
+          <option value="Advanced">Niveau 3 - Vérification Renforcée (L3)</option>
+        </select>
+        <small class="text-muted">Par défaut : Niveau 2 (Recommandé pour débloquer les services et le marketplace).</small>
+      </div>
       <div class="mb-3">
         <label class="form-label">Notes (optional)</label>
         <textarea class="form-control" rows="3" [(ngModel)]="modalNotes" placeholder="Add any notes about the approval..."></textarea>

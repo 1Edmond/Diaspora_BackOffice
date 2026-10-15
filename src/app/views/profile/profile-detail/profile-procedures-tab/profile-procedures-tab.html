@@ -2,66 +2,62 @@
   @if (loading) {
   <div class="d-flex justify-content-center p-5">
     <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+  } @else if (error) {
+  <div class="alert alert-danger">{{ error }}</div>
+  } @else if (procedures().length === 0) {
+  <div class="card border-dashed">
+    <div class="card-body text-center py-5">
+      <app-icon icon="clipboard-list" class="fs-1 text-muted d-block mb-3"></app-icon>
+      <h5 class="text-muted">Aucune démarche en cours</h5>
+      <p class="text-muted mb-0">Ce profil n'a pas encore initié de démarche administrative.</p>
     </div>
   </div>
   } @else {
-  <div class="card">
-    <div class="card-header d-flex align-items-center justify-content-between">
-      <h5 class="mb-0">Procedures ({{ procedures().length }} total)</h5>
-      <a routerLink="/procedures/user-procedures" class="btn btn-sm btn-outline-primary">
-        <app-icon icon="external-link" class="me-1"></app-icon> View All
+  <div class="card shadow-sm">
+    <div class="card-header d-flex align-items-center justify-content-between bg-light">
+      <h5 class="mb-0">Démarches Administratives ({{ procedures().length }})</h5>
+      <a routerLink="/procedure/user-procedures" class="btn btn-sm btn-outline-primary">
+        <app-icon icon="external-link" class="me-1"></app-icon> Gérer les démarches
       </a>
     </div>
     <div class="card-body p-0">
-      @if (procedures().length === 0) {
-      <div class="text-center text-muted py-5">
-        <app-icon icon="clipboard-list" class="fs-1 d-block mb-2"></app-icon>
-        No procedures found for this profile
-      </div>
-      } @else {
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th>Reference</th>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Progress</th>
-              <th>Current Step</th>
-              <th>Created</th>
-              <th style="width: 100px;">Actions</th>
+              <th>Procédure</th>
+              <th>Statut</th>
+              <th>Coût</th>
+              <th>Date de début</th>
+              <th>Complétée le</th>
             </tr>
           </thead>
           <tbody>
             @for (proc of procedures(); track proc.id) {
             <tr>
-              <td class="fw-medium">{{ proc.reference }}</td>
-              <td>{{ proc.title }}</td>
+              <td class="fw-semibold text-primary">{{ proc.procedureTitle || 'Démarche' }}</td>
               <td>
-                <span class="badge" [class]="'bg-' + getTypeBadge(proc.type)">
-                  {{ getTypeLabel(proc.type) }}
+                <span class="badge" [class]="'bg-' + getStatusBadge(proc.status)">
+                  {{ getStatusLabel(proc.status) }}
                 </span>
               </td>
               <td>
-                <div class="progress" style="height: 8px; width: 120px;">
-                  <div class="progress-bar bg-primary" [style.width.%]="proc.progress"></div>
-                </div>
-                <small class="text-muted">{{ proc.progress }}%</small>
+                @if (proc.costAmount) {
+                  {{ proc.costAmount }} {{ proc.costCurrency || 'XOF' }}
+                } @else {
+                  <span class="text-muted fs-xs">Gratuit</span>
+                }
               </td>
-              <td>{{ proc.currentStep }}</td>
-              <td>{{ proc.createdAt | date:'short' }}</td>
-              <td>
-                <a [routerLink]="['/procedures', proc.id]" class="btn btn-sm btn-outline-primary" title="View Details">
-                  <app-icon icon="eye"></app-icon>
-                </a>
-              </td>
+              <td class="text-muted fs-sm">{{ proc.createdAt | date:'mediumDate' }}</td>
+              <td class="text-muted fs-sm">{{ proc.completedAt ? (proc.completedAt | date:'mediumDate') : '-' }}</td>
             </tr>
             }
           </tbody>
         </table>
       </div>
-      }
     </div>
   </div>
   }

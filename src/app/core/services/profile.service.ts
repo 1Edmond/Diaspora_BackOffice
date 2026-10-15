@@ -123,9 +123,13 @@ export class ProfileService {
     return this.http.get(`${this.documentApiUrl}/${documentId}/download`, { responseType: 'blob' });
   }
 
+  setVerificationLevel(profileId: string, level: number): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.apiUrl}/${profileId}/verification-level`, { level });
+  }
+
   // KYC management
   getKycVerificationByUser(userId: string): Observable<KycVerification> {
-    return this.http.get<KycVerification>(`${this.kycApiUrl}/my-verification`);
+    return this.http.get<KycVerification>(`${this.kycApiUrl}/user/${userId}`);
   }
 
   getKycVerification(id: string): Observable<KycVerification> {
@@ -147,8 +151,8 @@ export class ProfileService {
     });
   }
 
-  approveKycVerification(id: string, notes?: string): Observable<BaseResponse> {
-    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/approve`, { notes });
+  approveKycVerification(id: string, level = 'Intermediate', notes?: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${this.kycApiUrl}/${id}/approve`, { level, notes });
   }
 
   rejectKycVerification(id: string, reason: string, notes?: string): Observable<BaseResponse> {

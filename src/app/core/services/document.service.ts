@@ -77,4 +77,12 @@ export class DocumentService {
   deactivateDocumentType(id: string): Observable<BaseResponse> {
     return this.http.post<BaseResponse>(`${this.docTypeApiUrl}/${id}/deactivate`, {});
   }
+
+  getDocumentTypeTranslations(id: string): Observable<{ [culture: string]: { [field: string]: string } }> {
+    return this.http.get<{ [culture: string]: { [field: string]: string } }>(`${this.docTypeApiUrl}/${id}/translations`);
+  }
+
+  updateDocumentTypeTranslation(id: string, culture: string, fields: { [field: string]: string }): Observable<void> {
+    return this.http.put<void>(`${this.docTypeApiUrl}/${id}/translations/${culture}`, fields);
+  }
 }

@@ -20,18 +20,30 @@
             <div class="row mb-3">
               <div class="col-md-4"><h6 class="text-uppercase text-muted">Phone</h6><p>{{ profile.phoneNumber }}</p></div>
               <div class="col-md-4"><h6 class="text-uppercase text-muted">Date of Birth</h6><p>{{ profile.dateOfBirth }}</p></div>
-              <div class="col-md-4"><h6 class="text-uppercase text-muted">Profile Type</h6><p>{{ profile.profileTypeName || profile.profileTypeId }}</p></div>
+              <div class="col-md-4"><h6 class="text-uppercase text-muted">Type de Profil / Pays</h6><p class="fw-semibold text-primary">{{ getProfileTypeDisplay(profile.profileTypeId) }}</p></div>
             </div>
             <div class="row mb-3">
               <div class="col-md-4"><h6 class="text-uppercase text-muted">User ID</h6><p class="text-truncate">{{ profile.userId }}</p></div>
               <div class="col-md-4"><h6 class="text-uppercase text-muted">Status</h6><p><span class="badge" [class]="'bg-' + statusBadges[profile.status]">{{statusLabels[profile.status]}}</span></p></div>
               <div class="col-md-4">
                 <h6 class="text-uppercase text-muted">Niveau Vérification</h6>
-                <p>
+                <div class="d-flex align-items-center gap-1 flex-wrap">
                   <span class="badge" [class]="'bg-' + verificationLevelBadges[profile.verificationLevel ?? 0]">
                     {{verificationLevelLabels[profile.verificationLevel ?? 0]}}
                   </span>
-                </p>
+                  <div class="dropdown d-inline-block">
+                    <button class="btn btn-xs btn-outline-primary dropdown-toggle py-0 px-1 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Modifier
+                    </button>
+                    <ul class="dropdown-menu shadow">
+                      <li><h6 class="dropdown-header">Définir le niveau KYC</h6></li>
+                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(0)"><span class="badge bg-secondary me-1">L0</span> L0 - Enregistré</button></li>
+                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(1)"><span class="badge bg-info me-1">L1</span> L1 - Identité Déclarée</button></li>
+                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(2)"><span class="badge bg-primary me-1">L2</span> L2 - Identité Vérifiée (KYC)</button></li>
+                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(3)"><span class="badge bg-success me-1">L3</span> L3 - Vérification Renforcée</button></li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="row mb-3">
@@ -73,13 +85,13 @@
             } @else if (activeTab() === 'documents') {
               <app-profile-documents-tab [profileId]="profile.id" [userId]="profile.userId" />
             } @else if (activeTab() === 'kyc') {
-              <app-profile-kyc-tab [userId]="profile.userId" />
+              <app-profile-kyc-tab [userId]="profile.userId" [profileId]="profile.id" />
             } @else if (activeTab() === 'services') {
               <app-profile-services-tab [profileId]="profile.id" [userId]="profile.userId" />
             } @else if (activeTab() === 'procedures') {
               <app-profile-procedures-tab [profileId]="profile.id" [userId]="profile.userId" />
             } @else if (activeTab() === 'wallet') {
-              <app-profile-wallet-tab [userId]="profile.userId" />
+              <app-profile-wallet-tab [profileId]="profile.id" [userId]="profile.userId" />
             }
           </div>
         </div>

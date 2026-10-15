@@ -108,9 +108,14 @@
                     <span class="badge" [class]="t.isActive ? 'bg-success' : 'bg-secondary'">{{t.isActive ? 'Actif' : 'Inactif'}}</span>
                   </td>
                   <td>
-                    @if(t.isActive) {
-                    <button class="btn btn-soft-danger btn-sm" (click)="deactivateType(t.id)">Désactiver</button>
-                    }
+                    <div class="d-flex gap-1">
+                      <button class="btn btn-soft-secondary btn-sm" (click)="openTranslations(t, translationModal)" title="Traductions">
+                        <app-icon icon="globe"></app-icon>
+                      </button>
+                      @if(t.isActive) {
+                      <button class="btn btn-soft-danger btn-sm" (click)="deactivateType(t.id)">Désactiver</button>
+                      }
+                    </div>
                   </td>
                 </tr>
                 } @empty {
@@ -131,4 +136,66 @@
       </div>
     </div>
   </div>
+
+  <!-- Translation Modal -->
+  <ng-template #translationModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title d-flex align-items-center gap-2">
+        <app-icon icon="globe" class="text-primary"></app-icon>
+        Traductions : {{ translatingDocType?.name }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeTranslationModal()"></button>
+    </div>
+    <div class="modal-body">
+      @if (translationLoading) {
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div class="text-muted mt-2">Chargement des traductions...</div>
+      </div>
+      } @else {
+        @if (translationSuccess) {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{ translationSuccess }}
+          <button type="button" class="btn-close" (click)="translationSuccess = ''"></button>
+        </div>
+        }
+        @if (translationError) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          {{ translationError }}
+          <button type="button" class="btn-close" (click)="translationError = ''"></button>
+        </div>
+        }
+
+        <ul class="nav nav-pills nav-fill mb-3 bg-light p-1 rounded">
+          @for (lang of translatingLanguages; track lang.code) {
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="selectedCulture === lang.code" (click)="selectedCulture = lang.code">
+              {{ lang.flag }} {{ lang.label }}
+            </button>
+          </li>
+          }
+        </ul>
+
+        <div class="p-3 border rounded bg-white shadow-sm">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Nom du type de document ({{ selectedCulture.toUpperCase() }}) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="translationData[selectedCulture].Name" placeholder="Nom traduit..." />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">Description ({{ selectedCulture.toUpperCase() }})</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="translationData[selectedCulture].Description" placeholder="Description traduite..."></textarea>
+          </div>
+          <div class="d-flex justify-content-end">
+            <button class="btn btn-primary" [disabled]="translationSaving || !translationData[selectedCulture].Name" (click)="saveTranslation(selectedCulture)">
+              @if(translationSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              Enregistrer pour {{ selectedCulture.toUpperCase() }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeTranslationModal()">Fermer</button>
+    </div>
+  </ng-template>
 </div>

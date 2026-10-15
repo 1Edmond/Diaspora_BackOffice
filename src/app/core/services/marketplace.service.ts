@@ -115,6 +115,14 @@ export class MarketplaceService {
     return this.http.put<void>(`${this.categoryApiUrl}/${id}/policy`, data);
   }
 
+  getCategoryTranslations(id: string): Observable<{ [culture: string]: { [field: string]: string } }> {
+    return this.http.get<{ [culture: string]: { [field: string]: string } }>(`${this.categoryApiUrl}/${id}/translations`);
+  }
+
+  updateCategoryTranslation(id: string, culture: string, fields: { [field: string]: string }): Observable<void> {
+    return this.http.put<void>(`${this.categoryApiUrl}/${id}/translations/${culture}`, fields);
+  }
+
   getReviews(listingId: string, page = 1, pageSize = 10): Observable<PagedList<ReviewDto>> {
     return this.http.get<PagedList<ReviewDto>>(`${environment.apiBaseUrl}/api/listings/${listingId}/reviews`, {
       params: { page: page.toString(), pageSize: pageSize.toString() },

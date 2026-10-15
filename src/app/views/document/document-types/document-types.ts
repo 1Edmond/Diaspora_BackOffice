@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { DocumentService } from '@core/services/document.service'
 import { ProfileService } from '@core/services/profile.service'
 import { DocumentTypeDto } from '@core/models/document/document.model'
@@ -9,7 +11,7 @@ import { ProfileTypeDto } from '@core/models/profile/profile.model'
 @Component({
   selector: 'app-document-types',
   standalone: true,
-  imports: [PageBreadcrumb, FormsModule],
+  imports: [PageBreadcrumb, FormsModule, Icon],
   templateUrl: './document-types.html',
   styles: ``,
 })
@@ -30,9 +32,29 @@ export class DocumentTypes implements OnInit {
     isRequired: false,
   }
 
+  // Translation management
+  translatingDocType: DocumentTypeDto | null = null
+  translatingLanguages = [
+    { code: 'fr', label: 'Français (FR)', flag: '🇫🇷' },
+    { code: 'en', label: 'English (EN)', flag: '🇬🇧' },
+    { code: 'ru', label: 'Русский (RU)', flag: '🇷🇺' },
+  ]
+  selectedCulture = 'fr'
+  translationData: { [culture: string]: { Name?: string; Description?: string } } = {
+    fr: { Name: '', Description: '' },
+    en: { Name: '', Description: '' },
+    ru: { Name: '', Description: '' }
+  }
+  translationLoading = false
+  translationSaving = false
+  translationSuccess = ''
+  translationError = ''
+  translationModalRef: NgbModalRef | null = null
+
   constructor(
     private documentService: DocumentService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -118,4 +140,70 @@ export class DocumentTypes implements OnInit {
       })
     }
   }
+
+  openTranslations(docType: DocumentTypeDto, content: any) {
+    this.translatingDocType = docType
+    this.selectedCulture = 'fr'
+    this.translationSuccess = ''
+    this.translationError = ''
+    this.translationLoading = true
+    this.translationData = {
+      fr: { Name: docType.name, Description: docType.description || '' },
+      en: { Name: '', Description: '' },
+      ru: { Name: '', Description: '' }
+    }
+
+    this.translationModalRef = this.modalService.open(content, { centered: true, size: 'lg' })
+
+    this.documentService.getDocumentTypeTranslations(docType.id).subscribe({
+      next: (translations) => {
+        this.translationLoading = false
+        if (translations) {
+          for (const lang of ['fr', 'en', 'ru']) {
+            if (translations[lang]) {
+              this.translationData[lang] = {
+                Name: translations[lang]['Name'] || this.translationData[lang].Name,
+                Description: translations[lang]['Description'] || this.translationData[lang].Description
+              }
+            }
+          }
+        }
+      },
+      error: (err) => {
+        this.translationLoading = false
+        console.error('Error loading translations:', err)
+      }
+    })
+  }
+
+  saveTranslation(culture: string) {
+    if (!this.translatingDocType) return
+    this.translationSaving = true
+    this.translationSuccess = ''
+    this.translationError = ''
+
+    const fields: { [field: string]: string } = {
+      Name: this.translationData[culture]?.Name || '',
+      Description: this.translationData[culture]?.Description || ''
+    }
+
+    this.documentService.updateDocumentTypeTranslation(this.translatingDocType.id, culture, fields).subscribe({
+      next: () => {
+        this.translationSaving = false
+        this.translationSuccess = `Traduction (${culture.toUpperCase()}) enregistrée avec succès.`
+        this.loadTypes()
+      },
+      error: (err) => {
+        this.translationSaving = false
+        this.translationError = err.error?.error || err.error?.message || 'Erreur lors de l\'enregistrement de la traduction.'
+      }
+    })
+  }
+
+  closeTranslationModal() {
+    this.translationModalRef?.close()
+    this.translationModalRef = null
+    this.translatingDocType = null
+  }
 }
+

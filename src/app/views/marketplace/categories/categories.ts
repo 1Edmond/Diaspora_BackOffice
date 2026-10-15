@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { Observable } from 'rxjs'
 import { MarketplaceService } from '@core/services/marketplace.service'
 import {
@@ -48,6 +49,25 @@ export class Categories implements OnInit {
     defaultCommissionRate: 10, // In percentage 10%
   }
 
+  // Translation management
+  translatingCat: CategoryDto | null = null
+  translatingLanguages = [
+    { code: 'fr', label: 'Français (FR)', flag: '🇫🇷' },
+    { code: 'en', label: 'English (EN)', flag: '🇬🇧' },
+    { code: 'ru', label: 'Русский (RU)', flag: '🇷🇺' },
+  ]
+  selectedCulture = 'fr'
+  translationData: { [culture: string]: { Name?: string; Description?: string } } = {
+    fr: { Name: '', Description: '' },
+    en: { Name: '', Description: '' },
+    ru: { Name: '', Description: '' }
+  }
+  translationLoading = false
+  translationSaving = false
+  translationSuccess = ''
+  translationError = ''
+  translationModalRef: NgbModalRef | null = null
+
   VerificationLevelLabels = VerificationLevelLabels
   VerificationLevelBadgeVariants = VerificationLevelBadgeVariants
   verificationLevels = [
@@ -58,7 +78,8 @@ export class Categories implements OnInit {
   ]
 
   constructor(
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -176,4 +197,70 @@ export class Categories implements OnInit {
     this.model = { name: '', description: '', iconUrl: '', displayOrder: 0 }
     this.saving = false
   }
+
+  openTranslations(cat: CategoryDto, content: any) {
+    this.translatingCat = cat
+    this.selectedCulture = 'fr'
+    this.translationSuccess = ''
+    this.translationError = ''
+    this.translationLoading = true
+    this.translationData = {
+      fr: { Name: cat.name, Description: cat.description || '' },
+      en: { Name: '', Description: '' },
+      ru: { Name: '', Description: '' }
+    }
+
+    this.translationModalRef = this.modalService.open(content, { centered: true, size: 'lg' })
+
+    this.marketplaceService.getCategoryTranslations(cat.id).subscribe({
+      next: (translations) => {
+        this.translationLoading = false
+        if (translations) {
+          for (const lang of ['fr', 'en', 'ru']) {
+            if (translations[lang]) {
+              this.translationData[lang] = {
+                Name: translations[lang]['Name'] || this.translationData[lang].Name,
+                Description: translations[lang]['Description'] || this.translationData[lang].Description
+              }
+            }
+          }
+        }
+      },
+      error: (err) => {
+        this.translationLoading = false
+        console.error('Error loading translations:', err)
+      }
+    })
+  }
+
+  saveTranslation(culture: string) {
+    if (!this.translatingCat) return
+    this.translationSaving = true
+    this.translationSuccess = ''
+    this.translationError = ''
+
+    const fields: { [field: string]: string } = {
+      Name: this.translationData[culture]?.Name || '',
+      Description: this.translationData[culture]?.Description || ''
+    }
+
+    this.marketplaceService.updateCategoryTranslation(this.translatingCat.id, culture, fields).subscribe({
+      next: () => {
+        this.translationSaving = false
+        this.translationSuccess = `Traduction (${culture.toUpperCase()}) enregistrée avec succès.`
+        this.loadCategories()
+      },
+      error: (err: any) => {
+        this.translationSaving = false
+        this.translationError = err.error?.error || err.error?.message || 'Erreur lors de l\'enregistrement de la traduction.'
+      }
+    })
+  }
+
+  closeTranslationModal() {
+    this.translationModalRef?.close()
+    this.translationModalRef = null
+    this.translatingCat = null
+  }
 }
+

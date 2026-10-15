@@ -2,35 +2,13 @@ import { Component, OnInit, Input, signal } from '@angular/core'
 import { DatePipe, DecimalPipe, CommonModule } from '@angular/common'
 import { Icon } from '@app/components/icon/icon'
 import { RouterLink } from '@angular/router'
-import { ProfileService } from '@core/services/profile.service'
-import { BaseResponse, PagedList } from '@core/models/shared/base-response.model'
+import { WalletService } from '@core/services/wallet.service'
+import { WalletDto, TransactionDto } from '@core/models/wallet/wallet.model'
 import {
   TransactionStatus,
   TransactionStatusLabels,
   TransactionStatusBadgeVariants,
-  TransactionDirection,
-  TransactionDirectionLabels,
-  TransactionDirectionBadgeVariants,
 } from '@core/models/shared/enums.model'
-
-interface WalletSummary {
-  balance: number
-  currency: string
-  pendingBalance: number
-  totalEarned: number
-  totalSpent: number
-}
-
-interface TransactionSummary {
-  id: string
-  type: 'credit' | 'debit'
-  amount: number
-  currency: string
-  status: number
-  description: string
-  reference: string
-  createdAt: string
-}
 
 @Component({
   selector: 'app-profile-wallet-tab',
@@ -40,52 +18,54 @@ interface TransactionSummary {
   styles: ``,
 })
 export class ProfileWalletTab implements OnInit {
+  @Input() profileId!: string
   @Input() userId!: string
 
-  wallet: WalletSummary | null = null
-  transactions = signal<TransactionSummary[]>([])
+  wallet = signal<WalletDto | null>(null)
+  transactions = signal<TransactionDto[]>([])
   loading = false
   error = ''
 
   TransactionStatus = TransactionStatus
   TransactionStatusLabels = TransactionStatusLabels
   TransactionStatusBadgeVariants = TransactionStatusBadgeVariants
-  TransactionDirection = TransactionDirection
-  TransactionDirectionLabels = TransactionDirectionLabels
-  TransactionDirectionBadgeVariants = TransactionDirectionBadgeVariants
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private walletService: WalletService) {}
 
   ngOnInit() {
-    this.loadWallet()
-    this.loadTransactions()
+    if (this.profileId) {
+      this.loadWalletData()
+    }
   }
 
-  loadWallet() {
+  loadWalletData() {
     this.loading = true
-    // TODO: Implement actual API call when backend endpoint is available
-    setTimeout(() => {
-      this.wallet = {
-        balance: 1250.75,
-        currency: 'XOF',
-        pendingBalance: 150.00,
-        totalEarned: 5000.00,
-        totalSpent: 3749.25
+    this.error = ''
+
+    this.walletService.getWallet(this.profileId).subscribe({
+      next: (w) => {
+        this.wallet.set(w)
+        this.loadTransactions()
+      },
+      error: (err: any) => {
+        this.loading = false
+        if (err.status !== 404) {
+          this.error = err.error?.error || err.error?.message || 'Impossible de charger le portefeuille'
+        }
       }
-      this.loading = false
-    }, 500)
+    })
   }
 
   loadTransactions() {
-    // TODO: Implement actual API call when backend endpoint is available
-    setTimeout(() => {
-      this.transactions.set([
-        { id: '1', type: 'credit', amount: 500, currency: 'XOF', status: 1, description: 'Service payment received', reference: 'TXN-001', createdAt: new Date().toISOString() },
-        { id: '2', type: 'debit', amount: 50, currency: 'XOF', status: 1, description: 'Platform fee', reference: 'TXN-002', createdAt: new Date(Date.now() - 3600000).toISOString() },
-        { id: '3', type: 'credit', amount: 750, currency: 'XOF', status: 0, description: 'Service payment pending', reference: 'TXN-003', createdAt: new Date(Date.now() - 86400000).toISOString() },
-        { id: '4', type: 'debit', amount: 100, currency: 'XOF', status: 2, description: 'Withdrawal failed', reference: 'TXN-004', createdAt: new Date(Date.now() - 172800000).toISOString() },
-      ])
-    }, 500)
+    this.walletService.getTransactions(this.profileId, { pageNumber: 1, pageSize: 15 }).subscribe({
+      next: (res) => {
+        this.transactions.set(res.items || [])
+        this.loading = false
+      },
+      error: () => {
+        this.loading = false
+      }
+    })
   }
 
   getStatusBadge(status: number): string {
@@ -93,6 +73,6 @@ export class ProfileWalletTab implements OnInit {
   }
 
   getStatusLabel(status: number): string {
-    return this.TransactionStatusLabels[status as TransactionStatus] || 'Unknown'
+    return this.TransactionStatusLabels[status as TransactionStatus] || 'Inconnu'
   }
 }
