@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core'
 import { DatePipe, CurrencyPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
 import { ServiceRequestDto, AdminServiceRequestQuery } from '@core/models/marketplace/marketplace.model'
 import {
@@ -17,7 +16,7 @@ import {
 @Component({
   selector: 'app-service-requests',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, Icon, FormsModule],
+  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, FormsModule],
   templateUrl: './service-requests.html',
   styles: ``,
 })

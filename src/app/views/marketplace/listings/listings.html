@@ -1,92 +1,93 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="All Listings" subTitle="Marketplace" />
+  <app-page-breadcrumb title="Annonces & Trajets Colis" subTitle="Marketplace" />
 
   <!-- Filters Card -->
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="mb-0">Filters</h5>
-          <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showFilters = !showFilters">
-            <app-icon [icon]="showFilters ? 'chevron-up' : 'chevron-down'" class="me-1"></app-icon>
-            {{ showFilters ? 'Hide' : 'Show' }} Filters
-          </button>
-        </div>
-        <div class="card-body" [class.d-none]="!showFilters">
-          <div class="row g-3">
-            <div class="col-md-3">
-              <label class="form-label">Search</label>
-              <input type="text" class="form-control" placeholder="Title, description..." [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Category</label>
-              <select class="form-select" [(ngModel)]="categoryId">
-                <option value="">All</option>
-                @for (cat of categories; track cat.id) {
-                <option [value]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Status</label>
-              <select class="form-select" [(ngModel)]="statusFilter">
-                @for (opt of statusOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Payment Mode</label>
-              <select class="form-select" [(ngModel)]="paymentModeFilter">
-                <option value="">All</option>
-                <option [value]="0">Contact Only</option>
-                <option [value]="1">Wallet Payment</option>
-                <option [value]="2">Both</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">City</label>
-              <input type="text" class="form-control" placeholder="City" [(ngModel)]="cityFilter" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Country</label>
-              <input type="text" class="form-control" placeholder="Country" [(ngModel)]="countryFilter" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Min Price</label>
-              <input type="number" class="form-control" placeholder="Min" [(ngModel)]="minPrice" step="0.01" min="0" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Max Price</label>
-              <input type="number" class="form-control" placeholder="Max" [(ngModel)]="maxPrice" step="0.01" min="0" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Provider ID</label>
-              <input type="text" class="form-control" placeholder="Provider ID" [(ngModel)]="providerFilter" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Sort By</label>
-              <select class="form-select" [(ngModel)]="sortBy">
-                <option [value]="0">Relevance</option>
-                <option [value]="1">Newest</option>
-                <option [value]="2">Rating Desc</option>
-                <option [value]="3">Price Asc</option>
-                <option [value]="4">Price Desc</option>
-                <option [value]="5">Distance</option>
-              </select>
-            </div>
-            <div class="col-12 d-flex gap-2">
-              <button class="btn btn-primary" (click)="loadListings()" [disabled]="loading">
-                @if (loading) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                <app-icon icon="search" class="me-1"></app-icon> Apply Filters
-              </button>
-              @if (hasActiveFilters()) {
-              <button class="btn btn-outline-secondary" (click)="clearFilters()">
-                <app-icon icon="x" class="me-1"></app-icon> Clear All
-              </button>
-              }
-            </div>
+  <div class="card mb-3">
+    <div class="card-header border-light d-flex align-items-center justify-content-between">
+      <h5 class="card-title mb-0 d-flex align-items-center gap-2">
+        <i class="ri-filter-3-line text-primary"></i> Filtres Avancés des Annonces
+      </h5>
+      <button class="btn btn-sm btn-soft-secondary d-flex align-items-center gap-1" type="button" (click)="showFilters = !showFilters">
+        <i [class]="showFilters ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+        {{ showFilters ? 'Masquer' : 'Afficher' }} les filtres
+      </button>
+    </div>
+    <div class="card-body" [class.d-none]="!showFilters">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label fs-12 fw-semibold">Recherche libre</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-search-line"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Titre, description..." [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" />
           </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Catégorie</label>
+          <select class="form-select form-select-sm" [(ngModel)]="categoryId">
+            <option value="">Toutes catégories</option>
+            @for (cat of categories; track cat.id) {
+            <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Statut de publication</label>
+          <select class="form-select form-select-sm" [(ngModel)]="statusFilter">
+            @for (opt of statusOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Mode de Règlement</label>
+          <select class="form-select form-select-sm" [(ngModel)]="paymentModeFilter">
+            <option value="">Tous les modes</option>
+            <option [value]="0">Contact direct uniquement</option>
+            <option [value]="1">Paiement sous séquestre</option>
+            <option [value]="2">Les deux autorisés</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Ville</label>
+          <input type="text" class="form-control form-control-sm" placeholder="Ex: Paris, Lomé" [(ngModel)]="cityFilter" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Code Pays (ISO)</label>
+          <input type="text" class="form-control form-control-sm text-uppercase" placeholder="TG, FR, CI..." [(ngModel)]="countryFilter" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Prix Minimum</label>
+          <input type="number" class="form-control form-control-sm" placeholder="Min" [(ngModel)]="minPrice" step="0.01" min="0" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Prix Maximum</label>
+          <input type="number" class="form-control form-control-sm" placeholder="Max" [(ngModel)]="maxPrice" step="0.01" min="0" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Identifiant Prestataire</label>
+          <input type="text" class="form-control form-control-sm font-monospace" placeholder="Profile ID" [(ngModel)]="providerFilter" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fs-12 fw-semibold">Tri des Résultats</label>
+          <select class="form-select form-select-sm" [(ngModel)]="sortBy">
+            <option [value]="0">Pertinence</option>
+            <option [value]="1">Plus récentes</option>
+            <option [value]="2">Meilleures notes</option>
+            <option [value]="3">Prix croissant</option>
+            <option [value]="4">Prix décroissant</option>
+            <option [value]="5">Distance</option>
+          </select>
+        </div>
+        <div class="col-12 d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm" (click)="loadListings()" [disabled]="loading">
+            @if (loading) { <span class="spinner-border spinner-border-sm"></span> }
+            <i class="ri-search-line"></i> Appliquer les Filtres
+          </button>
+          @if (hasActiveFilters()) {
+          <button class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" (click)="clearFilters()">
+            <i class="ri-close-line"></i> Réinitialiser
+          </button>
+          }
         </div>
       </div>
     </div>
@@ -94,246 +95,285 @@
 
   <!-- Error Alert -->
   @if (error) {
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
-        <span>{{ error }}</span>
-        <button type="button" class="btn-close" (click)="error = ''"></button>
-      </div>
-    </div>
+  <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
+    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <div class="flex-grow-1">{{ error }}</div>
+    <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
   }
 
-  <!-- Listings Table -->
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-          <div class="d-flex align-items-center gap-3">
-            <h5 class="mb-0">Listings ({{ totalCount }} total)</h5>
-            @if (selectedCount() > 0) {
-            <span class="badge bg-primary">{{ selectedCount() }} selected</span>
-            }
-          </div>
-          @if (selectedCount() > 0) {
-          <div class="d-flex gap-2">
-            <div class="btn-group btn-group-sm" role="group">
-              <button class="btn btn-success" (click)="bulkApprove()" [disabled]="bulkActionLoading || !canBulkApprove()" title="Approve selected">
-                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="check" class="me-1"></app-icon>Approve }
-              </button>
-              <button class="btn btn-danger" (click)="bulkReject()" [disabled]="bulkActionLoading || !canBulkReject()" title="Reject selected">
-                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="x" class="me-1"></app-icon>Reject }
-              </button>
-              <button class="btn btn-warning" (click)="bulkSuspend()" [disabled]="bulkActionLoading || !canBulkSuspend()" title="Suspend selected">
-                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="pause" class="me-1"></app-icon>Suspend }
-              </button>
-              <button class="btn btn-outline-danger" (click)="bulkDelete()" [disabled]="bulkActionLoading" title="Delete selected">
-                @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="trash" class="me-1"></app-icon>Delete }
-              </button>
-            </div>
-            <button class="btn btn-outline-secondary btn-sm" (click)="toggleSelectAll()" [attr.aria-label]="allSelected() ? 'Deselect all' : 'Select all'">
-              <app-icon [icon]="allSelected() ? 'check-square' : 'square'" class="me-1"></app-icon>
-              {{ allSelected() ? 'Deselect All' : 'Select All' }}
-            </button>
-          </div>
+  <!-- Listings Table Card -->
+  <div class="card">
+    <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <h5 class="card-title mb-0">Catalogue des Annonces & Trajets</h5>
+        <span class="badge bg-soft-primary text-primary">{{ totalCount }} annonces</span>
+        @if (selectedCount() > 0) {
+        <span class="badge bg-primary">{{ selectedCount() }} sélectionnée(s)</span>
         }
+      </div>
+      @if (selectedCount() > 0) {
+      <div class="d-flex gap-2">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-success" (click)="bulkApprove()" [disabled]="bulkActionLoading || !canBulkApprove()" title="Approuver la sélection">
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-check-line me-1"></i>Approuver }
+          </button>
+          <button class="btn btn-danger" (click)="bulkReject()" [disabled]="bulkActionLoading || !canBulkReject()" title="Rejeter la sélection">
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-close-line me-1"></i>Rejeter }
+          </button>
+          <button class="btn btn-warning" (click)="bulkSuspend()" [disabled]="bulkActionLoading || !canBulkSuspend()" title="Suspendre la sélection">
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-pause-line me-1"></i>Suspendre }
+          </button>
+          <button class="btn btn-outline-danger" (click)="bulkDelete()" [disabled]="bulkActionLoading" title="Supprimer la sélection">
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-delete-bin-line me-1"></i>Supprimer }
+          </button>
         </div>
+        <button class="btn btn-outline-secondary btn-sm" (click)="toggleSelectAll()" [attr.aria-label]="allSelected() ? 'Tout désélectionner' : 'Tout sélectionner'">
+          <i [class]="allSelected() ? 'ri-checkbox-line' : 'ri-checkbox-blank-line'" class="me-1"></i>
+          {{ allSelected() ? 'Désélectionner tout' : 'Tout sélectionner' }}
+        </button>
+      </div>
+      }
+    </div>
 
-        <div class="card-body p-0">
-          @if (loading) {
-          <div class="text-center py-5">
-            <span class="spinner-border text-primary"></span>
-            <p class="text-muted mt-2">Loading listings...</p>
-          </div>
-          } @else {
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 40px;">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" [disabled]="listings().length === 0" />
-                    </div>
-                  </th>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Provider</th>
-                  <th>Location</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                  <th>Price</th>
-                  <th>Rating</th>
-                  <th>Created</th>
-                  <th style="width: 120px;">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (listing of listings(); track listing.id) {
-                <tr [class.table-primary]="listing.selected">
-                  <td>
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" [checked]="listing.selected" (change)="toggleSelect(listing)" />
-                    </div>
-                  </td>
-                  <td>
-                    <div class="fw-medium text-truncate" style="max-width: 250px;">{{ listing.title }}</div>
+    <div class="card-body p-0">
+      @if (loading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2 fs-13">Chargement des annonces...</p>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+          <thead class="bg-light align-middle">
+            <tr>
+              <th style="width: 40px;" class="ps-3">
+                <div class="form-check">
+                  <input class="form-check-input mt-0" type="checkbox" [checked]="allSelected()" (change)="toggleSelectAll()" [disabled]="listings().length === 0" />
+                </div>
+              </th>
+              <th scope="col">Titre & Corridor P2P</th>
+              <th scope="col">Catégorie</th>
+              <th scope="col">Prestataire / Voyageur</th>
+              <th scope="col">Localisation</th>
+              <th scope="col" class="text-center">Statut</th>
+              <th scope="col">Paiement</th>
+              <th scope="col" class="text-end">Tarif / Kilo</th>
+              <th scope="col">Note</th>
+              <th scope="col">Date</th>
+              <th scope="col" class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (listing of listings(); track listing.id) {
+            <tr [class.table-primary]="listing.selected">
+              <td class="ps-3">
+                <div class="form-check">
+                  <input class="form-check-input mt-0" type="checkbox" [checked]="listing.selected" (change)="toggleSelect(listing)" />
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-sm flex-shrink-0">
+                    <span class="avatar-title bg-soft-primary text-primary rounded fs-18">
+                      <i [class]="listing.departureCountryCode ? 'ri-plane-line' : 'ri-store-2-line'"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;">{{ listing.title }}</div>
                     @if(listing.departureCountryCode && listing.arrivalCountryCode) {
-                    <div class="fs-xs text-primary mt-1">
-                      ✈️ {{listing.departureCity || listing.departureCountryCode}} ➔ {{listing.arrivalCity || listing.arrivalCountryCode}}
+                    <div class="d-flex align-items-center gap-1.5 fs-12 text-primary mt-1">
+                      <span class="badge bg-soft-primary text-primary px-2 py-0.5 font-monospace">
+                        <i class="ri-flight-takeoff-line me-1"></i>{{listing.departureCity || listing.departureCountryCode}} ➔ {{listing.arrivalCity || listing.arrivalCountryCode}}
+                      </span>
                       @if(listing.capacityKg) {
-                      &middot; <span class="badge bg-soft-primary text-primary">{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg</span>
+                      <span class="badge" [class.bg-soft-success]="(listing.remainingKg ?? listing.capacityKg) > (listing.capacityKg * 0.5)" [class.text-success]="(listing.remainingKg ?? listing.capacityKg) > (listing.capacityKg * 0.5)" [class.bg-soft-warning]="(listing.remainingKg ?? listing.capacityKg) <= (listing.capacityKg * 0.5) && (listing.remainingKg ?? listing.capacityKg) > 0" [class.text-warning]="(listing.remainingKg ?? listing.capacityKg) <= (listing.capacityKg * 0.5) && (listing.remainingKg ?? listing.capacityKg) > 0" [class.bg-soft-danger]="(listing.remainingKg ?? listing.capacityKg) <= 0" [class.text-danger]="(listing.remainingKg ?? listing.capacityKg) <= 0">
+                        <i class="ri-scales-3-line me-1"></i>{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg
+                      </span>
                       }
                     </div>
                     }
-                  </td>
-                  <td><span class="badge bg-soft-info text-info">{{ listing.categoryName }}</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="text-muted fs-xs">{{ listing.providerId }}</span>
-                      <button class="btn btn-link p-0 text-primary" (click)="onProviderClick(listing.providerId)" title="View provider">
-                        <app-icon icon="external-link" class="fs-xs"></app-icon>
-                      </button>
-                    </div>
-                  </td>
-                  <td>{{ listing.city || '—' }}, {{ listing.country || '—' }}</td>
-                  <td>
-                    <span class="badge" [class]="'bg-' + getStatusBadge(listing.status)">
-                      {{ getStatusLabel(listing.status) }}
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-soft-info text-info fs-12">{{ listing.categoryName || 'Général' }}</span></td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-xs flex-shrink-0">
+                    <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-12 font-monospace">
+                      {{ listing.providerId ? listing.providerId.slice(0, 2).toUpperCase() : 'PR' }}
                     </span>
-                  </td>
-                  <td>
-                    <span class="badge bg-soft-secondary text-secondary">{{ getPaymentModeLabel(listing.paymentMode) }}</span>
-                  </td>
-                  <td>{{ listing.price != null ? (listing.price | number:'1.0-2') + ' ' + (listing.currency || '') : '—' }}</td>
-                  <td>{{ listing.averageRating ? (listing.averageRating | number:'1.0-1') : '—' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon> ({{ listing.reviewCount }})</td>
-                  <td>{{ listing.createdAt | date:'short' }}</td>
-                  <td>
-                    <div class="btn-group btn-group-sm" role="group">
-                      <button class="btn btn-outline-primary" (click)="openDetail(listing)" title="View details">
-                        <app-icon icon="eye"></app-icon>
-                      </button>
-                      <button class="btn btn-outline-success" (click)="approveSingle(listing.id)" [disabled]="listing.status !== 0" title="Approve">
-                        <app-icon icon="check"></app-icon>
-                      </button>
-                      <button class="btn btn-outline-danger" (click)="rejectSingle(listing.id)" [disabled]="listing.status !== 0" title="Reject">
-                        <app-icon icon="x"></app-icon>
-                      </button>
-                      <button class="btn btn-outline-warning" (click)="suspendSingle(listing.id)" [disabled]="listing.status !== 1" title="Suspend">
-                        <app-icon icon="pause"></app-icon>
-                      </button>
-                      <button class="btn btn-outline-danger" (click)="deleteSingle(listing.id)" title="Delete">
-                        <app-icon icon="trash"></app-icon>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                } @empty {
-                <tr>
-                  <td colspan="11" class="text-center text-muted p-5">
-                    <app-icon icon="package" class="fs-1 d-block mb-2"></app-icon>
-                    No listings found
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          }
+                  </div>
+                  <div>
+                    <span class="text-muted fs-11 font-monospace d-block">{{ listing.providerId?.slice(0, 8) }}...</span>
+                    <button class="btn btn-link p-0 text-primary fs-11 text-decoration-none" (click)="onProviderClick(listing.providerId)">
+                      Voir profil <i class="ri-external-link-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+              <td class="text-muted fs-12">
+                <i class="ri-map-pin-line me-1 text-secondary"></i>{{ listing.city || '—' }}, {{ listing.country || '—' }}
+              </td>
+              <td class="text-center">
+                <span class="badge" [class]="'bg-soft-' + getStatusBadge(listing.status) + ' text-' + getStatusBadge(listing.status)">
+                  {{ getStatusLabel(listing.status) }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-soft-secondary text-secondary fs-11">{{ getPaymentModeLabel(listing.paymentMode) }}</span>
+              </td>
+              <td class="text-end fw-semibold text-dark fs-13">
+                {{ listing.price != null ? (listing.price | number:'1.0-2') + ' ' + (listing.currency || '') : '—' }}
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-1">
+                  <i class="ri-star-fill text-warning fs-13"></i>
+                  <span class="fw-semibold fs-12">{{ listing.averageRating ? (listing.averageRating | number:'1.0-1') : '—' }}</span>
+                  <span class="text-muted fs-11">({{ listing.reviewCount }})</span>
+                </div>
+              </td>
+              <td class="text-muted fs-12">{{ listing.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="text-end pe-3">
+                <div class="d-flex align-items-center justify-content-end gap-1">
+                  <button class="btn btn-xs btn-soft-primary" (click)="openDetail(listing)" title="Consulter la fiche">
+                    <i class="ri-eye-line"></i>
+                  </button>
+                  <button class="btn btn-xs btn-soft-success" (click)="approveSingle(listing.id)" [disabled]="listing.status !== 0" title="Approuver">
+                    <i class="ri-check-line"></i>
+                  </button>
+                  <button class="btn btn-xs btn-soft-danger" (click)="rejectSingle(listing.id)" [disabled]="listing.status !== 0" title="Rejeter">
+                    <i class="ri-close-line"></i>
+                  </button>
+                  <button class="btn btn-xs btn-soft-warning" (click)="suspendSingle(listing.id)" [disabled]="listing.status !== 1" title="Suspendre">
+                    <i class="ri-pause-line"></i>
+                  </button>
+                  <button class="btn btn-xs btn-soft-danger" (click)="deleteSingle(listing.id)" title="Supprimer">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="11" class="text-center text-muted p-5">
+                <div class="avatar-md mx-auto mb-3">
+                  <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                    <i class="ri-store-2-line"></i>
+                  </span>
+                </div>
+                <h6 class="text-dark">Aucune annonce trouvée</h6>
+                <p class="text-muted fs-13 mb-0">Aucun résultat ne correspond aux filtres appliqués.</p>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
 
-          @if(totalPages > 1 && !loading) {
-          <div class="card-body d-flex justify-content-between align-items-center border-top">
-            <span class="text-muted">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
-            </div>
-          </div>
-          }
+      @if(totalPages > 1 && !loading) {
+      <div class="card-footer border-light d-flex justify-content-between align-items-center">
+        <span class="text-muted fs-12">Page {{page}} sur {{totalPages}} ({{totalCount}} annonces au total)</span>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
+            <i class="ri-arrow-left-s-line me-1"></i>Précédent
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
+            Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+          </button>
         </div>
       </div>
+      }
     </div>
   </div>
-
-  <!-- Error Alert -->
-  @if (error) {
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
-        <span>{{ error }}</span>
-        <button type="button" class="btn-close" (click)="error = ''"></button>
-      </div>
-    </div>
-  </div>
-  }
 
   <!-- Detail Sidebar Modal -->
   @if (detailListing) {
   <div class="modal-backdrop fade show" (click)="closeDetail()"></div>
   <div class="modal fade show d-block" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 1055; max-width: 600px; margin-left: auto;">
-    <div class="modal-dialog modal-fullscreen-down modal-end">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ detailListing.title }}</h5>
-          <button type="button" class="btn-close" (click)="closeDetail()"></button>
+    <div class="modal-dialog modal-fullscreen-down modal-end h-100 m-0">
+      <div class="modal-content h-100 border-0 rounded-0 shadow-lg">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title text-white text-truncate" style="max-width: 480px;">{{ detailListing.title }}</h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetail()"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-4" style="overflow-y: auto;">
           @if (detailLoading) {
-          <div class="text-center py-4">
+          <div class="text-center py-5">
             <span class="spinner-border text-primary"></span>
-            <p class="text-muted mt-2">Loading details...</p>
+            <p class="text-muted mt-2">Chargement des détails de l'annonce...</p>
           </div>
           } @else if (detailError) {
           <div class="alert alert-danger">{{ detailError }}</div>
           } @else {
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Category</label>
-              <p class="mb-0">{{ detailListing.categoryName }}</p>
+          <div class="card bg-light border mb-3">
+            <div class="card-body p-3">
+              <div class="row g-2">
+                <div class="col-6">
+                  <span class="text-muted fs-11 text-uppercase d-block">Catégorie</span>
+                  <span class="fw-semibold text-dark">{{ detailListing.categoryName || 'Général' }}</span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-11 text-uppercase d-block">Statut</span>
+                  <span class="badge" [class]="'bg-soft-' + getStatusBadge(detailListing.status) + ' text-' + getStatusBadge(detailListing.status)">
+                    {{ getStatusLabel(detailListing.status) }}
+                  </span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-11 text-uppercase d-block">Prestataire</span>
+                  <span class="font-monospace text-primary fw-semibold fs-12">{{ detailListing.providerId }}</span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-11 text-uppercase d-block">Tarif</span>
+                  <span class="fw-bold text-success fs-14">{{ detailListing.price != null ? (detailListing.price | number:'1.0-2') + ' ' + (detailListing.currency || '') : '—' }}</span>
+                </div>
+              </div>
             </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Provider</label>
-              <p class="mb-0">{{ detailListing.providerId }}</p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">City / Country</label>
-              <p class="mb-0">{{ detailListing.city || '—' }}, {{ detailListing.country || '—' }}</p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Status</label>
-              <p class="mb-0"><span class="badge" [class]="'bg-' + getStatusBadge(detailListing.status)">{{ getStatusLabel(detailListing.status) }}</span></p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Payment Mode</label>
-              <p class="mb-0">{{ getPaymentModeLabel(detailListing.paymentMode) }}</p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Price</label>
-              <p class="mb-0">{{ detailListing.price != null ? (detailListing.price | number:'1.0-2') + ' ' + (detailListing.currency || '') : '—' }}</p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Rating</label>
-              <p class="mb-0">{{ detailListing.averageRating ? (detailListing.averageRating | number:'1.0-1') : '—' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon> ({{ detailListing.reviewCount }} reviews)</p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-medium">Created</label>
-              <p class="mb-0">{{ detailListing.createdAt | date:'medium' }}</p>
+          </div>
+
+          @if(detailListing.departureCountryCode && detailListing.arrivalCountryCode) {
+          <div class="card border border-info mb-3 bg-soft-info">
+            <div class="card-body p-3">
+              <h6 class="fw-semibold text-info mb-2"><i class="ri-flight-takeoff-line me-1"></i> Détails du Trajet Colis P2P</h6>
+              <div class="row g-2 fs-12">
+                <div class="col-6">
+                  <span class="text-muted d-block">Départ :</span>
+                  <strong>{{detailListing.departureCity}}, {{detailListing.departureCountryCode}}</strong>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted d-block">Arrivée :</span>
+                  <strong>{{detailListing.arrivalCity}}, {{detailListing.arrivalCountryCode}}</strong>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted d-block">Kilos disponibles :</span>
+                  <strong class="text-primary">{{detailListing.remainingKg ?? detailListing.capacityKg}} / {{detailListing.capacityKg}} kg</strong>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted d-block">Date de départ :</span>
+                  <span>{{detailListing.departureDate | date:'dd/MM/yyyy HH:mm'}}</span>
+                </div>
+              </div>
             </div>
           </div>
           }
+
+          <div class="mb-3">
+            <label class="form-label fs-12 fw-semibold text-muted text-uppercase">Description</label>
+            <p class="text-dark fs-13 mb-0">{{ detailListing.description || 'Aucune description saisie.' }}</p>
+          </div>
+          }
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeDetail()">Close</button>
-          <button type="button" class="btn btn-success" (click)="approveSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
-            <app-icon icon="check" class="me-1"></app-icon>Approve
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-light" (click)="closeDetail()">Fermer</button>
+          <button type="button" class="btn btn-success d-inline-flex align-items-center gap-1" (click)="approveSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
+            <i class="ri-check-line"></i> Approuver
           </button>
-          <button type="button" class="btn btn-danger" (click)="rejectSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
-            <app-icon icon="x" class="me-1"></app-icon>Reject
+          <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-1" (click)="rejectSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
+            <i class="ri-close-line"></i> Rejeter
           </button>
-          <button type="button" class="btn btn-warning" (click)="suspendSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 1">
-            <app-icon icon="pause" class="me-1"></app-icon>Suspend
-          </button>
-          <button type="button" class="btn btn-outline-danger" (click)="deleteSingle(detailListing.id); closeDetail()">
-            <app-icon icon="trash" class="me-1"></app-icon>Delete
+          <button type="button" class="btn btn-warning d-inline-flex align-items-center gap-1" (click)="suspendSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 1">
+            <i class="ri-pause-line"></i> Suspendre
           </button>
         </div>
       </div>

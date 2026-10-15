@@ -1,8 +1,7 @@
-﻿import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core'
+import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core'
 import { DecimalPipe, DatePipe, CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
 import {
   ListingStatus,
@@ -21,7 +20,7 @@ interface ListingWithActions extends ServiceListingSummaryDto {
 @Component({
   selector: 'app-listings',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, DatePipe, FormsModule, Icon, PageBreadcrumb],
+  imports: [CommonModule, DecimalPipe, DatePipe, FormsModule, PageBreadcrumb],
   templateUrl: './listings.html',
   styles: ``,
 })
