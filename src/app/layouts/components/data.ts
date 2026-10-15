@@ -297,4 +297,18 @@ export const menuItems: MenuItemType[] = [
       },
     ],
   },
+  {
+    'icon': 'message-square',
+    'slug': 'chat',
+    'label': 'Chat & Modération',
+    'isTitle': true,
+    'children': [
+      {
+        'url': '/chat/moderation',
+        'slug': 'pages:chat-moderation',
+        'label': 'Signalements & Modération',
+        'icon': 'alert-circle',
+      },
+    ],
+  },
 ]

@@ -275,6 +275,11 @@ export const routes: Routes = [
         data: { title: 'Notification Templates' },
       },
       {
+        path: 'chat/moderation',
+        loadComponent: () => import('./views/chat/chat-moderation/chat-moderation').then((m) => m.ChatModerationComponent),
+        data: { title: 'Chat Moderation' },
+      },
+      {
         path: 'pages/empty',
         loadComponent: () => import('./views/pages/empty/empty').then((m) => m.Empty),
         data: { title: 'Empty Page' },
