@@ -2,13 +2,36 @@
   <app-page-breadcrumb title="Transactions" subTitle="Wallet" />
 
   <div class="row mb-3">
-    <div class="col-lg-6">
-      <app-profile-dropdown />
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+            Grand Livre Global
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'by-profile'" (click)="setTab('by-profile')">
+            Par Profil
+          </button>
+        </li>
+      </ul>
+
+      <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1" (click)="exportCsv()" [disabled]="transactions.length === 0">
+        <i class="ri-download-2-line"></i> Exporter CSV
+      </button>
     </div>
   </div>
 
-  @if(!profileState.selectedProfileId()) {
-  <div class="alert alert-warning">Select a profile above to view its transactions.</div>
+  @if (activeTab === 'by-profile') {
+    <div class="row mb-3">
+      <div class="col-lg-6">
+        <app-profile-dropdown />
+      </div>
+    </div>
+
+    @if (!profileState.selectedProfileId()) {
+      <div class="alert alert-warning">Sélectionnez un profil ci-dessus pour afficher l'historique de ses transactions.</div>
+    }
   }
 
   <div class="row">
@@ -17,7 +40,7 @@
         <div class="row gap-3 align-items-end">
           <div class="col-lg-3">
             <select class="form-select" [(ngModel)]="typeFilter" name="typeFilter" (change)="onFilterChange()">
-              <option value="">All Types</option>
+              <option value="">Tous les types</option>
               @for (opt of typeOptions; track opt.value) {
               <option [value]="opt.value">{{opt.label}}</option>
               }
@@ -25,7 +48,7 @@
           </div>
           <div class="col-lg-3">
             <select class="form-select" [(ngModel)]="statusFilter" name="statusFilter" (change)="onFilterChange()">
-              <option value="">All Statuses</option>
+              <option value="">Tous les statuts</option>
               @for (opt of statusOptions; track opt.value) {
               <option [value]="opt.value">{{opt.label}}</option>
               }
@@ -44,19 +67,27 @@
             <table class="table table-hover mb-0">
               <thead>
                 <tr>
+                  @if (activeTab === 'all') {
+                  <th>Portefeuille</th>
+                  }
                   <th>Type</th>
-                  <th>Amount</th>
-                  <th>Fee</th>
-                  <th>Balance After</th>
+                  <th>Montant</th>
+                  <th>Frais</th>
+                  <th>Solde Après</th>
                   <th>Description</th>
-                  <th>Status</th>
+                  <th>Statut</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 @for (t of transactions; track t.id) {
                 <tr>
-                  <td><span class="badge bg-soft-info text-info">{{TransactionTypeLabels[t.type]}}</span></td>
+                  @if (activeTab === 'all') {
+                  <td class="font-monospace small text-muted" title="{{t.walletId}}">
+                    {{t.walletId.slice(0, 8)}}...
+                  </td>
+                  }
+                  <td><span class="badge bg-info-subtle text-info">{{TransactionTypeLabels[t.type] || t.type}}</span></td>
                   <td class="fw-semibold" [class.text-success]="t.direction === TransactionDirection.Credit" [class.text-danger]="t.direction === TransactionDirection.Debit">
                     {{t.direction === TransactionDirection.Debit ? '-' : '+'}}{{t.amount | number:'1.2-2'}} {{t.currency}}
                   </td>
@@ -64,14 +95,14 @@
                   <td>{{t.balanceAfter | number:'1.2-2'}} {{t.currency}}</td>
                   <td>{{t.description || '—'}}</td>
                   <td>
-                    <span class="badge" [class]="'bg-' + TransactionStatusBadgeVariants[t.status]">{{TransactionStatusLabels[t.status]}}</span>
+                    <span class="badge" [class]="'bg-' + TransactionStatusBadgeVariants[t.status]">{{TransactionStatusLabels[t.status] || t.status}}</span>
                   </td>
                   <td>{{t.createdAt | date:'short'}}</td>
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="7" class="text-center text-muted p-4">
-                    @if(loading) { Loading... } @else { No transactions }
+                  <td [attr.colspan]="activeTab === 'all' ? 8 : 7" class="text-center text-muted p-4">
+                    @if(loading) { <span class="spinner-border spinner-border-sm me-1"></span> Chargement... } @else { Aucune transaction trouvée }
                   </td>
                 </tr>
                 }

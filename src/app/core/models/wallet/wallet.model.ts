@@ -77,10 +77,14 @@ export interface MarketplacePaymentRequest {
 }
 
 export interface TransactionListQuery {
+  walletId?: string
   pageNumber?: number
   pageSize?: number
   type?: TransactionType
   status?: TransactionStatus
+  currency?: string
+  fromDate?: string
+  toDate?: string
 }
 
 export interface UpdateWalletParameterRequest {

@@ -43,6 +43,8 @@ export class Transactions implements OnInit {
   TransactionDirectionLabels = TransactionDirectionLabels
   TransactionDirectionBadgeVariants = TransactionDirectionBadgeVariants
 
+  activeTab: 'all' | 'by-profile' = 'all'
+
   typeOptions = [
     { value: TransactionType.Deposit, label: TransactionTypeLabels[TransactionType.Deposit] },
     { value: TransactionType.TransferOut, label: TransactionTypeLabels[TransactionType.TransferOut] },
@@ -52,6 +54,10 @@ export class Transactions implements OnInit {
     { value: TransactionType.MarketplacePayment, label: TransactionTypeLabels[TransactionType.MarketplacePayment] },
     { value: TransactionType.MarketplaceReceipt, label: TransactionTypeLabels[TransactionType.MarketplaceReceipt] },
     { value: TransactionType.Refund, label: TransactionTypeLabels[TransactionType.Refund] },
+    { value: TransactionType.MarketplacePaymentHold, label: TransactionTypeLabels[TransactionType.MarketplacePaymentHold] },
+    { value: TransactionType.MarketplacePaymentRelease, label: TransactionTypeLabels[TransactionType.MarketplacePaymentRelease] },
+    { value: TransactionType.MarketplacePaymentRefund, label: TransactionTypeLabels[TransactionType.MarketplacePaymentRefund] },
+    { value: TransactionType.MarketplacePlatformCommission, label: TransactionTypeLabels[TransactionType.MarketplacePlatformCommission] },
   ]
 
   statusOptions = [
@@ -63,38 +69,71 @@ export class Transactions implements OnInit {
   constructor(
     private walletService: WalletService,
     public profileState: ProfileStateService
-  ) {}
-
-  ngOnInit() {
-    if (this.profileState.selectedProfileId()) {
-      this.loadTransactions()
-    }
+  ) {
     effect(() => {
       const pid = this.profileState.selectedProfileId()
-      if (pid) {
+      if (pid && this.activeTab === 'by-profile') {
+        this.page = 1
         this.loadTransactions()
       }
     })
   }
 
+  ngOnInit() {
+    this.loadTransactions()
+  }
+
+  setTab(tab: 'all' | 'by-profile') {
+    this.activeTab = tab
+    this.page = 1
+    this.loadTransactions()
+  }
+
   loadTransactions() {
-    const profileId = this.profileState.selectedProfileId()
-    if (!profileId) return
     this.loading = true
-    this.walletService.getTransactions(profileId, {
-      pageNumber: this.page,
-      pageSize: this.pageSize,
-      type: this.typeFilter ? (Number(this.typeFilter) as TransactionType) : undefined,
-      status: this.statusFilter ? (Number(this.statusFilter) as TransactionStatus) : undefined,
-    }).subscribe({
-      next: (res) => {
-        this.transactions = res.items
-        this.totalCount = res.totalCount
-        this.totalPages = res.totalPages
+    const type = this.typeFilter ? (Number(this.typeFilter) as TransactionType) : undefined
+    const status = this.statusFilter ? (Number(this.statusFilter) as TransactionStatus) : undefined
+
+    if (this.activeTab === 'by-profile') {
+      const profileId = this.profileState.selectedProfileId()
+      if (!profileId) {
+        this.transactions = []
+        this.totalCount = 0
+        this.totalPages = 1
         this.loading = false
-      },
-      error: () => { this.loading = false },
-    })
+        return
+      }
+
+      this.walletService.getTransactions(profileId, {
+        pageNumber: this.page,
+        pageSize: this.pageSize,
+        type,
+        status,
+      }).subscribe({
+        next: (res) => {
+          this.transactions = res.items
+          this.totalCount = res.totalCount
+          this.totalPages = res.totalPages
+          this.loading = false
+        },
+        error: () => { this.loading = false },
+      })
+    } else {
+      this.walletService.getAllTransactions({
+        pageNumber: this.page,
+        pageSize: this.pageSize,
+        type,
+        status,
+      }).subscribe({
+        next: (res) => {
+          this.transactions = res.items
+          this.totalCount = res.totalCount
+          this.totalPages = res.totalPages
+          this.loading = false
+        },
+        error: () => { this.loading = false },
+      })
+    }
   }
 
   onFilterChange() {
@@ -105,5 +144,34 @@ export class Transactions implements OnInit {
   onPageChange(page: number) {
     this.page = page
     this.loadTransactions()
+  }
+
+  exportCsv() {
+    if (!this.transactions || this.transactions.length === 0) return
+
+    const headers = ['Date', 'ID Transaction', 'Type', 'Direction', 'Montant', 'Frais', 'Solde Après', 'Devise', 'Statut', 'Description']
+    const rows = this.transactions.map(t => [
+      t.createdAt,
+      t.id,
+      TransactionTypeLabels[t.type] || t.type,
+      t.direction === TransactionDirection.Credit ? 'Credit' : 'Debit',
+      t.amount,
+      t.fee,
+      t.balanceAfter,
+      t.currency,
+      TransactionStatusLabels[t.status] || t.status,
+      `"${(t.description || '').replace(/"/g, '""')}"`
+    ])
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `transactions_${new Date().toISOString().slice(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 }

@@ -59,6 +59,19 @@ export class WalletService {
     return this.http.get<PagedList<TransactionDto>>(`${this.apiUrl}/transactions/profile/${profileId}`, { params });
   }
 
+  getAllTransactions(query: TransactionListQuery = {}): Observable<PagedList<TransactionDto>> {
+    const params: any = {};
+    if (query.pageNumber != null) params.pageNumber = query.pageNumber;
+    if (query.pageSize != null) params.pageSize = query.pageSize;
+    if (query.type != null) params.type = query.type;
+    if (query.status != null) params.status = query.status;
+    if (query.currency) params.currency = query.currency;
+    if (query.walletId) params.walletId = query.walletId;
+    if (query.fromDate) params.fromDate = query.fromDate;
+    if (query.toDate) params.toDate = query.toDate;
+    return this.http.get<PagedList<TransactionDto>>(`${this.apiUrl}/transactions`, { params });
+  }
+
   transfer(data: TransferRequest): Observable<TransferResponse> {
     return this.http.post<TransferResponse>(`${this.apiUrl}/transactions/transfer`, data);
   }
