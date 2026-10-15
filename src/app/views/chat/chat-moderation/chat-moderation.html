@@ -1,134 +1,258 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Modération du Chat" subTitle="Sécurité & Échanges" />
+  <app-page-breadcrumb title="Modération du Chat & Sécurité" subTitle="Modération" />
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <app-icon icon="check-circle" class="me-2"></app-icon> {{ successMessage }}
+    <i class="ri-checkbox-circle-line me-1 fs-16 align-middle"></i> {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <app-icon icon="alert-circle" class="me-2"></app-icon> {{ errorMessage }}
+    <i class="ri-error-warning-line me-1 fs-16 align-middle"></i> {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
   </div>
   }
 
-  <!-- Filtres de signalements -->
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="card border p-3">
-        <div class="row g-2 align-items-center">
-          <div class="col-md-5">
-            <div class="app-search">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Rechercher par utilisateur, motif ou mot-clé..."
-                [(ngModel)]="searchTerm"
-                (ngModelChange)="applyFilter()"
-              />
-              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+  <!-- KPIs de Modération Ubold -->
+  <div class="row">
+    <div class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1 overflow-hidden">
+              <p class="text-uppercase fw-semibold fs-12 text-muted text-truncate mb-1">Total Signalements</p>
+              <h3 class="fs-22 fw-bold text-dark my-1">{{ reports.length }}</h3>
+              <p class="text-muted mb-0 fs-12">Historique complet</p>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="avatar-sm">
+                <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-20">
+                  <i class="ri-chat-voice-line"></i>
+                </span>
+              </div>
             </div>
           </div>
-          <div class="col-md-3">
-            <select class="form-select" [(ngModel)]="selectedStatus" (ngModelChange)="applyFilter()">
-              <option value="">Tous les statuts</option>
-              <option value="Pending">En attente d'arbitrage</option>
-              <option value="ActionTaken">Sanction appliquée</option>
-              <option value="Dismissed">Classé sans suite</option>
-            </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1 overflow-hidden">
+              <p class="text-uppercase fw-semibold fs-12 text-muted text-truncate mb-1">En Attente d'Arbitrage</p>
+              <h3 class="fs-22 fw-bold text-warning my-1">{{ pendingCount }}</h3>
+              <p class="text-muted mb-0 fs-12">Nécessite intervention</p>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="avatar-sm">
+                <span class="avatar-title bg-soft-warning text-warning rounded-circle fs-20">
+                  <i class="ri-time-line"></i>
+                </span>
+              </div>
+            </div>
           </div>
-          <div class="col-md-4 text-end text-muted fs-sm">
-            Total : {{ filteredReports.length }} signalement(s)
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1 overflow-hidden">
+              <p class="text-uppercase fw-semibold fs-12 text-muted text-truncate mb-1">Sanctions Appliquées</p>
+              <h3 class="fs-22 fw-bold text-danger my-1">{{ actionTakenCount }}</h3>
+              <p class="text-muted mb-0 fs-12">Utilisateurs sanctionnés</p>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="avatar-sm">
+                <span class="avatar-title bg-soft-danger text-danger rounded-circle fs-20">
+                  <i class="ri-forbid-line"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1 overflow-hidden">
+              <p class="text-uppercase fw-semibold fs-12 text-muted text-truncate mb-1">Classés Sans Suite</p>
+              <h3 class="fs-22 fw-bold text-secondary my-1">{{ dismissedCount }}</h3>
+              <p class="text-muted mb-0 fs-12">Signalements rejetés</p>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="avatar-sm">
+                <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-20">
+                  <i class="ri-check-double-line"></i>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Table des signalements -->
+  <!-- Barre de Recherche & Filtres -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-3">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+              <div class="position-relative">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Rechercher par nom de citoyen, motif ou contenu signalé..."
+                  [(ngModel)]="searchTerm"
+                  (ngModelChange)="applyFilter()"
+                />
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" [(ngModel)]="selectedStatus" (ngModelChange)="applyFilter()">
+                <option value="">Tous les statuts de signalement</option>
+                <option value="Pending">En attente d'arbitrage</option>
+                <option value="ActionTaken">Sanction appliquée</option>
+                <option value="Dismissed">Classé sans suite</option>
+              </select>
+            </div>
+            <div class="col-md-4 text-end text-muted fs-13">
+              <i class="ri-shield-user-line me-1"></i>Total : <strong class="text-dark">{{ filteredReports.length }}</strong> dossier(s)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table des signalements Ubold -->
   <div class="row">
     <div class="col-12">
       <div class="card">
+        <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Registre des Signalements de Conversations</h5>
+          <span class="badge bg-soft-danger text-danger fs-12 px-2 py-1">
+            <i class="ri-alert-fill me-1"></i>Modération Active
+          </span>
+        </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-custom table-nowrap table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
                   <th>Utilisateur Signalé</th>
-                  <th>Signalé Par</th>
-                  <th>Motif du Signalement</th>
+                  <th>Auteur du Signalement</th>
+                  <th>Motif Invoqué</th>
                   <th>Extrait du Message</th>
-                  <th>Date</th>
+                  <th>Date & Heure</th>
                   <th>Statut</th>
-                  <th class="text-end">Actions de Modération</th>
+                  <th class="text-end">Actions Modérateur</th>
                 </tr>
               </thead>
               <tbody>
                 @if (loading) {
                 <tr>
                   <td colspan="7" class="text-center p-4">
-                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des signalements...
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                    Chargement des signalements...
                   </td>
                 </tr>
                 } @else if (filteredReports.length === 0) {
                 <tr>
                   <td colspan="7" class="text-center p-4 text-muted">
-                    Aucun signalement trouvé selon ces critères.
+                    <i class="ri-checkbox-circle-line fs-24 text-success d-block mb-1"></i>
+                    Aucun incident ou signalement pour ces critères.
                   </td>
                 </tr>
                 } @else {
                   @for (rep of filteredReports; track rep.id) {
                   <tr>
                     <td>
-                      <div class="fw-semibold text-danger">{{ rep.reportedSenderName }}</div>
-                      <small class="text-muted font-monospace fs-xs">{{ rep.reportedSenderId }}</small>
-                    </td>
-                    <td>
-                      <div class="fw-semibold">{{ rep.reporterName }}</div>
-                    </td>
-                    <td>
-                      <span class="badge bg-soft-danger text-danger fs-xs mb-1">{{ rep.reason }}</span>
-                    </td>
-                    <td>
-                      <div class="fs-xs text-muted fst-italic p-1 border rounded bg-light" style="max-width: 320px;">
-                        "{{ rep.messageSnippet || 'Contenu signalé' }}"
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-xs me-2">
+                          <span class="avatar-title bg-soft-danger text-danger rounded-circle fs-12">
+                            <i class="ri-user-unfollow-line"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <div class="fw-semibold text-danger fs-13">{{ rep.reportedSenderName }}</div>
+                          <small class="text-muted font-monospace fs-11">{{ rep.reportedSenderId }}</small>
+                        </div>
                       </div>
                     </td>
                     <td>
-                      <span class="fs-xs">{{ rep.reportedAt | date:'short' }}</span>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-xs me-2">
+                          <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-12">
+                            <i class="ri-user-line"></i>
+                          </span>
+                        </div>
+                        <div class="fw-medium text-dark fs-13">{{ rep.reporterName }}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-soft-danger text-danger fs-12">
+                        <i class="ri-error-warning-line me-1"></i>{{ rep.reason }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="fs-12 text-muted fst-italic p-2 rounded bg-light border text-truncate" style="max-width: 320px;">
+                        "{{ rep.messageSnippet || 'Extrait non disponible' }}"
+                      </div>
+                    </td>
+                    <td>
+                      <span class="fs-12 text-muted">
+                        <i class="ri-calendar-line me-1"></i>{{ rep.reportedAt | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
                     </td>
                     <td>
                       @if (rep.status === 'Pending') {
-                      <span class="badge bg-warning text-dark">En Attente</span>
+                      <span class="badge bg-soft-warning text-warning">
+                        <i class="ri-time-line me-1"></i>En Attente
+                      </span>
                       } @else if (rep.status === 'ActionTaken') {
-                      <span class="badge bg-danger">Sanctionné</span>
+                      <span class="badge bg-soft-danger text-danger">
+                        <i class="ri-forbid-line me-1"></i>Sanctionné
+                      </span>
                       } @else {
-                      <span class="badge bg-secondary">Classé</span>
+                      <span class="badge bg-soft-secondary text-secondary">
+                        <i class="ri-checkbox-circle-line me-1"></i>Classé
+                      </span>
                       }
                     </td>
                     <td class="text-end">
-                      <div class="d-inline-flex gap-1">
+                      <div class="btn-group">
                         <button
                           class="btn btn-soft-primary btn-sm"
                           (click)="openChatContext(rep)"
-                          title="Inspecter le fil complet de la conversation"
+                          title="Inspecter le fil complet des messages"
                         >
-                          <app-icon icon="message-square" class="me-1"></app-icon> Inspecter
+                          <i class="ri-message-3-line me-1"></i> Inspecter
                         </button>
                         @if (rep.status === 'Pending') {
                         <button
                           class="btn btn-soft-danger btn-sm"
                           (click)="openSuspendModal(rep)"
-                          title="Suspendre immédiatement l'auteur"
+                          title="Suspendre immédiatement le compte de l'auteur"
                         >
-                          <app-icon icon="slash" class="me-1"></app-icon> Sanctionner
+                          <i class="ri-forbid-line me-1"></i> Sanctionner
                         </button>
                         <button
                           class="btn btn-soft-secondary btn-sm"
                           (click)="dismissReport(rep)"
                           title="Classer sans suite"
                         >
-                          <app-icon icon="x"></app-icon>
+                          <i class="ri-close-line"></i>
                         </button>
                         }
                       </div>
@@ -144,48 +268,59 @@
     </div>
   </div>
 
-  <!-- Modal Visualisation Fil Conversation -->
+  <!-- Modal Inspection Fil de Conversation Ubold -->
   @if (showChatModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-light">
+        <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">
-            <app-icon icon="message-square" class="me-1"></app-icon> Inspection du Fil de Conversation
+            <i class="ri-message-3-line me-2"></i>Inspection du Fil de Discussion Modéré
           </h5>
-          <button type="button" class="btn-close" (click)="closeChatModal()"></button>
+          <button type="button" class="btn-close btn-close-white" (click)="closeChatModal()"></button>
         </div>
-        <div class="modal-body p-3">
+        <div class="modal-body p-4">
           @if (activeReport) {
-          <div class="alert alert-warning py-2 mb-3 fs-xs">
-            <strong>Signalement en cours :</strong> {{ activeReport.reportedSenderName }} a été signalé pour "{{ activeReport.reason }}" par {{ activeReport.reporterName }}.
+          <div class="alert alert-warning py-2 mb-3 fs-13 border-0 rounded-3">
+            <i class="ri-alert-line me-1 fs-16 align-middle"></i>
+            <strong>Signalement en cours :</strong> {{ activeReport.reportedSenderName }} a été signalé pour <em>"{{ activeReport.reason }}"</em> par {{ activeReport.reporterName }}.
           </div>
           }
 
           @if (loadingMessages) {
-          <div class="text-center p-4">
+          <div class="text-center p-5">
             <div class="spinner-border text-primary"></div>
+            <p class="text-muted mt-2 fs-13">Reconstitution de l'historique de discussion...</p>
           </div>
           } @else {
-          <div class="chat-conversation p-2 border rounded bg-light" style="max-height: 400px; overflow-y: auto;">
+          <!-- Zone de messages stylée Ubold Chat -->
+          <div class="p-3 border rounded-3 bg-light" style="max-height: 420px; overflow-y: auto;">
             @for (msg of conversationMessages; track msg.id) {
             <div
               class="d-flex mb-3 gap-2"
               [class.justify-content-end]="msg.senderDisplayName === activeReport?.reportedSenderName"
             >
               <div
-                class="p-2 rounded border"
+                class="p-3 rounded-3 shadow-sm border"
                 [class.bg-white]="msg.senderDisplayName !== activeReport?.reportedSenderName"
                 [class.bg-soft-danger]="msg.senderDisplayName === activeReport?.reportedSenderName"
                 style="max-width: 75%;"
               >
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <strong class="fs-xs" [class.text-danger]="msg.senderDisplayName === activeReport?.reportedSenderName">
-                    {{ msg.senderDisplayName }}
+                  <strong
+                    class="fs-12"
+                    [class.text-danger]="msg.senderDisplayName === activeReport?.reportedSenderName"
+                    [class.text-dark]="msg.senderDisplayName !== activeReport?.reportedSenderName"
+                  >
+                    <i class="ri-user-line me-1"></i>{{ msg.senderDisplayName }}
                   </strong>
-                  <small class="text-muted fs-xxs ms-2">{{ msg.createdAt | date:'shortTime' }}</small>
+                  <small class="text-muted fs-10 ms-3">{{ msg.createdAt | date:'HH:mm:ss' }}</small>
                 </div>
-                <div class="fs-sm mb-1" [class.text-muted]="msg.isDeleted" [class.fst-italic]="msg.isDeleted">
+                <div
+                  class="fs-13 mb-2"
+                  [class.text-muted]="msg.isDeleted"
+                  [class.fst-italic]="msg.isDeleted"
+                >
                   {{ msg.content }}
                 </div>
                 @if (!msg.isDeleted) {
@@ -196,7 +331,7 @@
                     (click)="deleteMessage(msg)"
                     title="Supprimer ce message illicite"
                   >
-                    <app-icon icon="trash-2" class="me-1"></app-icon> Supprimer
+                    <i class="ri-delete-bin-line me-1"></i>Supprimer ce message
                   </button>
                 </div>
                 }
@@ -209,7 +344,7 @@
         <div class="modal-footer">
           @if (activeReport && activeReport.status === 'Pending') {
           <button type="button" class="btn btn-danger" (click)="openSuspendModal(activeReport)">
-            <app-icon icon="slash" class="me-1"></app-icon> Suspendre l'émetteur
+            <i class="ri-forbid-line me-1"></i> Suspendre l'émetteur
           </button>
           }
           <button type="button" class="btn btn-secondary" (click)="closeChatModal()">Fermer</button>
@@ -219,33 +354,43 @@
   </div>
   }
 
-  <!-- Modal de Suspension Rapide -->
+  <!-- Modal de Suspension Rapide Ubold -->
   @if (showSuspendModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title">
-            <app-icon icon="slash" class="me-1"></app-icon> Sanctionner l'utilisateur
+            <i class="ri-forbid-line me-2"></i>Sanction & Suspension Immédiate
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeSuspendModal()"></button>
         </div>
-        <div class="modal-body">
-          <p class="text-muted mb-3">
-            Vous vous apprêtez à suspendre l'accès de <strong>{{ suspendTargetUser?.name }}</strong> suite à un signalement de modération.
+        <div class="modal-body p-4">
+          <p class="text-muted fs-13 mb-3">
+            Vous vous apprêtez à révoquer l'accès de l'utilisateur <strong class="text-dark">{{ suspendTargetUser?.name }}</strong> suite à un signalement de modération.
           </p>
           <div class="mb-3">
-            <label class="form-label fw-bold">Motif de la suspension <span class="text-danger">*</span></label>
-            <textarea class="form-control" rows="3" [(ngModel)]="suspendReason"></textarea>
+            <label class="form-label fw-semibold text-dark fs-13">Motif Officiel de la Suspension <span class="text-danger">*</span></label>
+            <textarea
+              class="form-control"
+              rows="3"
+              placeholder="Explicitez le motif de la sanction (infraction aux conditions générales, propos injurieux...)"
+              [(ngModel)]="suspendReason"
+            ></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeSuspendModal()" [disabled]="actionLoading">Annuler</button>
-          <button type="button" class="btn btn-danger" [disabled]="!suspendReason.trim() || actionLoading" (click)="confirmSuspend()">
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="!suspendReason.trim() || actionLoading"
+            (click)="confirmSuspend()"
+          >
             @if (actionLoading) {
             <span class="spinner-border spinner-border-sm me-1"></span>
             }
-            Appliquer la suspension
+            Confirmer la suspension du compte
           </button>
         </div>
       </div>

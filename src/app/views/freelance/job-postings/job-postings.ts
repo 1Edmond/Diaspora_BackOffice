@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
-import { Icon } from '@app/components/icon/icon';
 import { FreelanceService } from '@core/services/freelance.service';
 import {
   JobCategoryDto,
@@ -16,7 +15,7 @@ import {
 @Component({
   selector: 'app-job-postings',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon, DatePipe, DecimalPipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, DecimalPipe],
   templateUrl: './job-postings.html',
 })
 export class JobPostingsComponent implements OnInit {
@@ -46,6 +45,7 @@ export class JobPostingsComponent implements OnInit {
   JobPostingStatus = JobPostingStatus;
   PaymentType = PaymentType;
   PaymentTiming = PaymentTiming;
+  Math = Math;
 
   constructor(private freelanceService: FreelanceService) {}
 
@@ -194,19 +194,19 @@ export class JobPostingsComponent implements OnInit {
   getStatusBadgeClass(status: JobPostingStatus): string {
     switch (status) {
       case JobPostingStatus.Draft:
-        return 'bg-secondary';
+        return 'bg-soft-secondary text-secondary';
       case JobPostingStatus.Published:
-        return 'bg-success';
+        return 'bg-soft-success text-success';
       case JobPostingStatus.RegistrationClosed:
-        return 'bg-info';
+        return 'bg-soft-info text-info';
       case JobPostingStatus.InProgress:
-        return 'bg-primary';
+        return 'bg-soft-primary text-primary';
       case JobPostingStatus.Completed:
-        return 'bg-dark';
+        return 'bg-soft-dark text-dark';
       case JobPostingStatus.Cancelled:
-        return 'bg-danger';
+        return 'bg-soft-danger text-danger';
       default:
-        return 'bg-secondary';
+        return 'bg-soft-secondary text-secondary';
     }
   }
 

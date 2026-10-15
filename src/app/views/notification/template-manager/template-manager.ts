@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
-import { Icon } from '@app/components/icon/icon';
 import { NotificationService } from '@core/services/notification.service';
 import { NotificationRuleDto } from '@core/models/notification/notification.model';
 
@@ -17,7 +16,7 @@ interface SystemTemplate {
 @Component({
   selector: 'app-template-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon],
+  imports: [CommonModule, FormsModule, PageBreadcrumb],
   templateUrl: './template-manager.html',
 })
 export class TemplateManagerComponent implements OnInit {

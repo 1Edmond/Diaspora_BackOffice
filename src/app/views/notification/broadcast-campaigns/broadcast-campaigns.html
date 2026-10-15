@@ -1,57 +1,74 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Diffusion de Campagnes" subTitle="Notifications" />
+  <app-page-breadcrumb title="Diffusion de Campagnes & Alertes" subTitle="Notifications" />
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <app-icon icon="check-circle" class="me-2"></app-icon> {{ successMessage }}
+    <i class="ri-checkbox-circle-line me-1 fs-16 align-middle"></i> {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <app-icon icon="alert-circle" class="me-2"></app-icon> {{ errorMessage }}
+    <i class="ri-error-warning-line me-1 fs-16 align-middle"></i> {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
   </div>
   }
 
   <div class="row">
-    <!-- Formulaire de composition -->
+    <!-- Formulaire de composition Ubold -->
     <div class="col-lg-7">
       <div class="card">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0">
-            <app-icon icon="send" class="me-1"></app-icon> Composer une Campagne Broadcast
-          </h5>
+        <div class="card-header bg-transparent border-bottom py-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm me-2">
+              <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-18">
+                <i class="ri-broadcast-line"></i>
+              </span>
+            </div>
+            <div>
+              <h5 class="card-title mb-0">Composer une Campagne de Diffusion</h5>
+              <p class="text-muted fs-12 mb-0">Distribuez une alerte ou un message officiel à l'ensemble ou à une partie de la communauté</p>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <form (ngSubmit)="sendCampaign()">
             <div class="mb-3">
-              <label class="form-label fw-bold">Titre de la notification <span class="text-danger">*</span></label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Ex: Information consulaire importante / Mise à jour Diaspora..."
-                [(ngModel)]="title"
-                name="title"
-                required
-              />
+              <label class="form-label fw-semibold text-dark fs-13">Titre de la Notification <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="ri-notification-3-line"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Ex: Information consulaire importante / Mise à jour Diaspora..."
+                  [(ngModel)]="title"
+                  name="title"
+                  required
+                />
+              </div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label fw-bold">Message complet <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold text-dark fs-13">Corps du Message <span class="text-danger">*</span></label>
               <textarea
                 class="form-control"
                 rows="4"
-                placeholder="Rédigez le texte de la notification qui sera distribuée aux utilisateurs..."
+                placeholder="Rédigez le texte officiel qui sera distribué sur les smartphones et comptes des citoyens..."
                 [(ngModel)]="message"
                 name="message"
                 required
               ></textarea>
+              <div class="d-flex justify-content-between text-muted fs-11 mt-1">
+                <span>Variables dynamiques supportées : &#123;prenom&#125;, &#123;pays&#125;</span>
+                <span>{{ message.length }} caractères</span>
+              </div>
             </div>
 
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label class="form-label fw-bold">Canaux de diffusion</label>
+                <label class="form-label fw-semibold text-dark fs-13">Canal de Diffusion</label>
                 <select class="form-select" [(ngModel)]="channel" name="channel">
-                  <option value="All">Tous les canaux (Push + In-App)</option>
+                  <option value="All">Tous canaux (Push Mobile + In-App)</option>
                   <option value="InApp">In-App uniquement</option>
                   <option value="Push">Push Mobile uniquement</option>
                   <option value="Email">Email uniquement</option>
@@ -59,9 +76,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label fw-bold">Ciblage par Rôle</label>
+                <label class="form-label fw-semibold text-dark fs-13">Ciblage par Rôle</label>
                 <select class="form-select" [(ngModel)]="targetRole" name="targetRole">
-                  <option value="All">Tous les utilisateurs</option>
+                  <option value="All">Tous les utilisateurs actifs</option>
                   <option value="Citizen">Citoyens</option>
                   <option value="Provider">Prestataires Marketplace</option>
                   <option value="Freelancer">Travailleurs Freelance</option>
@@ -69,9 +86,9 @@
               </div>
 
               <div class="col-12">
-                <label class="form-label fw-bold">Ciblage Géographique / Pays</label>
+                <label class="form-label fw-semibold text-dark fs-13">Ciblage Géographique / Pays</label>
                 <select class="form-select" [(ngModel)]="selectedProfileTypeId" name="selectedProfileTypeId">
-                  <option value="">Tous les pays (Diffusion Globale)</option>
+                  <option value="">Tous les pays (Diffusion Internationale)</option>
                   @for (pt of profileTypes; track pt.id) {
                   <option [value]="pt.id">{{ pt.flag }} {{ pt.countryName }} ({{ pt.countryCode }})</option>
                   }
@@ -79,16 +96,19 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+              <div class="text-muted fs-12">
+                <i class="ri-shield-check-line text-success me-1"></i>Envoi instantané sécurisé par RabbitMQ
+              </div>
               <button
                 type="submit"
-                class="btn btn-primary"
+                class="btn btn-primary px-3"
                 [disabled]="!title.trim() || !message.trim() || sending"
               >
                 @if (sending) {
                 <span class="spinner-border spinner-border-sm me-1"></span> Diffusion en cours...
                 } @else {
-                <app-icon icon="send" class="me-1"></app-icon> Diffuser la campagne
+                <i class="ri-send-plane-fill me-1"></i> Diffuser la campagne
                 }
               </button>
             </div>
@@ -97,28 +117,56 @@
       </div>
     </div>
 
-    <!-- Prévisualisation Mobile et Historique -->
+    <!-- Prévisualisation Smartphone Ubold & Historique -->
     <div class="col-lg-5">
       <div class="card mb-3">
-        <div class="card-header bg-light">
+        <div class="card-header bg-transparent border-bottom py-3">
           <h5 class="card-title mb-0">
-            <app-icon icon="smartphone" class="me-1"></app-icon> Aperçu Mobile
+            <i class="ri-smartphone-line me-1 text-primary"></i> Aperçu Mobile en Direct
           </h5>
         </div>
-        <div class="card-body">
-          <div class="border rounded p-3 bg-light position-relative">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <div class="avatar avatar-xs bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
-                <app-icon icon="bell" class="fs-xs"></app-icon>
+        <div class="card-body d-flex justify-content-center p-3">
+          <!-- Mockup Smartphone Ubold -->
+          <div
+            class="mockup-phone border border-4 border-dark rounded-4 shadow-sm p-3 bg-white"
+            style="width: 320px; min-height: 280px; position: relative;"
+          >
+            <!-- Barre de statut supérieure du smartphone -->
+            <div class="d-flex justify-content-between align-items-center text-muted fs-11 mb-3 px-1 border-bottom pb-1">
+              <span>09:41</span>
+              <div class="d-flex gap-1 align-items-center">
+                <i class="ri-wifi-line"></i>
+                <i class="ri-signal-tower-line"></i>
+                <i class="ri-battery-charge-line"></i>
               </div>
-              <strong class="fs-xs text-uppercase">Diaspora Mobile</strong>
-              <small class="text-muted ms-auto fs-xs">À l'instant</small>
             </div>
-            <div class="fw-bold fs-sm">{{ title || 'Titre de la notification...' }}</div>
-            <div class="text-muted fs-xs" style="white-space: pre-wrap;">{{ message || 'Le message de la notification apparaîtra ici tel qu\'affiché sur le smartphone du citoyen.' }}</div>
-            <div class="mt-2 pt-1 border-top fs-xxs text-muted d-flex justify-content-between">
-              <span>Canal : {{ channel }}</span>
-              <span>Cible : {{ targetRole }}</span>
+
+            <!-- Carte de notification push stylée -->
+            <div class="p-3 rounded-3 shadow-sm border bg-light position-relative">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="avatar-xs">
+                  <span class="avatar-title bg-primary text-white rounded-circle fs-12">
+                    <i class="ri-notification-3-fill"></i>
+                  </span>
+                </div>
+                <div>
+                  <strong class="fs-12 text-dark d-block">Diaspora Mobile</strong>
+                  <span class="badge bg-soft-primary text-primary fs-10">{{ channel }}</span>
+                </div>
+                <small class="text-muted ms-auto fs-10">À l'instant</small>
+              </div>
+
+              <div class="fw-bold fs-13 text-dark mb-1">
+                {{ title || 'Titre de la notification...' }}
+              </div>
+              <div class="text-muted fs-12" style="white-space: pre-wrap; max-height: 120px; overflow-y: auto;">
+                {{ message || 'Le contenu de la notification s\'affichera ici en temps réel au fur et à mesure de votre saisie...' }}
+              </div>
+
+              <div class="mt-2 pt-2 border-top fs-10 text-muted d-flex justify-content-between align-items-center">
+                <span><i class="ri-user-follow-line me-1"></i>{{ targetRole }}</span>
+                <span><i class="ri-checkbox-circle-line text-success me-1"></i>Prêt</span>
+              </div>
             </div>
           </div>
         </div>
@@ -126,30 +174,32 @@
 
       <!-- Historique des campagnes de la session -->
       <div class="card">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0">Campagnes Récentes</h5>
+        <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Campagnes de la Session</h5>
+          <span class="badge bg-soft-success text-success fs-11">{{ recentCampaigns.length }} diffusées</span>
         </div>
         <div class="card-body p-0">
           @if (recentCampaigns.length === 0) {
-          <div class="text-center p-3 text-muted fs-sm">
-            Aucune campagne diffusée durant cette session.
+          <div class="text-center p-4 text-muted fs-13">
+            <i class="ri-history-line fs-24 d-block mb-1"></i>
+            Aucune campagne diffusée durant cette session de travail.
           </div>
           } @else {
-          <ul class="list-group list-group-flush">
+          <div class="list-group list-group-flush">
             @for (camp of recentCampaigns; track camp.id) {
-            <li class="list-group-item p-3">
+            <div class="list-group-item p-3">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong class="fs-sm">{{ camp.title }}</strong>
-                <span class="badge bg-soft-success text-success fs-xs">{{ camp.channel }}</span>
+                <strong class="fs-13 text-dark">{{ camp.title }}</strong>
+                <span class="badge bg-soft-success text-success fs-11">{{ camp.channel }}</span>
               </div>
-              <p class="text-muted fs-xs mb-1">{{ camp.message }}</p>
-              <div class="d-flex justify-content-between text-muted fs-xs">
-                <span>Rôle : {{ camp.targetRole }}</span>
-                <span>{{ camp.sentAt | date:'shortTime' }}</span>
+              <p class="text-muted fs-12 mb-1 text-truncate">{{ camp.message }}</p>
+              <div class="d-flex justify-content-between text-muted fs-11">
+                <span><i class="ri-user-shared-line me-1"></i>{{ camp.targetRole }}</span>
+                <span><i class="ri-time-line me-1"></i>{{ camp.sentAt | date:'HH:mm:ss' }}</span>
               </div>
-            </li>
+            </div>
             }
-          </ul>
+          </div>
           }
         </div>
       </div>

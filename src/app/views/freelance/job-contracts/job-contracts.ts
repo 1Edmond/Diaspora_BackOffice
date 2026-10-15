@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
-import { Icon } from '@app/components/icon/icon';
 import { FreelanceService } from '@core/services/freelance.service';
 import {
   CheckInMethod,
@@ -15,7 +14,7 @@ import {
 @Component({
   selector: 'app-job-contracts',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
   templateUrl: './job-contracts.html',
 })
 export class JobContractsComponent implements OnInit {
@@ -73,20 +72,22 @@ export class JobContractsComponent implements OnInit {
     });
   }
 
+  Math = Math;
+
   getApplicationStatusBadgeClass(status: JobApplicationStatus): string {
     switch (status) {
       case JobApplicationStatus.Pending:
-        return 'bg-warning text-dark';
+        return 'bg-soft-warning text-warning';
       case JobApplicationStatus.Accepted:
-        return 'bg-success';
+        return 'bg-soft-success text-success';
       case JobApplicationStatus.Rejected:
-        return 'bg-danger';
+        return 'bg-soft-danger text-danger';
       case JobApplicationStatus.Cancelled:
-        return 'bg-secondary';
+        return 'bg-soft-secondary text-secondary';
       case JobApplicationStatus.Completed:
-        return 'bg-info';
+        return 'bg-soft-info text-info';
       default:
-        return 'bg-secondary';
+        return 'bg-soft-secondary text-secondary';
     }
   }
 
@@ -110,17 +111,17 @@ export class JobContractsComponent implements OnInit {
   getCheckInStatusBadgeClass(status: CheckInStatus): string {
     switch (status) {
       case CheckInStatus.Pending:
-        return 'bg-warning text-dark';
+        return 'bg-soft-warning text-warning';
       case CheckInStatus.CheckedIn:
-        return 'bg-primary';
+        return 'bg-soft-primary text-primary';
       case CheckInStatus.CheckedOut:
-        return 'bg-info';
+        return 'bg-soft-info text-info';
       case CheckInStatus.Verified:
-        return 'bg-success';
+        return 'bg-soft-success text-success';
       case CheckInStatus.Disputed:
-        return 'bg-danger';
+        return 'bg-soft-danger text-danger';
       default:
-        return 'bg-secondary';
+        return 'bg-soft-secondary text-secondary';
     }
   }
 

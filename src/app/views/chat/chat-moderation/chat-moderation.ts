@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
-import { Icon } from '@app/components/icon/icon';
 import { ChatService } from '@core/services/chat.service';
 import { IdentityService } from '@core/services/identity/identity.service';
 import { ChatReport, MessageDto } from '@core/models/chat/chat.model';
@@ -10,7 +9,7 @@ import { ChatReport, MessageDto } from '@core/models/chat/chat.model';
 @Component({
   selector: 'app-chat-moderation',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
   templateUrl: './chat-moderation.html',
 })
 export class ChatModerationComponent implements OnInit {
@@ -31,9 +30,20 @@ export class ChatModerationComponent implements OnInit {
   suspendReason = '';
   suspendTargetUser: { id: string; name: string } | null = null;
   actionLoading = false;
-
   successMessage = '';
   errorMessage = '';
+
+  get pendingCount(): number {
+    return this.reports.filter((r) => r.status === 'Pending').length;
+  }
+
+  get actionTakenCount(): number {
+    return this.reports.filter((r) => r.status === 'ActionTaken').length;
+  }
+
+  get dismissedCount(): number {
+    return this.reports.filter((r) => r.status === 'Dismissed').length;
+  }
 
   constructor(
     private chatService: ChatService,

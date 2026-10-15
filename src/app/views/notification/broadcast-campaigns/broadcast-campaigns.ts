@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
-import { Icon } from '@app/components/icon/icon';
 import { NotificationService } from '@core/services/notification.service';
 import { ProfileService } from '@core/services/profile.service';
 import { ProfileTypeDto } from '@core/models/profile/profile.model';
@@ -19,7 +18,7 @@ interface SentCampaign {
 @Component({
   selector: 'app-broadcast-campaigns',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
   templateUrl: './broadcast-campaigns.html',
 })
 export class BroadcastCampaignsComponent implements OnInit {
