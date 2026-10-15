@@ -80,6 +80,11 @@ export const routes: Routes = [
         data: { title: 'KYC Verifications' },
       },
       {
+        path: 'kyc/requirements',
+        loadComponent: () => import('./views/kyc/kyc-requirements/kyc-requirements').then((m) => m.KycRequirements),
+        data: { title: 'Country KYC Requirements' },
+      },
+      {
         path: 'kyc/:id',
         loadComponent: () => import('./views/kyc/kyc-detail/kyc-detail').then((m) => m.KycDetail),
         data: { title: 'KYC Details' },

@@ -1,0 +1,285 @@
+<div class="container-fluid">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <app-page-breadcrumb title="Exigences KYC par Pays" subTitle="KYC" />
+    <button class="btn btn-primary" (click)="openCreateModal()" [disabled]="!selectedProfileTypeId">
+      <app-icon icon="plus" class="me-1"></app-icon>
+      Ajouter une exigence
+    </button>
+  </div>
+
+  @if (successMessage) {
+  <div class="alert alert-success alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+    <span>{{ successMessage }}</span>
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+  }
+
+  @if (error) {
+  <div class="alert alert-danger alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+  }
+
+  <!-- Country Selection Card -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row align-items-center g-3">
+        <div class="col-md-5 col-lg-4">
+          <label class="form-label fw-semibold">Sélectionner un pays / Profile Type :</label>
+          <div class="d-flex align-items-center gap-2">
+            <select
+              class="form-select"
+              [ngModel]="selectedProfileTypeId"
+              (ngModelChange)="onCountryChange($event)"
+              [disabled]="loadingCountries"
+            >
+              @for (c of profileTypes; track c.id) {
+              <option [value]="c.id">
+                {{ c.flag || '🏳️' }} {{ c.countryName }} ({{ c.countryCode }})
+              </option>
+              }
+            </select>
+          </div>
+        </div>
+
+        @if (selectedProfileType) {
+        <div class="col-md-7 col-lg-8">
+          <div class="d-flex align-items-center flex-wrap gap-2 pt-md-4">
+            <span class="badge bg-soft-primary text-primary fs-xs">
+              Code ISO : {{ selectedProfileType.countryCode }}
+            </span>
+            <span class="badge bg-soft-info text-info fs-xs">
+              Devise : {{ selectedProfileType.currency || 'N/A' }}
+            </span>
+            <span class="badge bg-soft-secondary text-secondary fs-xs">
+              Indicatif : {{ selectedProfileType.phoneIndicatif || 'N/A' }}
+            </span>
+            <span class="badge" [class]="selectedProfileType.isActive ? 'bg-success' : 'bg-secondary'">
+              {{ selectedProfileType.isActive ? 'Pays Actif' : 'Pays Inactif' }}
+            </span>
+            <span class="badge bg-soft-dark text-dark fs-xs ms-auto">
+              Total exigences : {{ requirements.length }}
+            </span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirements Table -->
+  <div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h5 class="card-title mb-0">
+        Pièces justificatives KYC exigées
+        @if (selectedProfileType) {
+        <span>pour <strong>{{ selectedProfileType.countryName }}</strong></span>
+        }
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Code Document</th>
+              <th>Intitulé du Document</th>
+              <th>Motif / Règle d'exigence</th>
+              <th>Caractère</th>
+              <th>Statut</th>
+              <th>Date de configuration</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of requirements; track req.id) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar flex-shrink-0">
+                    <div class="avatar-title rounded bg-soft-primary text-primary">
+                      <app-icon icon="file-check"></app-icon>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="fw-semibold">{{ req.documentTypeCode }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="text-dark">{{ getDocumentTypeName(req.documentTypeId, req.documentTypeCode) }}</span>
+              </td>
+              <td>
+                <span class="text-muted">{{ req.purpose }}</span>
+              </td>
+              <td>
+                @if (req.isRequired) {
+                <span class="badge bg-success">Requis</span>
+                } @else {
+                <span class="badge bg-secondary">Facultatif</span>
+                }
+              </td>
+              <td>
+                @if (req.isActive) {
+                <span class="badge bg-success">Actif</span>
+                } @else {
+                <span class="badge bg-danger">Inactif</span>
+                }
+              </td>
+              <td>
+                <span class="small text-muted">{{ req.createdAt | date:'short' }}</span>
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <button
+                    class="btn btn-soft-primary btn-sm"
+                    title="Modifier"
+                    (click)="openEditModal(req)"
+                  >
+                    <app-icon icon="edit-2"></app-icon>
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    [class]="req.isActive ? 'btn-soft-warning' : 'btn-soft-success'"
+                    [title]="req.isActive ? 'Désactiver' : 'Activer'"
+                    (click)="toggleActive(req)"
+                  >
+                    <app-icon [icon]="req.isActive ? 'power-off' : 'check'"></app-icon>
+                  </button>
+                  <button
+                    class="btn btn-soft-danger btn-sm"
+                    title="Supprimer"
+                    (click)="deleteRequirement(req)"
+                  >
+                    <app-icon icon="trash-2"></app-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted p-5">
+                @if (loadingRequirements) {
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                  <span class="spinner-border spinner-border-sm text-primary"></span>
+                  Chargement des exigences KYC...
+                </div>
+                } @else {
+                <div class="py-3">
+                  <div class="avatar avatar-lg mx-auto mb-3">
+                    <div class="avatar-title rounded-circle bg-soft-secondary text-secondary fs-3">
+                      <app-icon icon="file-question"></app-icon>
+                    </div>
+                  </div>
+                  <h6>Aucune exigence KYC configurée pour ce pays</h6>
+                  <p class="text-muted small mb-3">
+                    Configurez les justificatifs (passeport, carte consulaire, visa, etc.) obligatoires pour les utilisateurs de ce pays.
+                  </p>
+                  <button
+                    class="btn btn-sm btn-primary"
+                    (click)="openCreateModal()"
+                    [disabled]="!selectedProfileTypeId"
+                  >
+                    <app-icon icon="plus" class="me-1"></app-icon> Ajouter la première exigence
+                  </button>
+                </div>
+                }
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ajout / Modification -->
+  <ng-template #requirementModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">
+        {{ isEditing ? 'Modifier l\'exigence KYC' : 'Ajouter une exigence KYC' }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      @if (error) {
+      <div class="alert alert-danger mb-3">{{ error }}</div>
+      }
+
+      @if (!isEditing) {
+      <div class="mb-3">
+        <label class="form-label">Type de Document <span class="text-danger">*</span></label>
+        <select
+          class="form-select"
+          [(ngModel)]="formDocumentTypeId"
+          (ngModelChange)="onDocumentTypeSelectionChange($event)"
+        >
+          <option value="" disabled>Sélectionnez un document</option>
+          @for (dt of documentTypes; track dt.id) {
+          <option [value]="dt.id">
+            {{ dt.name }} ({{ dt.code }})
+          </option>
+          }
+        </select>
+        <div class="form-text">
+          Code document associé : <code>{{ formDocumentTypeCode || 'aucun' }}</code>
+        </div>
+      </div>
+      } @else {
+      <div class="mb-3">
+        <label class="form-label">Code Document</label>
+        <input type="text" class="form-control" [value]="formDocumentTypeCode" readonly disabled />
+      </div>
+      }
+
+      <div class="mb-3">
+        <label class="form-label">Motif / Justification de l'exigence <span class="text-danger">*</span></label>
+        <textarea
+          class="form-control"
+          rows="3"
+          [(ngModel)]="formPurpose"
+          placeholder="ex: Justificatif de séjour régulier exigé pour la vérification consulaire..."
+        ></textarea>
+        <div class="form-text">Ce motif sera indiqué aux utilisateurs lors de la soumission du KYC.</div>
+      </div>
+
+      <div class="form-check form-switch mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="isRequiredSwitch"
+          [(ngModel)]="formIsRequired"
+        />
+        <label class="form-check-label" for="isRequiredSwitch">
+          <strong>Document obligatoire</strong> (Le dossier KYC ne pourra être soumis sans cette pièce)
+        </label>
+      </div>
+
+      @if (isEditing) {
+      <div class="form-check form-switch mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="isActiveSwitch"
+          [(ngModel)]="formIsActive"
+        />
+        <label class="form-check-label" for="isActiveSwitch">
+          <strong>Exigence active</strong>
+        </label>
+      </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="closeModal()" [disabled]="saving">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-primary" (click)="saveRequirement()" [disabled]="saving || !formPurpose.trim()">
+        @if (saving) {
+        <span class="spinner-border spinner-border-sm me-1"></span>
+        }
+        {{ isEditing ? 'Mettre à jour' : 'Créer l\'exigence' }}
+      </button>
+    </div>
+  </ng-template>
+</div>

@@ -11,6 +11,11 @@ import {
   RejectKycRequest,
   RequestMoreInfoRequest,
 } from '../models/kyc/kyc.model';
+import {
+  CountryKycRequirementDto,
+  CreateCountryKycRequirementRequest,
+  UpdateCountryKycRequirementRequest,
+} from '../models/kyc/kyc-requirement.model';
 
 @Injectable({
   providedIn: 'root',
@@ -81,5 +86,24 @@ export class KycService {
     return this.http.get(`${this.apiUrl}/${verificationId}/documents/${documentId}/download`, {
       responseType: 'blob',
     });
+  }
+
+  // Requirements CRUD
+  getRequirements(profileTypeId?: string): Observable<CountryKycRequirementDto[]> {
+    const params: any = {};
+    if (profileTypeId) params.profileTypeId = profileTypeId;
+    return this.http.get<CountryKycRequirementDto[]>(`${this.apiUrl}/requirements`, { params });
+  }
+
+  createRequirement(data: CreateCountryKycRequirementRequest): Observable<CountryKycRequirementDto> {
+    return this.http.post<CountryKycRequirementDto>(`${this.apiUrl}/requirements`, data);
+  }
+
+  updateRequirement(id: string, data: UpdateCountryKycRequirementRequest): Observable<CountryKycRequirementDto> {
+    return this.http.put<CountryKycRequirementDto>(`${this.apiUrl}/requirements/${id}`, data);
+  }
+
+  deleteRequirement(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/requirements/${id}`);
   }
 }

@@ -65,6 +65,12 @@ export const menuItems: MenuItemType[] = [
         'label': 'Verifications',
         'icon': 'list-checks',
       },
+      {
+        'url': '/kyc/requirements',
+        'slug': 'pages:kyc-requirements',
+        'label': 'Requirements',
+        'icon': 'file-check',
+      },
     ],
   },
   {
