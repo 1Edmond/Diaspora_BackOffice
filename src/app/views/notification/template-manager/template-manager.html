@@ -1,0 +1,162 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Gestionnaire de Modèles" subTitle="Notifications" />
+
+  @if (successMessage) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <app-icon icon="check-circle" class="me-2"></app-icon> {{ successMessage }}
+  </div>
+  }
+  @if (errorMessage) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <app-icon icon="alert-circle" class="me-2"></app-icon> {{ errorMessage }}
+  </div>
+  }
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Modèles Transactionnels & Règles d'Événements</h5>
+          <span class="text-muted fs-sm">Configurez les canaux activés et le texte de notification par événement métier</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Catégorie</th>
+                  <th>Événement Métier</th>
+                  <th>Texte / Modèle par Défaut</th>
+                  <th>Canaux Activés</th>
+                  <th>Statut</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (loading) {
+                <tr>
+                  <td colspan="6" class="text-center p-4">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des règles...
+                  </td>
+                </tr>
+                } @else {
+                  @for (tpl of systemCatalog; track tpl.eventType) {
+                  <tr>
+                    <td>
+                      <span class="badge bg-light text-dark border">{{ tpl.category }}</span>
+                    </td>
+                    <td>
+                      <div class="fw-semibold">{{ tpl.label }}</div>
+                      <small class="text-muted font-monospace fs-xs">{{ tpl.eventType }}</small>
+                    </td>
+                    <td>
+                      <div class="fs-xs text-muted" style="max-width: 380px;">{{ tpl.defaultMessage }}</div>
+                    </td>
+                    <td>
+                      <div class="d-flex gap-1">
+                        @if (hasChannel(tpl.eventType, 1)) {
+                        <span class="badge bg-soft-info text-info fs-xxs">In-App</span>
+                        }
+                        @if (hasChannel(tpl.eventType, 2)) {
+                        <span class="badge bg-soft-primary text-primary fs-xxs">Push</span>
+                        }
+                        @if (hasChannel(tpl.eventType, 4)) {
+                        <span class="badge bg-soft-success text-success fs-xxs">Email</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      @if (getRuleFor(tpl.eventType)?.isActive ?? true) {
+                      <span class="badge bg-success">Actif</span>
+                      } @else {
+                      <span class="badge bg-secondary">Désactivé</span>
+                      }
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-soft-primary btn-sm" (click)="openEdit(tpl)" title="Configurer canaux et modèle">
+                        <app-icon icon="settings" class="me-1"></app-icon> Configurer
+                      </button>
+                    </td>
+                  </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal d'édition de modèle -->
+  @if (showEditModal && selectedTemplate) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">
+            <app-icon icon="edit" class="me-1"></app-icon> {{ selectedTemplate.label }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeEdit()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Statut de la Règle</label>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="editIsActive" id="activeRuleSwitch">
+              <label class="form-check-label" for="activeRuleSwitch">
+                {{ editIsActive ? 'Règle Active (les notifications sont envoyées)' : 'Règle Inactive (notifications suspendues pour cet événement)' }}
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Canaux autorisés pour cet événement</label>
+            <div class="d-flex gap-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editInApp" id="checkInApp">
+                <label class="form-check-label" for="checkInApp">Notification In-App</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editPush" id="checkPush">
+                <label class="form-check-label" for="checkPush">Push Mobile</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editEmail" id="checkEmail">
+                <label class="form-check-label" for="checkEmail">Email</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Texte du Modèle</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="editCustomText"></textarea>
+            <small class="text-muted">Cliquez sur une variable pour l'insérer automatiquement :</small>
+            <div class="mt-1 d-flex gap-1 flex-wrap">
+              @for (ph of selectedTemplate.supportedPlaceholders; track ph) {
+              <button type="button" class="btn btn-xs btn-outline-secondary" (click)="insertPlaceholder(ph)">
+                {{ ph }}
+              </button>
+              }
+            </div>
+          </div>
+
+          <div class="card bg-light border p-3">
+            <h6 class="text-uppercase text-muted fs-xs fw-bold mb-1">Aperçu en direct</h6>
+            <div class="fs-sm">{{ editCustomText }}</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEdit()" [disabled]="saving">Annuler</button>
+          <button type="button" class="btn btn-primary" (click)="saveRule()" [disabled]="saving">
+            @if (saving) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            Enregistrer la règle
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

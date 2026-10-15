@@ -283,6 +283,18 @@ export const menuItems: MenuItemType[] = [
         'label': 'Preferences',
         'icon': 'settings',
       },
+      {
+        'url': '/notifications/broadcast',
+        'slug': 'pages:notifications-broadcast',
+        'label': 'Broadcast Campaigns',
+        'icon': 'send',
+      },
+      {
+        'url': '/notifications/templates',
+        'slug': 'pages:notifications-templates',
+        'label': 'Templates & Rules',
+        'icon': 'file-text',
+      },
     ],
   },
 ]

@@ -265,6 +265,16 @@ export const routes: Routes = [
         data: { title: 'Notification Preferences' },
       },
       {
+        path: 'notifications/broadcast',
+        loadComponent: () => import('./views/notification/broadcast-campaigns/broadcast-campaigns').then((m) => m.BroadcastCampaignsComponent),
+        data: { title: 'Broadcast Campaigns' },
+      },
+      {
+        path: 'notifications/templates',
+        loadComponent: () => import('./views/notification/template-manager/template-manager').then((m) => m.TemplateManagerComponent),
+        data: { title: 'Notification Templates' },
+      },
+      {
         path: 'pages/empty',
         loadComponent: () => import('./views/pages/empty/empty').then((m) => m.Empty),
         data: { title: 'Empty Page' },

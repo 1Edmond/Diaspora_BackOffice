@@ -1,0 +1,158 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Diffusion de Campagnes" subTitle="Notifications" />
+
+  @if (successMessage) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <app-icon icon="check-circle" class="me-2"></app-icon> {{ successMessage }}
+  </div>
+  }
+  @if (errorMessage) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <app-icon icon="alert-circle" class="me-2"></app-icon> {{ errorMessage }}
+  </div>
+  }
+
+  <div class="row">
+    <!-- Formulaire de composition -->
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="card-title mb-0">
+            <app-icon icon="send" class="me-1"></app-icon> Composer une Campagne Broadcast
+          </h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="sendCampaign()">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Titre de la notification <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Ex: Information consulaire importante / Mise à jour Diaspora..."
+                [(ngModel)]="title"
+                name="title"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Message complet <span class="text-danger">*</span></label>
+              <textarea
+                class="form-control"
+                rows="4"
+                placeholder="Rédigez le texte de la notification qui sera distribuée aux utilisateurs..."
+                [(ngModel)]="message"
+                name="message"
+                required
+              ></textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Canaux de diffusion</label>
+                <select class="form-select" [(ngModel)]="channel" name="channel">
+                  <option value="All">Tous les canaux (Push + In-App)</option>
+                  <option value="InApp">In-App uniquement</option>
+                  <option value="Push">Push Mobile uniquement</option>
+                  <option value="Email">Email uniquement</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Ciblage par Rôle</label>
+                <select class="form-select" [(ngModel)]="targetRole" name="targetRole">
+                  <option value="All">Tous les utilisateurs</option>
+                  <option value="Citizen">Citoyens</option>
+                  <option value="Provider">Prestataires Marketplace</option>
+                  <option value="Freelancer">Travailleurs Freelance</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-bold">Ciblage Géographique / Pays</label>
+                <select class="form-select" [(ngModel)]="selectedProfileTypeId" name="selectedProfileTypeId">
+                  <option value="">Tous les pays (Diffusion Globale)</option>
+                  @for (pt of profileTypes; track pt.id) {
+                  <option [value]="pt.id">{{ pt.flag }} {{ pt.countryName }} ({{ pt.countryCode }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="!title.trim() || !message.trim() || sending"
+              >
+                @if (sending) {
+                <span class="spinner-border spinner-border-sm me-1"></span> Diffusion en cours...
+                } @else {
+                <app-icon icon="send" class="me-1"></app-icon> Diffuser la campagne
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prévisualisation Mobile et Historique -->
+    <div class="col-lg-5">
+      <div class="card mb-3">
+        <div class="card-header bg-light">
+          <h5 class="card-title mb-0">
+            <app-icon icon="smartphone" class="me-1"></app-icon> Aperçu Mobile
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="border rounded p-3 bg-light position-relative">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <div class="avatar avatar-xs bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                <app-icon icon="bell" class="fs-xs"></app-icon>
+              </div>
+              <strong class="fs-xs text-uppercase">Diaspora Mobile</strong>
+              <small class="text-muted ms-auto fs-xs">À l'instant</small>
+            </div>
+            <div class="fw-bold fs-sm">{{ title || 'Titre de la notification...' }}</div>
+            <div class="text-muted fs-xs" style="white-space: pre-wrap;">{{ message || 'Le message de la notification apparaîtra ici tel qu\'affiché sur le smartphone du citoyen.' }}</div>
+            <div class="mt-2 pt-1 border-top fs-xxs text-muted d-flex justify-content-between">
+              <span>Canal : {{ channel }}</span>
+              <span>Cible : {{ targetRole }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historique des campagnes de la session -->
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="card-title mb-0">Campagnes Récentes</h5>
+        </div>
+        <div class="card-body p-0">
+          @if (recentCampaigns.length === 0) {
+          <div class="text-center p-3 text-muted fs-sm">
+            Aucune campagne diffusée durant cette session.
+          </div>
+          } @else {
+          <ul class="list-group list-group-flush">
+            @for (camp of recentCampaigns; track camp.id) {
+            <li class="list-group-item p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong class="fs-sm">{{ camp.title }}</strong>
+                <span class="badge bg-soft-success text-success fs-xs">{{ camp.channel }}</span>
+              </div>
+              <p class="text-muted fs-xs mb-1">{{ camp.message }}</p>
+              <div class="d-flex justify-content-between text-muted fs-xs">
+                <span>Rôle : {{ camp.targetRole }}</span>
+                <span>{{ camp.sentAt | date:'shortTime' }}</span>
+              </div>
+            </li>
+            }
+          </ul>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

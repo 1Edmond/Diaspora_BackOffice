@@ -52,4 +52,14 @@ export class NotificationService {
   deleteRule(eventType: string): Observable<void> {
     return this.http.delete<void>(`${this.rulesUrl}/${eventType}`);
   }
+
+  broadcastCampaign(data: {
+    title: string;
+    message: string;
+    channel?: string;
+    targetRole?: string;
+    profileTypeId?: string;
+  }): Observable<{ id: string; message: string }> {
+    return this.http.post<{ id: string; message: string }>(`${this.apiUrl}/broadcast`, data);
+  }
 }
