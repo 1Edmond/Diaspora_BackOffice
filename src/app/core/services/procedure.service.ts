@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse, PagedList } from '../models/shared/base-response.model';
-import { ProcedureProfileType } from '../models/shared/enums.model';
+import { ProcedureProfileType, UserProcedureStatus } from '../models/shared/enums.model';
 import {
   CompleteUserProcedureRequest,
   CreateLocationRequest,
@@ -54,6 +54,13 @@ export class ProcedureService {
 
   deleteProcedure(id: string): Observable<BaseResponse> {
     return this.http.delete<BaseResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  getAllUserProceduresAdmin(status?: UserProcedureStatus, procedureId?: string, pageNumber = 1, pageSize = 20): Observable<PagedList<UserProcedureDto>> {
+    const params: any = { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() };
+    if (status !== undefined && status !== null) params.status = status.toString();
+    if (procedureId) params.procedureId = procedureId;
+    return this.http.get<PagedList<UserProcedureDto>>(`${this.userProcApiUrl}/admin/all`, { params });
   }
 
   getUserProcedures(profileId: string, pageNumber = 1, pageSize = 10): Observable<PagedList<UserProcedureDto>> {
