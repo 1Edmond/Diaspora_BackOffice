@@ -193,6 +193,12 @@ export const menuItems: MenuItemType[] = [
         'label': 'Providers Analytics',
         'icon': 'users',
       },
+      {
+        'url': '/marketplace/disputes',
+        'slug': 'pages:marketplace-disputes',
+        'label': 'Disputes',
+        'icon': 'alert-triangle',
+      },
     ],
   },
   {

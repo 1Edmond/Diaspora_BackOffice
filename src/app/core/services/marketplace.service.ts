@@ -24,6 +24,11 @@ import {
   UpdateCategoryPolicyRequest,
   UpdateListingRequest,
 } from '../models/marketplace/marketplace.model';
+import {
+  DisputeDto,
+  DisputeStatus,
+  ResolveDisputeRequest,
+} from '../models/marketplace/dispute.model';
 
 @Injectable({
   providedIn: 'root',
@@ -220,5 +225,19 @@ export class MarketplaceService {
 
   resolveReport(id: string, status: number, notes: string): Observable<BaseResponse> {
     return this.http.post<BaseResponse>(`${environment.apiBaseUrl}/api/reports/${id}/resolve`, { status, notes });
+  }
+
+  getDisputes(status?: DisputeStatus, pageNumber = 1, pageSize = 20): Observable<PagedList<DisputeDto>> {
+    const params: any = { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() };
+    if (status != null) params.status = status.toString();
+    return this.http.get<PagedList<DisputeDto>>(`${environment.apiBaseUrl}/api/disputes`, { params });
+  }
+
+  getDispute(id: string): Observable<DisputeDto> {
+    return this.http.get<DisputeDto>(`${environment.apiBaseUrl}/api/disputes/${id}`);
+  }
+
+  resolveDispute(id: string, request: ResolveDisputeRequest): Observable<any> {
+    return this.http.post<any>(`${environment.apiBaseUrl}/api/disputes/${id}/resolve`, request);
   }
 }

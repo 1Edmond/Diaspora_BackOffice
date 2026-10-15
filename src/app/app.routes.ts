@@ -210,6 +210,11 @@ export const routes: Routes = [
         data: { title: 'Providers Analytics' },
       },
       {
+        path: 'marketplace/disputes',
+        loadComponent: () => import('./views/marketplace/disputes/disputes').then((m) => m.Disputes),
+        data: { title: 'Disputes' },
+      },
+      {
         path: 'wallet',
         loadComponent: () => import('./views/wallet/wallet/wallet').then((m) => m.WalletComponent),
         data: { title: 'Wallet' },

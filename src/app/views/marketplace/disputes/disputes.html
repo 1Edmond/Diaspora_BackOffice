@@ -1,0 +1,429 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Litiges & Arbitrage des Séquestres" subTitle="Marketplace" />
+
+  <!-- Success Notification -->
+  @if (successMessage) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="alert alert-success alert-dismissible fade show d-flex align-items-center justify-content-between" role="alert">
+        <div class="d-flex align-items-center gap-2">
+          <app-icon icon="check-circle" class="fs-5"></app-icon>
+          <span>{{ successMessage }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Error Notification -->
+  @if (error) {
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center justify-content-between" role="alert">
+        <div class="d-flex align-items-center gap-2">
+          <app-icon icon="alert-triangle" class="fs-5"></app-icon>
+          <span>{{ error }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Navigation Tabs and Filters -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <ul class="nav nav-pills nav-fill-sm mb-0">
+            <li class="nav-item">
+              <a class="nav-link cursor-pointer" [class.active]="tab === 'all'" (click)="switchTab('all')">
+                <app-icon icon="list" class="me-1"></app-icon> Tous
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link cursor-pointer" [class.active]="tab === 'active'" (click)="switchTab('active')">
+                <app-icon icon="clock" class="me-1"></app-icon> Ouverts / En cours
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link cursor-pointer" [class.active]="tab === 'resolved'" (click)="switchTab('resolved')">
+                <app-icon icon="check-circle" class="me-1"></app-icon> Résolus / Clos
+              </a>
+            </li>
+          </ul>
+
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" style="min-width: 180px;" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+              <option [ngValue]="null">Tous les statuts</option>
+              @if (tab === 'all' || tab === 'active') {
+                <option [ngValue]="DisputeStatus.Opened">Ouvert</option>
+                <option [ngValue]="DisputeStatus.UnderReview">En cours d'examen</option>
+              }
+              @if (tab === 'all' || tab === 'resolved') {
+                <option [ngValue]="DisputeStatus.ResolvedBuyerRefunded">Remboursé (Acheteur)</option>
+                <option [ngValue]="DisputeStatus.ResolvedSellerPaid">Payé (Vendeur)</option>
+                <option [ngValue]="DisputeStatus.ResolvedSplit">Répartition partagée</option>
+                <option [ngValue]="DisputeStatus.Dismissed">Rejeté</option>
+              }
+            </select>
+
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadDisputes()" [disabled]="loading" title="Rafraîchir">
+              <app-icon icon="refresh-cw" [class.spin]="loading"></app-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disputes Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex align-items-center justify-content-between bg-transparent">
+          <h5 class="mb-0">Dossiers de litiges ({{ totalCount }} trouvés)</h5>
+        </div>
+
+        <div class="card-body p-0">
+          @if (loading) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted mt-2">Chargement des litiges...</p>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Litige</th>
+                    <th>Date</th>
+                    <th>Demandeur / Défendeur</th>
+                    <th>Motif</th>
+                    <th>Montant Séquestre</th>
+                    <th>Statut</th>
+                    <th class="text-end" style="width: 170px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (dispute of disputes(); track dispute.id) {
+                    <tr>
+                      <td>
+                        <span class="fw-semibold text-primary font-monospace">#{{ dispute.id.substring(0, 8) }}</span>
+                        <div class="text-muted small">Demande: {{ dispute.serviceRequestId.substring(0, 8) }}</div>
+                      </td>
+                      <td>
+                        <span class="d-block">{{ dispute.createdAt | date:'dd/MM/yyyy' }}</span>
+                        <span class="text-muted small">{{ dispute.createdAt | date:'HH:mm' }}</span>
+                      </td>
+                      <td>
+                        <div>
+                          <span class="badge bg-soft-info text-info me-1">Dem</span>
+                          <strong>{{ dispute.initiatorName || dispute.initiatorId.substring(0, 8) }}</strong>
+                        </div>
+                        <div class="mt-1">
+                          <span class="badge bg-soft-secondary text-secondary me-1">Déf</span>
+                          <span class="text-muted">{{ dispute.defendantName || dispute.defendantId.substring(0, 8) }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="fw-medium d-block text-truncate" style="max-width: 250px;">{{ dispute.reason }}</span>
+                        <span class="text-muted small text-truncate d-block" style="max-width: 250px;">{{ dispute.description }}</span>
+                        @if (dispute.evidenceUrls && dispute.evidenceUrls.length > 0) {
+                          <span class="badge bg-soft-primary text-primary mt-1">
+                            <app-icon icon="paperclip" class="me-1"></app-icon>{{ dispute.evidenceUrls.length }} pièce(s)
+                          </span>
+                        }
+                      </td>
+                      <td>
+                        <span class="fw-bold">{{ dispute.serviceRequestAgreedPrice | currency:(dispute.serviceRequestCurrency || 'EUR'):'symbol':'1.0-2' }}</span>
+                      </td>
+                      <td>
+                        <span class="badge" [class]="'bg-' + DisputeStatusBadgeVariants[dispute.status]">
+                          {{ DisputeStatusLabels[dispute.status] }}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button class="btn btn-outline-info" (click)="openDetailsModal(detailsModal, dispute)" title="Consulter le dossier">
+                            <app-icon icon="eye" class="me-1"></app-icon> Détails
+                          </button>
+                          @if (!isTerminalStatus(dispute.status)) {
+                            <button class="btn btn-primary" (click)="openArbitrationModal(resolveModal, dispute)" title="Arbitrer le séquestre">
+                              <app-icon icon="scale" class="me-1"></app-icon> Arbitrer
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" class="text-center py-5 text-muted">
+                        <app-icon icon="shield-alert" class="fs-1 d-block mb-2 text-secondary"></app-icon>
+                        <p class="mb-0 fw-medium">Aucun litige correspondant aux critères.</p>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1 && !loading) {
+              <div class="card-footer d-flex justify-content-between align-items-center bg-transparent py-3">
+                <span class="text-muted small">Page {{ page }} sur {{ totalPages }} ({{ totalCount }} litiges au total)</span>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
+                    Précédent
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
+                    Suivant
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <ng-template #detailsModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title d-flex align-items-center gap-2">
+        <app-icon icon="file-text" class="text-primary"></app-icon>
+        Dossier de Litige #{{ selectedDispute?.id?.substring(0, 8) }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeDetailsModal()"></button>
+    </div>
+    <div class="modal-body">
+      @if (selectedDispute) {
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded">
+              <span class="text-muted small text-uppercase d-block mb-1">Demandeur (Acheteur)</span>
+              <strong>{{ selectedDispute.initiatorName || 'Non renseigné' }}</strong>
+              <div class="text-muted font-monospace small">ID: {{ selectedDispute.initiatorId }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded">
+              <span class="text-muted small text-uppercase d-block mb-1">Défendeur (Prestataire)</span>
+              <strong>{{ selectedDispute.defendantName || 'Non renseigné' }}</strong>
+              <div class="text-muted font-monospace small">ID: {{ selectedDispute.defendantId }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <span class="text-muted small text-uppercase d-block">Montant Séquestre</span>
+            <span class="fw-bold fs-5 text-dark">
+              {{ selectedDispute.serviceRequestAgreedPrice | currency:(selectedDispute.serviceRequestCurrency || 'EUR'):'symbol':'1.0-2' }}
+            </span>
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted small text-uppercase d-block">Statut du litige</span>
+            <span class="badge mt-1" [class]="'bg-' + DisputeStatusBadgeVariants[selectedDispute.status]">
+              {{ DisputeStatusLabels[selectedDispute.status] }}
+            </span>
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted small text-uppercase d-block">Date d'ouverture</span>
+            <span class="text-dark">{{ selectedDispute.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark">Motif du litige</label>
+          <div class="p-2 border rounded bg-white">{{ selectedDispute.reason }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark">Description détaillée</label>
+          <div class="p-3 border rounded bg-white" style="white-space: pre-wrap;">{{ selectedDispute.description || 'Aucune description fournie.' }}</div>
+        </div>
+
+        <!-- Evidence Section -->
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark">Pièces justificatives & Preuves</label>
+          @if (selectedDispute.evidenceUrls && selectedDispute.evidenceUrls.length > 0) {
+            <div class="row g-2">
+              @for (url of selectedDispute.evidenceUrls; track url) {
+                <div class="col-sm-6 col-md-4">
+                  <div class="border rounded p-2 text-center h-100 d-flex flex-column justify-content-between bg-white">
+                    @if (isImage(url)) {
+                      <a [href]="url" target="_blank" rel="noopener noreferrer">
+                        <img [src]="url" alt="Preuve" class="evidence-preview-img w-100 mb-2" />
+                      </a>
+                    } @else {
+                      <div class="py-4 text-center">
+                        <app-icon icon="file" class="fs-1 text-secondary mb-1"></app-icon>
+                        <span class="small text-truncate d-block px-1">Document externe</span>
+                      </div>
+                    }
+                    <a [href]="url" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary mt-1">
+                      <app-icon icon="external-link" class="me-1"></app-icon> Ouvrir la pièce
+                    </a>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-muted font-italic mb-0">Aucune pièce justificative attachée à ce dossier.</p>
+          }
+        </div>
+
+        <!-- Resolution Details (if resolved) -->
+        @if (isTerminalStatus(selectedDispute.status)) {
+          <div class="alert alert-secondary mt-3">
+            <h6 class="fw-bold mb-2 d-flex align-items-center gap-1">
+              <app-icon icon="check-circle" class="text-success"></app-icon> Détails de la Résolution
+            </h6>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <span class="text-muted small d-block">Arbitré le :</span>
+                <strong>{{ selectedDispute.resolvedAt | date:'dd/MM/yyyy HH:mm' }}</strong>
+              </div>
+              <div class="col-md-6">
+                <span class="text-muted small d-block">Part Acheteur / Vendeur :</span>
+                <strong>{{ selectedDispute.buyerRefundPercentage ?? 0 }}% remboursé / {{ selectedDispute.sellerPayoutPercentage ?? 0 }}% payé</strong>
+              </div>
+            </div>
+            <div>
+              <span class="text-muted small d-block">Notes d'arbitrage :</span>
+              <p class="mb-0 fst-italic">{{ selectedDispute.resolutionNotes || 'Aucune note enregistrée.' }}</p>
+            </div>
+          </div>
+        }
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">Fermer</button>
+      @if (selectedDispute && !isTerminalStatus(selectedDispute.status)) {
+        <button type="button" class="btn btn-primary" (click)="closeDetailsModal(); openArbitrationModal(resolveModal, selectedDispute)">
+          <app-icon icon="scale" class="me-1"></app-icon> Passer à l'Arbitrage
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Arbitration Modal -->
+  <ng-template #resolveModal let-modal>
+    <div class="modal-header bg-soft-primary">
+      <h5 class="modal-title d-flex align-items-center gap-2 text-primary">
+        <app-icon icon="scale"></app-icon> Arbitrage du Séquestre — Litige #{{ arbitratingDispute?.id?.substring(0, 8) }}
+      </h5>
+      <button type="button" class="btn-close" (click)="closeArbitrationModal()"></button>
+    </div>
+    <div class="modal-body">
+      @if (arbitrationError) {
+        <div class="alert alert-danger mb-3">{{ arbitrationError }}</div>
+      }
+
+      @if (arbitratingDispute) {
+        <div class="p-3 bg-light rounded mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="text-muted small text-uppercase d-block">Montant sous séquestre</span>
+              <span class="fs-4 fw-bold text-primary">
+                {{ arbitratingDispute.serviceRequestAgreedPrice | currency:(arbitratingDispute.serviceRequestCurrency || 'EUR'):'symbol':'1.0-2' }}
+              </span>
+            </div>
+            <div class="text-end">
+              <span class="text-muted small text-uppercase d-block">Motif du litige</span>
+              <strong class="text-dark">{{ arbitratingDispute.reason }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Décision d'Arbitrage <span class="text-danger">*</span></label>
+          <div class="list-group">
+            <label class="list-group-item d-flex align-items-center gap-3 cursor-pointer">
+              <input class="form-check-input flex-shrink-0" type="radio" name="arbitrationMode" value="buyer_100" [(ngModel)]="arbitrationMode" (change)="onArbitrationModeChange()" />
+              <div>
+                <strong class="d-block text-success">Remboursement acheteur 100%</strong>
+                <small class="text-muted">Les fonds sous séquestre sont intégralement reversés à l'acheteur. Le prestataire ne perçoit aucun paiement.</small>
+              </div>
+            </label>
+
+            <label class="list-group-item d-flex align-items-center gap-3 cursor-pointer">
+              <input class="form-check-input flex-shrink-0" type="radio" name="arbitrationMode" value="seller_100" [(ngModel)]="arbitrationMode" (change)="onArbitrationModeChange()" />
+              <div>
+                <strong class="d-block text-primary">Paiement prestataire 100%</strong>
+                <small class="text-muted">Les fonds sous séquestre sont débloqués et versés en totalité au prestataire de service.</small>
+              </div>
+            </label>
+
+            <label class="list-group-item d-flex align-items-center gap-3 cursor-pointer">
+              <input class="form-check-input flex-shrink-0" type="radio" name="arbitrationMode" value="split" [(ngModel)]="arbitrationMode" (change)="onArbitrationModeChange()" />
+              <div>
+                <strong class="d-block text-warning">Répartition partagée (Pourcentage personnalisé)</strong>
+                <small class="text-muted">Partage des fonds entre l'acheteur et le prestataire selon des pourcentages définis (total = 100%).</small>
+              </div>
+            </label>
+
+            <label class="list-group-item d-flex align-items-center gap-3 cursor-pointer">
+              <input class="form-check-input flex-shrink-0" type="radio" name="arbitrationMode" value="dismiss" [(ngModel)]="arbitrationMode" (change)="onArbitrationModeChange()" />
+              <div>
+                <strong class="d-block text-danger">Rejeter le litige</strong>
+                <small class="text-muted">Le litige est classé sans suite / rejeté pour absence de fondement.</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Split Percentage Inputs -->
+        @if (arbitrationMode === 'split') {
+          <div class="card bg-light border-warning mb-3">
+            <div class="card-body">
+              <h6 class="fw-bold mb-3 text-warning">Répartition des pourcentages (Somme = 100%)</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-medium">% Remboursement Acheteur</label>
+                  <div class="input-group">
+                    <input type="number" min="0" max="100" class="form-control" [ngModel]="buyerRefundPercentage" (ngModelChange)="onBuyerPercentChange($event)" />
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-medium">% Versement Prestataire</label>
+                  <div class="input-group">
+                    <input type="number" min="0" max="100" class="form-control" [ngModel]="sellerPayoutPercentage" (ngModelChange)="onSellerPercentChange($event)" />
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+              </div>
+              @if (buyerRefundPercentage + sellerPayoutPercentage !== 100) {
+                <div class="text-danger small mt-2">
+                  <app-icon icon="alert-circle" class="me-1"></app-icon> La somme des deux pourcentages doit être exactement égale à 100% (actuel: {{ buyerRefundPercentage + sellerPayoutPercentage }}%).
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Resolution Notes -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Notes d'arbitrage obligatoires <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="4" [(ngModel)]="resolutionNotes" placeholder="Indiquez les motifs et conclusions de la décision d'arbitrage..."></textarea>
+          <div class="form-text">Ce motif sera enregistré dans le dossier d'arbitrage et consultable dans l'historique du litige.</div>
+        </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeArbitrationModal()" [disabled]="resolving">Annuler</button>
+      <button type="button" class="btn btn-primary" (click)="submitArbitration()" [disabled]="resolving || !isArbitrationValid()">
+        @if (resolving) {
+          <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+        }
+        <app-icon icon="check" class="me-1"></app-icon> Confirmer la Décision d'Arbitrage
+      </button>
+    </div>
+  </ng-template>
+</div>
