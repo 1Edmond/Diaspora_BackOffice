@@ -1,38 +1,102 @@
 <div class="container-fluid">
   <app-page-breadcrumb title="Documents" subTitle="Document" />
 
+  @if (actionSuccessMessage) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{actionSuccessMessage}}
+    <button type="button" class="btn-close" (click)="actionSuccessMessage = ''"></button>
+  </div>
+  }
+
+  @if (actionErrorMessage) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{actionErrorMessage}}
+    <button type="button" class="btn-close" (click)="actionErrorMessage = ''"></button>
+  </div>
+  }
+
   <div class="row">
     <div class="col-12">
+      <!-- Tabs Navigation -->
+      <ul class="nav nav-pills mb-3 gap-2">
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')">
+            <app-icon icon="clock" class="me-1 fs-sm"></app-icon> En attente
+            @if (activeTab === 'pending' && totalCount > 0) {
+            <span class="badge bg-warning text-dark ms-1">{{totalCount}}</span>
+            }
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'expiring'" (click)="switchTab('expiring')">
+            <app-icon icon="alert-triangle" class="me-1 fs-sm"></app-icon> Expirant bientôt
+            @if (activeTab === 'expiring' && totalCount > 0) {
+            <span class="badge bg-danger text-white ms-1">{{totalCount}}</span>
+            }
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'by-profile'" (click)="switchTab('by-profile')">
+            <app-icon icon="user" class="me-1 fs-sm"></app-icon> Par profil
+          </button>
+        </li>
+      </ul>
+
       <div class="card">
         <div class="card-header border-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+          @if (activeTab === 'by-profile') {
           <div class="d-flex gap-2 flex-grow-1 align-items-center" style="max-width: 400px;">
             <div class="flex-grow-1">
-              <label class="form-label fw-medium fs-sm mb-1 text-muted">Select Profile</label>
-              <app-profile-search-dropdown [placeholder]="'Search by name or email...'" (onProfileSelect)="onProfileSelect($event)" />
+              <label class="form-label fw-medium fs-sm mb-1 text-muted">Sélectionner un profil</label>
+              <app-profile-search-dropdown [placeholder]="'Rechercher par nom ou email...'" (onProfileSelect)="onProfileSelect($event)" />
             </div>
           </div>
-          
+
           <div class="d-flex align-items-center gap-2 mt-auto mb-1">
             @if (profileId) {
             <button class="btn btn-primary" (click)="openUploadModal(uploadModal)">
-              <app-icon icon="plus" class="me-1 fs-sm"></app-icon> Upload Document
+              <app-icon icon="plus" class="me-1 fs-sm"></app-icon> Téléverser un document
             </button>
             }
           </div>
+          } @else if (activeTab === 'pending') {
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="card-title mb-0">File d'Attente Globale des Documents</h5>
+            <span class="badge bg-light text-muted border">{{totalCount}} document(s) à valider</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
+              <app-icon icon="refresh-cw" class="fs-sm me-1"></app-icon> Actualiser
+            </button>
+          </div>
+          } @else if (activeTab === 'expiring') {
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="card-title mb-0">Alertes — Documents Expirant dans les 30 Jours</h5>
+            <span class="badge bg-danger-subtle text-danger">{{totalCount}} document(s)</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
+              <app-icon icon="refresh-cw" class="fs-sm me-1"></app-icon> Actualiser
+            </button>
+          </div>
+          }
         </div>
 
-        @if (profileId) {
+        @if (activeTab !== 'by-profile' || profileId) {
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
               <thead class="bg-light bg-opacity-25 thead-sm">
                 <tr class="text-uppercase fs-xxs">
-                  <th>File Name</th>
+                  <th>Nom du fichier</th>
+                  @if (activeTab !== 'by-profile') {
+                  <th>Profil</th>
+                  }
                   <th>Type</th>
-                  <th>Size</th>
-                  <th>Status</th>
-                  <th>Expires</th>
-                  <th>Uploaded</th>
+                  <th>Taille</th>
+                  <th>Statut</th>
+                  <th>Expiration</th>
+                  <th>Date d'ajout</th>
                   <th class="text-center">Actions</th>
                 </tr>
               </thead>
@@ -46,28 +110,80 @@
                           <app-icon icon="file-text" class="fs-18"></app-icon>
                         </div>
                       </div>
-                      <a [routerLink]="['/documents', doc.id]" class="fw-medium link-reset">{{doc.fileName}}</a>
+                      <div>
+                        <a [routerLink]="['/documents', doc.id]" class="fw-medium link-reset">{{doc.fileName}}</a>
+                        @if (doc.rejectionReason) {
+                        <div class="text-danger small fs-xxs">Rejet: {{doc.rejectionReason}}</div>
+                        }
+                      </div>
                     </div>
                   </td>
+                  @if (activeTab !== 'by-profile') {
+                  <td>
+                    <span class="font-monospace fs-xs text-muted" [title]="doc.profileId">
+                      {{doc.profileId.substring(0, 8)}}...
+                    </span>
+                  </td>
+                  }
                   <td><span class="badge bg-info-subtle text-info">{{doc.documentTypeName || 'N/A'}}</span></td>
                   <td>{{(doc.fileSize / 1024).toFixed(1)}} KB</td>
                   <td>
-                    <span class="badge" [class]="'bg-' + statusBadges[doc.status] + '-subtle text-' + statusBadges[doc.status]">{{statusLabels[doc.status]}}</span>
+                    <span class="badge" [class]="'bg-' + statusBadges[doc.status] + '-subtle text-' + statusBadges[doc.status]">
+                      {{statusLabels[doc.status]}}
+                    </span>
                   </td>
-                  <td>{{doc.expiresAt ? (doc.expiresAt | date:'short') : '—'}}</td>
+                  <td>
+                    @if (doc.expiresAt) {
+                    <span [class.text-danger]="activeTab === 'expiring'">{{doc.expiresAt | date:'short'}}</span>
+                    } @else {
+                    <span class="text-muted">—</span>
+                    }
+                  </td>
                   <td>{{doc.createdAt | date:'short'}}</td>
                   <td>
                     <div class="d-flex align-items-center justify-content-center gap-1">
-                      <a [routerLink]="['/documents', doc.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="View"><app-icon icon="eye" class="fs-lg"></app-icon></a>
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-primary" (click)="downloadDocument(doc)" title="Download"><app-icon icon="download" class="fs-lg"></app-icon></button>
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="onDelete(doc)" title="Delete"><app-icon icon="trash-2" class="fs-lg"></app-icon></button>
+                      <!-- Validation Actions for Pending Documents -->
+                      @if (doc.status === DocumentStatus.Pending) {
+                      <button
+                        class="btn btn-default btn-icon btn-sm rounded-circle text-success"
+                        (click)="validateDocument(doc)"
+                        [disabled]="validatingDocId === doc.id"
+                        title="Valider">
+                        @if (validatingDocId === doc.id) {
+                        <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                        <app-icon icon="check-circle" class="fs-lg"></app-icon>
+                        }
+                      </button>
+                      <button
+                        class="btn btn-default btn-icon btn-sm rounded-circle text-danger"
+                        (click)="openRejectModal(rejectModal, doc)"
+                        title="Rejeter">
+                        <app-icon icon="x-circle" class="fs-lg"></app-icon>
+                      </button>
+                      }
+
+                      <!-- Standard Actions -->
+                      <a [routerLink]="['/documents', doc.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="Consulter"><app-icon icon="eye" class="fs-lg"></app-icon></a>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-primary" (click)="downloadDocument(doc)" title="Télécharger"><app-icon icon="download" class="fs-lg"></app-icon></button>
+                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="onDelete(doc)" title="Supprimer"><app-icon icon="trash-2" class="fs-lg"></app-icon></button>
                     </div>
                   </td>
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="7" class="text-center text-muted py-5">
-                    @if(loading) { <span class="spinner-border spinner-border-sm me-2"></span> Loading... } @else { No documents found for this profile }
+                  <td [attr.colspan]="activeTab !== 'by-profile' ? 8 : 7" class="text-center text-muted py-5">
+                    @if (loading) {
+                      <span class="spinner-border spinner-border-sm me-2"></span> Chargement en cours...
+                    } @else {
+                      @if (activeTab === 'pending') {
+                        Aucun document en attente de validation.
+                      } @else if (activeTab === 'expiring') {
+                        Aucun document expirant bientôt.
+                      } @else {
+                        Aucun document trouvé pour ce profil.
+                      }
+                    }
                   </td>
                 </tr>
                 }
@@ -75,13 +191,14 @@
             </table>
           </div>
         </div>
+
         <div class="card-footer border-0">
           @if(totalPages > 1) {
           <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted small">Page {{page}} of {{totalPages}} ({{totalCount}} total)</span>
+            <span class="text-muted small">Page {{page}} sur {{totalPages}} ({{totalCount}} total)</span>
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Prev</button>
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Next</button>
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Précédent</button>
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Suivant</button>
             </div>
           </div>
           }
@@ -89,7 +206,7 @@
         } @else {
         <div class="card-body">
           <div class="alert alert-info border-0 d-flex align-items-center mb-0">
-            <app-icon icon="info" class="fs-lg me-2"></app-icon> Select a profile from the dropdown above to view documents.
+            <app-icon icon="info" class="fs-lg me-2"></app-icon> Sélectionnez un profil dans le menu déroulant ci-dessus pour consulter ses documents.
           </div>
         </div>
         }
@@ -97,9 +214,50 @@
     </div>
   </div>
 
+  <!-- Rejection Modal -->
+  <ng-template #rejectModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Rejeter le document</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      @if (rejectError) {
+      <div class="alert alert-danger mb-3">{{rejectError}}</div>
+      }
+      <div class="mb-3">
+        <label class="form-label text-muted small mb-1">Document concerné</label>
+        <div class="fw-semibold">{{selectedDocumentForReject?.fileName}}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="rejectReason">Motif de rejet <span class="text-danger">*</span></label>
+        <textarea
+          id="rejectReason"
+          class="form-control"
+          rows="3"
+          placeholder="Précisez le motif du rejet (ex: document illisible, expiré, non conforme...)"
+          [(ngModel)]="rejectReason"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()" [disabled]="rejecting">Annuler</button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="rejecting || !rejectReason.trim()"
+        (click)="confirmReject()">
+        @if (rejecting) {
+        <span class="spinner-border spinner-border-sm me-1"></span> Rejet en cours...
+        } @else {
+        Confirmer le rejet
+        }
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Upload Modal -->
   <ng-template #uploadModal let-modal>
     <div class="modal-header">
-      <h5 class="modal-title">Upload Document</h5>
+      <h5 class="modal-title">Téléverser un document</h5>
       <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
@@ -107,23 +265,23 @@
       <div class="alert alert-danger mb-3">{{uploadError}}</div>
       }
       <div class="mb-3">
-        <label class="form-label">Document Type <span class="text-danger">*</span></label>
+        <label class="form-label">Type de document <span class="text-danger">*</span></label>
         <select class="form-select" [(ngModel)]="selectedDocumentTypeId">
-          <option value="">Select type...</option>
+          <option value="">Sélectionner un type...</option>
           @for (dt of documentTypes; track dt.id) {
           <option [value]="dt.id">{{dt.name}} ({{dt.code}})</option>
           }
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label">File <span class="text-danger">*</span></label>
+        <label class="form-label">Fichier <span class="text-danger">*</span></label>
         <input type="file" class="form-control" (change)="onFileChange($event)" />
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Annuler</button>
       <button type="button" class="btn btn-primary" [disabled]="uploading || !selectedDocumentTypeId || !selectedFile" (click)="uploadDocument()">
-        @if (uploading) { <span class="spinner-border spinner-border-sm me-1"></span> Uploading... } @else { Upload }
+        @if (uploading) { <span class="spinner-border spinner-border-sm me-1"></span> Téléversement... } @else { Téléverser }
       </button>
     </div>
   </ng-template>

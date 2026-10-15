@@ -42,6 +42,12 @@ export class DocumentService {
     return this.http.get<PagedList<DocumentDto>>(`${this.apiUrl}/profile/${profileId}`, { params });
   }
 
+  getPendingDocuments(pageNumber = 1, pageSize = 20): Observable<PagedList<DocumentDto>> {
+    return this.http.get<PagedList<DocumentDto>>(`${this.apiUrl}/pending`, {
+      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() },
+    });
+  }
+
   getExpiringDocuments(daysAhead = 30, pageNumber = 1, pageSize = 20): Observable<PagedList<DocumentDto>> {
     return this.http.get<PagedList<DocumentDto>>(`${this.apiUrl}/expiring`, {
       params: { daysAhead: daysAhead.toString(), pageNumber: pageNumber.toString(), pageSize: pageSize.toString() },
