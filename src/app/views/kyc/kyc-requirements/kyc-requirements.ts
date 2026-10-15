@@ -3,7 +3,6 @@ import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { KycService } from '@core/services/kyc.service'
 import { ProfileService } from '@core/services/profile.service'
 import { DocumentService } from '@core/services/document.service'
@@ -18,7 +17,7 @@ import {
 @Component({
   selector: 'app-kyc-requirements',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
   templateUrl: './kyc-requirements.html',
   styles: ``,
 })

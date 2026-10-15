@@ -1,159 +1,184 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Users" subTitle="Identity" />
-  <div class="row">
-    <div class="col-lg-12">
-      <form class="card border p-3">
-        <div class="row g-3 align-items-end">
-          <div class="col-lg-4">
-            <label class="form-label fs-xs text-uppercase text-muted fw-bold">Recherche par email / nom</label>
-            <div class="app-search">
-              <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchTerm" name="searchTerm" (keyup.enter)="onSearch()" />
-              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
-            </div>
-          </div>
-          <div class="col-lg-3">
-            <label class="form-label fs-xs text-uppercase text-muted fw-bold">Statut du compte</label>
-            <select class="form-select" [(ngModel)]="selectedStatus" name="selectedStatus" (change)="onStatusChange()">
-              <option value="">Tous les statuts</option>
-              <option value="Active">Actif</option>
-              <option value="Suspended">Suspendu</option>
-              <option value="Inactive">Inactif</option>
-              <option value="Deleted">Supprimé (Soft-delete)</option>
-            </select>
-          </div>
-          <div class="col-lg-2">
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" id="includeDeletedCheck" [(ngModel)]="includeDeleted" name="includeDeleted" (change)="onStatusChange()">
-              <label class="form-check-label fs-sm" for="includeDeletedCheck">
-                Inclure archivés
-              </label>
-            </div>
-          </div>
-          <div class="col">
-            <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
-              <button type="button" class="btn btn-primary" (click)="onSearch()">
-                <app-icon icon="filter" class="me-1"></app-icon> Filtrer
-              </button>
-              <a routerLink="/identity/users/new" class="btn btn-success">
-                <app-icon icon="plus" class="me-1"></app-icon> Nouvel Utilisateur
-              </a>
-            </div>
+  <app-page-breadcrumb title="Gestion des Utilisateurs" subTitle="Identity" />
+
+  <!-- Filter Card -->
+  <div class="card mb-3">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4">
+          <label class="form-label fs-12 fw-semibold text-muted text-uppercase">Recherche par email / nom</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-search-line"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Rechercher par mot-clé..." [(ngModel)]="searchTerm" name="searchTerm" (keyup.enter)="onSearch()" />
           </div>
         </div>
-      </form>
+        <div class="col-lg-3">
+          <label class="form-label fs-12 fw-semibold text-muted text-uppercase">Statut du compte</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-shield-user-line"></i></span>
+            <select class="form-select form-select-sm border-start-0" [(ngModel)]="selectedStatus" name="selectedStatus" (change)="onStatusChange()">
+              <option value="">Tous les statuts</option>
+              <option value="Active">Actif uniquement</option>
+              <option value="Suspended">Suspendu uniquement</option>
+              <option value="Inactive">Inactif</option>
+              <option value="Deleted">Archivé (Soft-delete)</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <div class="form-check form-switch mb-1">
+            <input class="form-check-input" type="checkbox" id="includeDeletedCheck" [(ngModel)]="includeDeleted" name="includeDeleted" (change)="onStatusChange()">
+            <label class="form-check-label fs-12" for="includeDeletedCheck">
+              Inclure archivés
+            </label>
+          </div>
+        </div>
+        <div class="col text-end">
+          <div class="d-inline-flex gap-2">
+            <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm" (click)="onSearch()">
+              <i class="ri-filter-3-line"></i> Filtrer
+            </button>
+            <a routerLink="/identity/users/new" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 shadow-sm">
+              <i class="ri-user-add-line"></i> Nouvel Utilisateur
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Utilisateur</th>
-                  <th>Email</th>
-                  <th>Rôles</th>
-                  <th>Statut</th>
-                  <th>Niveau KYC</th>
-                  <th>Inscription</th>
-                  <th class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (loading) {
-                <tr>
-                  <td colspan="7" class="text-center p-4">
-                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des utilisateurs...
-                  </td>
-                </tr>
-                } @else if (users.length === 0) {
-                <tr>
-                  <td colspan="7" class="text-center p-4 text-muted">
-                    Aucun utilisateur trouvé selon ces critères.
-                  </td>
-                </tr>
-                } @else {
-                  @for (user of users; track user.id) {
-                  <tr>
-                    <td>
-                      <div class="d-flex align-items-center gap-2">
-                        <div class="avatar flex-shrink-0">
-                          <div class="avatar-title rounded-circle bg-soft-primary text-primary">
-                            {{user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}}
-                          </div>
-                        </div>
-                        <div>
-                          <div class="fw-semibold">{{user.firstName || ''}} {{user.lastName || ''}}</div>
-                          <small class="text-muted font-monospace fs-xs">{{user.id.substring(0, 8)}}...</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{{user.email}}</td>
-                    <td>
-                      @for (r of user.role; track r) {
-                      <span class="badge bg-light text-dark border me-1">{{r}}</span>
-                      }
-                    </td>
-                    <td>
-                      <span class="badge" [class]="user.status === 'Active' ? 'bg-success' : user.status === 'Suspended' ? 'bg-danger' : user.status === 'Deleted' ? 'bg-dark' : 'bg-secondary'">
-                        {{user.status}}
+  <!-- Users Table Card -->
+  <div class="card">
+    <div class="card-header border-light d-flex align-items-center justify-content-between">
+      <h5 class="card-title mb-0">Registre des Comptes Citoyens & Administrateurs</h5>
+      <span class="badge bg-soft-primary text-primary">{{ totalCount }} utilisateurs</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+          <thead class="bg-light align-middle">
+            <tr>
+              <th scope="col" class="ps-3">Utilisateur</th>
+              <th scope="col">Email de Contact</th>
+              <th scope="col">Rôles Attribués</th>
+              <th scope="col" class="text-center">Statut Compte</th>
+              <th scope="col" class="text-center">Niveau KYC</th>
+              <th scope="col">Date d'Inscription</th>
+              <th scope="col" class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading) {
+            <tr>
+              <td colspan="7" class="text-center p-5">
+                <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                <span class="text-muted fs-13">Chargement des utilisateurs...</span>
+              </td>
+            </tr>
+            } @else if (users.length === 0) {
+            <tr>
+              <td colspan="7" class="text-center p-5 text-muted">
+                <div class="avatar-md mx-auto mb-3">
+                  <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                    <i class="ri-user-unfollow-line"></i>
+                  </span>
+                </div>
+                <h6 class="text-dark">Aucun utilisateur trouvé</h6>
+                <p class="text-muted fs-13 mb-0">Aucun compte ne correspond aux filtres appliqués.</p>
+              </td>
+            </tr>
+            } @else {
+              @for (user of users; track user.id) {
+              <tr>
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-sm flex-shrink-0">
+                      <span class="avatar-title rounded-circle bg-soft-primary text-primary fw-bold fs-13">
+                        {{user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}}
                       </span>
-                    </td>
-                    <td>
-                      <span class="badge" [class]="'bg-' + (user.kycLevel === 'Advanced' ? 'success' : user.kycLevel === 'Intermediate' ? 'info' : user.kycLevel === 'Basic' ? 'warning' : 'secondary')">
-                        {{user.kycLevel}}
-                      </span>
-                    </td>
-                    <td>{{user.createdAt | date:'short'}}</td>
-                    <td class="text-end">
-                      <div class="d-inline-flex gap-1">
-                        <a [routerLink]="['/identity/users', user.id]" class="btn btn-soft-primary btn-sm" title="Fiche détaillée & Sécurité">
-                          <app-icon icon="eye"></app-icon>
-                        </a>
-                        <a [routerLink]="['/identity/users', user.id, 'edit']" class="btn btn-soft-info btn-sm" title="Modifier le profil">
-                          <app-icon icon="pencil"></app-icon>
-                        </a>
-                        @if (user.status === 'Active') {
-                        <button class="btn btn-soft-danger btn-sm" title="Suspendre l'utilisateur" (click)="openSuspendModal(user)">
-                          <app-icon icon="slash"></app-icon>
-                        </button>
-                        } @else if (user.status === 'Suspended') {
-                        <button class="btn btn-soft-success btn-sm" title="Réactiver le compte" (click)="onActivate(user)">
-                          <app-icon icon="check-circle"></app-icon>
-                        </button>
-                        }
-                        @if (user.status !== 'Deleted') {
-                        <button class="btn btn-soft-secondary btn-sm" title="Supprimer (soft-delete)" (click)="onDelete(user)">
-                          <app-icon icon="trash-2"></app-icon>
-                        </button>
-                        } @else {
-                        <button class="btn btn-soft-warning btn-sm" title="Restaurer le compte" (click)="onRestore(user)">
-                          <app-icon icon="rotate-ccw"></app-icon>
-                        </button>
-                        }
-                      </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <div>
+                      <a [routerLink]="['/identity/users', user.id]" class="fw-semibold text-dark text-decoration-none d-block">
+                        {{user.firstName || ''}} {{user.lastName || ''}}
+                      </a>
+                      <span class="text-muted font-monospace fs-11">ID: {{user.id.substring(0, 8)}}...</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="fs-13 text-muted">{{user.email}}</span>
+                </td>
+                <td>
+                  @for (r of user.role; track r) {
+                  <span class="badge bg-soft-dark text-dark border me-1 fs-11">{{r}}</span>
                   }
-                }
-              </tbody>
-            </table>
-          </div>
+                </td>
+                <td class="text-center">
+                  @if (user.status === 'Active') {
+                  <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                  } @else if (user.status === 'Suspended') {
+                  <span class="badge bg-soft-danger text-danger"><i class="ri-spam-line me-1"></i>Suspendu</span>
+                  } @else if (user.status === 'Deleted') {
+                  <span class="badge bg-soft-dark text-dark"><i class="ri-delete-bin-line me-1"></i>Archivé</span>
+                  } @else {
+                  <span class="badge bg-soft-secondary text-secondary">{{user.status}}</span>
+                  }
+                </td>
+                <td class="text-center">
+                  <span class="badge" [class]="'bg-soft-' + (user.kycLevel === 'Advanced' ? 'success text-success' : user.kycLevel === 'Intermediate' ? 'info text-info' : user.kycLevel === 'Basic' ? 'warning text-warning' : 'secondary text-secondary')">
+                    <i class="ri-shield-check-line me-1"></i>{{user.kycLevel || 'Non vérifié'}}
+                  </span>
+                </td>
+                <td class="text-muted fs-12">{{user.createdAt | date:'dd/MM/yyyy'}}</td>
+                <td class="text-end pe-3">
+                  <div class="d-inline-flex gap-1">
+                    <a [routerLink]="['/identity/users', user.id]" class="btn btn-xs btn-soft-primary" title="Fiche détaillée & Sécurité">
+                      <i class="ri-eye-line"></i>
+                    </a>
+                    <a [routerLink]="['/identity/users', user.id, 'edit']" class="btn btn-xs btn-soft-info" title="Modifier le profil">
+                      <i class="ri-pencil-line"></i>
+                    </a>
+                    @if (user.status === 'Active') {
+                    <button class="btn btn-xs btn-soft-danger" title="Suspendre l'utilisateur" (click)="openSuspendModal(user)">
+                      <i class="ri-forbid-line"></i>
+                    </button>
+                    } @else if (user.status === 'Suspended') {
+                    <button class="btn btn-xs btn-soft-success" title="Réactiver le compte" (click)="onActivate(user)">
+                      <i class="ri-check-line"></i>
+                    </button>
+                    }
+                    @if (user.status !== 'Deleted') {
+                    <button class="btn btn-xs btn-soft-secondary" title="Supprimer (soft-delete)" (click)="onDelete(user)">
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                    } @else {
+                    <button class="btn btn-xs btn-soft-warning" title="Restaurer le compte" (click)="onRestore(user)">
+                      <i class="ri-restart-line"></i>
+                    </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
 
-          <!-- Pagination -->
-          @if (totalCount > pageSize) {
-          <div class="d-flex justify-content-between align-items-center p-3 border-top">
-            <span class="text-muted fs-sm">Total : {{ totalCount }} utilisateurs (Page {{ page }} sur {{ totalPages }})</span>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">Précédent</button>
-              <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">Suivant</button>
-            </div>
-          </div>
-          }
+      <!-- Pagination -->
+      @if (totalCount > pageSize) {
+      <div class="card-footer border-light d-flex justify-content-between align-items-center">
+        <span class="text-muted fs-12">Total : {{ totalCount }} utilisateurs (Page {{ page }} sur {{ totalPages }})</span>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
+            <i class="ri-arrow-left-s-line me-1"></i>Précédent
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
+            Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+          </button>
         </div>
       </div>
+      }
     </div>
   </div>
 
@@ -161,29 +186,36 @@
   @if (showSuspendModal) {
   <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
+      <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">
-            <app-icon icon="slash" class="me-1"></app-icon> Suspendre l'utilisateur
+          <h5 class="modal-title text-white d-flex align-items-center gap-2">
+            <i class="ri-forbid-line"></i> Suspendre l'utilisateur
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeSuspendModal()"></button>
         </div>
-        <div class="modal-body">
-          <p class="text-muted mb-3">
-            Vous vous apprêtez à suspendre l'utilisateur <strong>{{ targetUser?.email }}</strong>.
-          </p>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Motif de la suspension administrative <span class="text-danger">*</span></label>
-            <textarea class="form-control" rows="3" [(ngModel)]="suspendReason" placeholder="Indiquez le motif de la sanction ou de la vérification de sécurité..."></textarea>
+        <div class="modal-body p-4">
+          <div class="card bg-light border mb-3">
+            <div class="card-body p-3">
+              <span class="text-muted fs-11 text-uppercase d-block mb-1">Compte Cible :</span>
+              <strong class="text-dark fs-14">{{ targetUser?.email }}</strong>
+              <div class="text-muted fs-11 font-monospace mt-1">ID: {{ targetUser?.id }}</div>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fs-13 fw-semibold">Motif de la suspension administrative <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="3" [(ngModel)]="suspendReason" placeholder="Indiquez le motif de la sanction ou de la vérification de conformité..."></textarea>
+            <small class="text-muted fs-11">Tous les jetons d'accès actifs de cet utilisateur seront immédiatement révoqués.</small>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeSuspendModal()" [disabled]="actionLoading">Annuler</button>
-          <button type="button" class="btn btn-danger" [disabled]="!suspendReason.trim() || actionLoading" (click)="confirmSuspend()">
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-light" (click)="closeSuspendModal()" [disabled]="actionLoading">Annuler</button>
+          <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-1" [disabled]="!suspendReason.trim() || actionLoading" (click)="confirmSuspend()">
             @if (actionLoading) {
-            <span class="spinner-border spinner-border-sm me-1"></span>
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+            Suspension...
+            } @else {
+            <i class="ri-check-line"></i> Confirmer la suspension
             }
-            Confirmer la suspension
           </button>
         </div>
       </div>

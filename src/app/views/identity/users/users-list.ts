@@ -3,14 +3,13 @@ import { DatePipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { IdentityService } from '@core/services/identity/identity.service'
 import { User, UserListResponse } from '@core/models/identity/user.model'
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, Icon],
+  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule],
   templateUrl: './users-list.html',
   styles: ``,
 })

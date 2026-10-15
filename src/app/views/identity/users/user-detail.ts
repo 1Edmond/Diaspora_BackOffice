@@ -3,14 +3,13 @@ import { DatePipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
 import { IdentityService } from '@core/services/identity/identity.service'
 import { RefreshToken, User } from '@core/models/identity/user.model'
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, FormsModule, RouterLink, Icon],
+  imports: [PageBreadcrumb, DatePipe, FormsModule, RouterLink],
   templateUrl: './user-detail.html',
   styles: ``,
 })
