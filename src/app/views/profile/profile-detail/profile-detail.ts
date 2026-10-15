@@ -14,6 +14,7 @@ import {
   VerificationLevelLabels,
   VerificationLevelBadgeVariants,
 } from '@core/models/shared/enums.model'
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
 import { ProfileDocumentsTab } from './profile-documents-tab/profile-documents-tab'
 import { ProfileKycTab } from './profile-kyc-tab/profile-kyc-tab'
 import { ProfileServicesTab } from './profile-services-tab/profile-services-tab'
@@ -32,6 +33,7 @@ type TabType = 'overview' | 'documents' | 'kyc' | 'services' | 'procedures' | 'w
     DatePipe,
     RouterLink,
     Icon,
+    NgbDropdownModule,
     ProfileDocumentsTab,
     ProfileKycTab,
     ProfileServicesTab,

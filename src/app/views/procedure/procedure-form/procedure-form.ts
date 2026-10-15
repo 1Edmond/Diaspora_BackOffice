@@ -21,10 +21,12 @@ import {
   getLanguageDisplay,
 } from '@core/constants/languages.constant'
 
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
+
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [PageBreadcrumb, FormsModule, RouterLink, Icon],
+  imports: [PageBreadcrumb, FormsModule, RouterLink, Icon, NgbDropdownModule],
   templateUrl: './procedure-form.html',
   styles: ``,
 })

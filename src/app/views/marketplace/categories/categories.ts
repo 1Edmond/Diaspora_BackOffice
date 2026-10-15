@@ -22,10 +22,12 @@ import {
   getLanguageDisplay,
 } from '@core/constants/languages.constant'
 
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
+
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [PageBreadcrumb, FormsModule, Icon, DecimalPipe],
+  imports: [PageBreadcrumb, FormsModule, Icon, DecimalPipe, NgbDropdownModule],
   templateUrl: './categories.html',
   styles: ``,
 })

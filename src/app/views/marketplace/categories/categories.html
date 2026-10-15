@@ -93,30 +93,28 @@
           <div class="mb-3">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <label class="form-label fw-semibold mb-0">Langues & Traductions :</label>
-              <div class="dropdown">
-                <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="dropdown" ngbDropdown placement="bottom-end">
+                <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" ngbDropdownToggle>
                   <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 280px; overflow-y: auto;">
-                  <li><h6 class="dropdown-header">Langues usuelles</h6></li>
+                <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu style="max-height: 280px; overflow-y: auto;">
+                  <h6 class="dropdown-header">Langues usuelles</h6>
                   @for (lang of commonLanguages; track lang.code) {
                     @if (!formLanguages.includes(lang.code)) {
-                      <li>
-                        <button class="dropdown-item fs-sm py-1" (click)="addFormLanguage(lang.code)">
-                          {{ lang.flag }} {{ lang.label }}
-                        </button>
-                      </li>
+                      <button class="dropdown-item fs-sm py-1" (click)="addFormLanguage(lang.code)">
+                        {{ lang.flag }} {{ lang.label }}
+                      </button>
                     }
                   }
-                  <li><hr class="dropdown-divider"></li>
-                  <li class="px-3 py-1">
+                  <div class="dropdown-divider"></div>
+                  <div class="px-3 py-1">
                     <label class="form-label fs-xs text-muted mb-1">Code ISO libre (ex: it, tr, pl...)</label>
                     <div class="input-group input-group-sm">
                       <input type="text" class="form-control" placeholder="Code (ex: it)" [(ngModel)]="customLangInput" (keyup.enter)="addFormLanguage(customLangInput)" />
                       <button class="btn btn-primary" (click)="addFormLanguage(customLangInput)" [disabled]="!customLangInput.trim()">OK</button>
                     </div>
-                  </li>
-                </ul>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -298,28 +296,26 @@
 
         <div class="d-flex align-items-center justify-content-between mb-2">
           <label class="form-label fw-semibold mb-0">Langues de traduction :</label>
-          <div class="dropdown">
-            <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <div class="dropdown" ngbDropdown placement="bottom-end">
+            <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" ngbDropdownToggle>
               <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
             </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 250px; overflow-y: auto;">
+            <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu style="max-height: 250px; overflow-y: auto;">
               @for (lang of commonLanguages; track lang.code) {
                 @if (!translatingLanguages.includes(lang.code)) {
-                  <li>
-                    <button class="dropdown-item fs-sm py-1" (click)="addModalLanguage(lang.code)">
-                      {{ lang.flag }} {{ lang.label }}
-                    </button>
-                  </li>
+                  <button class="dropdown-item fs-sm py-1" (click)="addModalLanguage(lang.code)">
+                    {{ lang.flag }} {{ lang.label }}
+                  </button>
                 }
               }
-              <li><hr class="dropdown-divider"></li>
-              <li class="px-3 py-1">
+              <div class="dropdown-divider"></div>
+              <div class="px-3 py-1">
                 <div class="input-group input-group-sm">
                   <input type="text" class="form-control" placeholder="Code ISO" [(ngModel)]="customModalLangInput" (keyup.enter)="addModalLanguage(customModalLangInput)" />
                   <button class="btn btn-primary" (click)="addModalLanguage(customModalLangInput)" [disabled]="!customModalLangInput.trim()">OK</button>
                 </div>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -44,17 +44,17 @@
                   <span class="badge" [class]="'bg-' + verificationLevelBadges[profile.verificationLevel ?? 0]">
                     {{verificationLevelLabels[profile.verificationLevel ?? 0]}}
                   </span>
-                  <div class="dropdown d-inline-block">
-                    <button class="btn btn-xs btn-outline-primary dropdown-toggle py-0 px-1 fs-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <div class="dropdown d-inline-block" ngbDropdown placement="bottom-end">
+                    <button class="btn btn-xs btn-outline-primary dropdown-toggle py-0 px-1 fs-xs" type="button" ngbDropdownToggle>
                       Modifier
                     </button>
-                    <ul class="dropdown-menu shadow">
-                      <li><h6 class="dropdown-header">Définir le niveau KYC</h6></li>
-                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(0)"><span class="badge bg-secondary me-1">L0</span> L0 - Enregistré</button></li>
-                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(1)"><span class="badge bg-info me-1">L1</span> L1 - Identité Déclarée</button></li>
-                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(2)"><span class="badge bg-primary me-1">L2</span> L2 - Identité Vérifiée (KYC)</button></li>
-                      <li><button class="dropdown-item fs-sm" (click)="updateVerificationLevel(3)"><span class="badge bg-success me-1">L3</span> L3 - Vérification Renforcée</button></li>
-                    </ul>
+                    <div class="dropdown-menu shadow" ngbDropdownMenu>
+                      <h6 class="dropdown-header">Définir le niveau KYC</h6>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(0)"><span class="badge bg-secondary me-1">L0</span> L0 - Enregistré</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(1)"><span class="badge bg-info me-1">L1</span> L1 - Identité Déclarée</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(2)"><span class="badge bg-primary me-1">L2</span> L2 - Identité Vérifiée (KYC)</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(3)"><span class="badge bg-success me-1">L3</span> L3 - Vérification Renforcée</button>
+                    </div>
                   </div>
                 </div>
               </div>
