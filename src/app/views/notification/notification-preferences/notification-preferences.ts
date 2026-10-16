@@ -15,7 +15,7 @@ export interface EventMetadata {
 }
 
 export interface RuleWithChannels extends NotificationRuleDto {
-  channelFlags: Record<NotificationChannel, boolean>
+  channelFlags: Partial<Record<NotificationChannel, boolean>>
   metadata?: EventMetadata
   customTemplate?: string
 }
@@ -28,7 +28,14 @@ export interface RuleWithChannels extends NotificationRuleDto {
   styles: ``,
 })
 export class NotificationPreferences implements OnInit {
-  private readonly allChannels = Object.values(NotificationChannel).filter(v => typeof v === 'number') as NotificationChannel[]
+  readonly allChannels: NotificationChannel[] = [
+    NotificationChannel.Email,
+    NotificationChannel.Sms,
+    NotificationChannel.Whatsapp,
+    NotificationChannel.Telegram,
+    NotificationChannel.Push,
+    NotificationChannel.InApp
+  ]
 
   rules = signal<RuleWithChannels[]>([])
   loading = signal(false)
@@ -130,9 +137,13 @@ export class NotificationPreferences implements OnInit {
         // Compléter avec les templates du catalogue non encore enregistrés
         for (const meta of this.systemCatalog) {
           if (!seenEvents.has(meta.eventType)) {
-            const channelFlags: Record<NotificationChannel, boolean> = {} as any
-            for (const ch of this.allChannels) {
-              channelFlags[ch] = (ch === NotificationChannel.InApp || ch === NotificationChannel.Push)
+            const channelFlags: Record<NotificationChannel, boolean> = {
+              [NotificationChannel.Email]: false,
+              [NotificationChannel.Sms]: false,
+              [NotificationChannel.Whatsapp]: false,
+              [NotificationChannel.Telegram]: false,
+              [NotificationChannel.Push]: true,
+              [NotificationChannel.InApp]: true,
             }
             const rule: RuleWithChannels = {
               eventType: meta.eventType,
@@ -163,9 +174,13 @@ export class NotificationPreferences implements OnInit {
     const isActive = rule.isActive ?? rule.IsActive ?? true
     const channelNames = rule.channelNames ?? rule.ChannelNames ?? []
 
-    const channelFlags: Record<NotificationChannel, boolean> = {} as any
-    for (const ch of this.allChannels) {
-      channelFlags[ch] = (channels & ch) === ch
+    const channelFlags: Record<NotificationChannel, boolean> = {
+      [NotificationChannel.Email]: (channels & NotificationChannel.Email) === NotificationChannel.Email,
+      [NotificationChannel.Sms]: (channels & NotificationChannel.Sms) === NotificationChannel.Sms,
+      [NotificationChannel.Whatsapp]: (channels & NotificationChannel.Whatsapp) === NotificationChannel.Whatsapp,
+      [NotificationChannel.Telegram]: (channels & NotificationChannel.Telegram) === NotificationChannel.Telegram,
+      [NotificationChannel.Push]: (channels & NotificationChannel.Push) === NotificationChannel.Push,
+      [NotificationChannel.InApp]: (channels & NotificationChannel.InApp) === NotificationChannel.InApp,
     }
 
     const metadata = this.systemCatalog.find(m => m.eventType === eventType)
@@ -190,7 +205,7 @@ export class NotificationPreferences implements OnInit {
     rule.channels = this.computeChannels(rule.channelFlags)
   }
 
-  private computeChannels(flags: Record<NotificationChannel, boolean>): number {
+  private computeChannels(flags: Partial<Record<NotificationChannel, boolean>>): number {
     let value = 0
     for (const [ch, enabled] of Object.entries(flags)) {
       if (enabled) value |= Number(ch)

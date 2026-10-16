@@ -77,10 +77,10 @@
                     <div class="d-flex flex-wrap gap-1.5">
                       @for (ch of getChannelKeys(rule); track ch) {
                       <label class="btn btn-sm d-flex align-items-center gap-1 px-2 py-1 fs-11"
-                        [class.btn-primary]="rule.channelFlags[ch]"
+                        [class.btn-primary]="!!rule.channelFlags[ch]"
                         [class.btn-outline-secondary]="!rule.channelFlags[ch]">
                         <input type="checkbox"
-                          [checked]="rule.channelFlags[ch]"
+                          [checked]="!!rule.channelFlags[ch]"
                           (change)="toggleChannel(rule, ch); saveRule(rule)"
                           class="visually-hidden" />
                         <app-icon [icon]="channelIcons[ch]" class="fs-6"></app-icon>
@@ -163,10 +163,10 @@
           <div class="d-flex flex-wrap gap-2">
             @for (ch of getChannelKeys(selectedRuleForEdit); track ch) {
             <label class="btn btn-sm d-flex align-items-center gap-1 px-3 py-1.5"
-              [class.btn-primary]="selectedRuleForEdit.channelFlags[ch]"
+              [class.btn-primary]="!!selectedRuleForEdit.channelFlags[ch]"
               [class.btn-outline-secondary]="!selectedRuleForEdit.channelFlags[ch]">
               <input type="checkbox"
-                [checked]="selectedRuleForEdit.channelFlags[ch]"
+                [checked]="!!selectedRuleForEdit.channelFlags[ch]"
                 (change)="toggleChannel(selectedRuleForEdit, ch)"
                 class="visually-hidden" />
               <app-icon [icon]="channelIcons[ch]" class="fs-6"></app-icon>
