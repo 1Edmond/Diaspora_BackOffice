@@ -39,10 +39,12 @@ export class Ecommerce implements OnInit {
   openDisputesCount = 0;
   activeMissionsCount = 0;
 
-  // Trésorerie
+  // Trésorerie multi-devises
   revenueData: PlatformRevenueDto | null = null;
-  totalHeldXof = 0;
-  totalCommissionXof = 0;
+  selectedCurrency: string = 'EUR';
+  availableCurrencies: string[] = [];
+  totalHeld = 0;
+  totalCommission = 0;
 
   // Alertes et litiges urgents
   urgentDisputes: DisputeDto[] = [];
@@ -74,17 +76,16 @@ export class Ecommerce implements OnInit {
       error: () => {},
     });
 
-    // 2. Trésorerie Plateforme
+    // 2. Trésorerie Plateforme multi-devises
     this.walletService.getPlatformRevenue().subscribe({
       next: (rev: PlatformRevenueDto) => {
         this.revenueData = rev;
-        const xofSummary = rev.currencies?.find((c) => c.currency === 'XOF');
-        if (xofSummary) {
-          this.totalCommissionXof = xofSummary.platformBalance;
-          this.totalHeldXof = xofSummary.totalEscrowHeld;
-        } else if (rev.currencies && rev.currencies.length > 0) {
-          this.totalCommissionXof = rev.currencies[0].platformBalance;
-          this.totalHeldXof = rev.currencies[0].totalEscrowHeld;
+        this.availableCurrencies = (rev.currencies || []).map((c) => c.currency);
+        if (this.availableCurrencies.length > 0) {
+          if (!this.availableCurrencies.includes(this.selectedCurrency)) {
+            this.selectedCurrency = this.availableCurrencies[0];
+          }
+          this.updateCurrencyMetrics();
         }
       },
       error: () => {},
@@ -126,6 +127,22 @@ export class Ecommerce implements OnInit {
       },
       error: () => {},
     });
+  }
+
+  selectCurrency(currency: string) {
+    this.selectedCurrency = currency;
+    this.updateCurrencyMetrics();
+  }
+
+  private updateCurrencyMetrics() {
+    const summary = this.revenueData?.currencies?.find((c) => c.currency === this.selectedCurrency);
+    if (summary) {
+      this.totalCommission = summary.platformBalance;
+      this.totalHeld = summary.totalEscrowHeld;
+    } else {
+      this.totalCommission = 0;
+      this.totalHeld = 0;
+    }
   }
 
   navigateTo(path: string) {

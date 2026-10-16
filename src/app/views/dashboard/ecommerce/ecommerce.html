@@ -1,9 +1,26 @@
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <app-page-breadcrumb title="Tableau de Bord Général" subTitle="Diaspora Plateforme" />
-    <button class="btn btn-outline-primary btn-sm" (click)="loadDashboardData()" [disabled]="loading">
-      <app-icon icon="rotate-ccw" class="me-1"></app-icon> Actualiser les données
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      @if (availableCurrencies.length > 1) {
+      <div class="btn-group btn-group-sm shadow-sm" role="group" aria-label="Sélection de la devise">
+        @for (curr of availableCurrencies; track curr) {
+        <button
+          type="button"
+          class="btn py-1 px-2.5 fs-12 fw-semibold"
+          [class.btn-primary]="selectedCurrency === curr"
+          [class.btn-outline-primary]="selectedCurrency !== curr"
+          (click)="selectCurrency(curr)"
+        >
+          {{ curr }}
+        </button>
+        }
+      </div>
+      }
+      <button class="btn btn-outline-primary btn-sm" (click)="loadDashboardData()" [disabled]="loading">
+        <app-icon icon="rotate-ccw" class="me-1"></app-icon> Actualiser les données
+      </button>
+    </div>
   </div>
 
   <!-- Widgets Statistiques Principaux Ubold -->
@@ -20,8 +37,8 @@
     <div class="col">
       <app-statistics-widget
         title="Fonds sous Séquestre"
-        [value]="totalHeldXof"
-        suffix=" XOF"
+        [value]="totalHeld"
+        [suffix]="' ' + selectedCurrency"
         icon="solar:shield-check-bold-duotone"
         avatarClass="bg-soft-info text-info"
       />
@@ -29,8 +46,8 @@
     <div class="col">
       <app-statistics-widget
         title="Commissions Trésorerie"
-        [value]="totalCommissionXof"
-        suffix=" XOF"
+        [value]="totalCommission"
+        [suffix]="' ' + selectedCurrency"
         icon="solar:wallet-money-bold-duotone"
         avatarClass="bg-soft-success text-success"
         [trend]="{ value: 8, isUp: true, text: 'revenus plateforme' }"
