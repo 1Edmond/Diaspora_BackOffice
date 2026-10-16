@@ -254,28 +254,28 @@
                   <td class="text-end pe-3">
                     <div class="d-flex align-items-center justify-content-end gap-1">
                       <button
-                        class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
+                        class="btn btn-xs btn-soft-success"
                         (click)="startSingle(up)"
                         [disabled]="up.status !== UserProcedureStatus.NotStarted"
                         title="Démarrer la démarche"
                       >
-                        <i class="ri-play-line"></i> Démarrer
+                        <i class="ri-play-line"></i>
                       </button>
                       <button
-                        class="btn btn-xs btn-soft-primary d-inline-flex align-items-center gap-1"
+                        class="btn btn-xs btn-soft-primary"
                         (click)="openActionModal(actionModal, up, 'complete')"
                         [disabled]="up.status !== UserProcedureStatus.InProgress"
                         title="Valider la démarche"
                       >
-                        <i class="ri-check-line"></i> Valider
+                        <i class="ri-check-line"></i>
                       </button>
                       <button
-                        class="btn btn-xs btn-soft-warning d-inline-flex align-items-center gap-1"
+                        class="btn btn-xs btn-soft-warning"
                         (click)="openActionModal(actionModal, up, 'skip')"
                         [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped"
                         title="Ignorer cette démarche"
                       >
-                        <i class="ri-skip-forward-line"></i> Ignorer
+                        <i class="ri-skip-forward-line"></i>
                       </button>
                     </div>
                   </td>
@@ -466,28 +466,28 @@
                     <td class="text-end pe-3">
                       <div class="d-flex align-items-center justify-content-end gap-1">
                         <button
-                          class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
+                          class="btn btn-xs btn-soft-success"
                           (click)="startSingle(up)"
                           [disabled]="up.status !== UserProcedureStatus.NotStarted"
                           title="Démarrer la démarche"
                         >
-                          <i class="ri-play-line"></i> Démarrer
+                          <i class="ri-play-line"></i>
                         </button>
                         <button
-                          class="btn btn-xs btn-soft-primary d-inline-flex align-items-center gap-1"
+                          class="btn btn-xs btn-soft-primary"
                           (click)="openActionModal(actionModal, up, 'complete')"
                           [disabled]="up.status !== UserProcedureStatus.InProgress"
                           title="Valider la démarche"
                         >
-                          <i class="ri-check-line"></i> Valider
+                          <i class="ri-check-line"></i>
                         </button>
                         <button
-                          class="btn btn-xs btn-soft-warning d-inline-flex align-items-center gap-1"
+                          class="btn btn-xs btn-soft-warning"
                           (click)="openActionModal(actionModal, up, 'skip')"
                           [disabled]="up.status === UserProcedureStatus.Completed || up.status === UserProcedureStatus.Skipped"
                           title="Ignorer cette démarche"
                         >
-                          <i class="ri-skip-forward-line"></i> Ignorer
+                          <i class="ri-skip-forward-line"></i>
                         </button>
                       </div>
                     </td>

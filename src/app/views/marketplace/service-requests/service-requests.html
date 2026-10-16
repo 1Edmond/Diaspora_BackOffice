@@ -213,8 +213,8 @@
                   <td class="text-muted fs-12">{{req.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
                   <td class="text-end pe-3">
                     <div class="d-flex align-items-center justify-content-end gap-1">
-                      <button class="btn btn-xs btn-soft-primary d-inline-flex align-items-center gap-1" (click)="viewDetail(req)" title="Voir détails">
-                        <i class="ri-eye-line"></i> Détails
+                      <button class="btn btn-xs btn-soft-primary" (click)="viewDetail(req)" title="Voir détails">
+                        <i class="ri-eye-line"></i>
                       </button>
                       @if(tab === 'received' && req.status === ServiceRequestStatus.Pending) {
                       <button class="btn btn-xs btn-soft-success" (click)="accept(req.id)" title="Accepter"><i class="ri-check-line"></i></button>

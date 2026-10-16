@@ -116,6 +116,8 @@
                 <td class="text-center">
                   @if (user.status === 'Active') {
                   <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                  } @else if (user.status === 'Inactive') {
+                  <span class="badge bg-soft-warning text-warning"><i class="ri-time-line me-1"></i>Inactif</span>
                   } @else if (user.status === 'Suspended') {
                   <span class="badge bg-soft-danger text-danger"><i class="ri-spam-line me-1"></i>Suspendu</span>
                   } @else if (user.status === 'Deleted') {
@@ -142,8 +144,8 @@
                     <button class="btn btn-xs btn-soft-danger" title="Suspendre l'utilisateur" (click)="openSuspendModal(user)">
                       <i class="ri-forbid-line"></i>
                     </button>
-                    } @else if (user.status === 'Suspended') {
-                    <button class="btn btn-xs btn-soft-success" title="Réactiver le compte" (click)="onActivate(user)">
+                    } @else if (user.status === 'Suspended' || user.status === 'Inactive') {
+                    <button class="btn btn-xs btn-soft-success" [title]="user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte'" (click)="onActivate(user)">
                       <i class="ri-check-line"></i>
                     </button>
                     }

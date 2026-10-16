@@ -155,21 +155,21 @@
                       <!-- Validation Actions for Pending Documents -->
                       @if (doc.status === DocumentStatus.Pending) {
                       <button
-                        class="btn btn-xs btn-soft-success d-inline-flex align-items-center gap-1"
+                        class="btn btn-xs btn-soft-success"
                         (click)="validateDocument(doc)"
                         [disabled]="validatingDocId === doc.id"
                         title="Valider ce document">
                         @if (validatingDocId === doc.id) {
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                         } @else {
-                        <i class="ri-check-line"></i> Valider
+                        <i class="ri-check-line"></i>
                         }
                       </button>
                       <button
-                        class="btn btn-xs btn-soft-danger d-inline-flex align-items-center gap-1"
+                        class="btn btn-xs btn-soft-danger"
                         (click)="openRejectModal(rejectModal, doc)"
                         title="Rejeter avec motif">
-                        <i class="ri-close-line"></i> Rejeter
+                        <i class="ri-close-line"></i>
                       </button>
                       }
 

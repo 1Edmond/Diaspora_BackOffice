@@ -103,7 +103,8 @@ export class UsersList implements OnInit {
   }
 
   onActivate(user: User) {
-    if (!confirm(`Confirmez-vous la réactivation du compte ${user.email} ?`)) return
+    const actionLabel = user.status === 'Inactive' ? "l'activation" : "la réactivation"
+    if (!confirm(`Confirmez-vous ${actionLabel} du compte ${user.email} ?`)) return
     this.identityService.activateUser(user.id).subscribe({
       next: () => this.loadUsers(),
       error: () => {},

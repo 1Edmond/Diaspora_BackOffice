@@ -96,18 +96,19 @@ export class UserDetail implements OnInit {
 
   confirmActivate() {
     if (!this.user) return
-    if (!confirm(`Confirmez-vous la réactivation du compte de ${this.user.email} ?`)) return
+    const actionLabel = this.user.status === 'Inactive' ? "l'activation" : "la réactivation"
+    if (!confirm(`Confirmez-vous ${actionLabel} du compte de ${this.user.email} ?`)) return
 
     this.actionLoading = true
     this.identityService.activateUser(this.user.id).subscribe({
       next: () => {
         this.actionLoading = false
-        this.showMessage('success', 'Compte réactivé avec succès.')
+        this.showMessage('success', 'Compte activé avec succès.')
         this.loadUser(this.user!.id)
       },
       error: (err) => {
         this.actionLoading = false
-        this.showMessage('error', err?.error?.message || 'Erreur lors de la réactivation.')
+        this.showMessage('error', err?.error?.message || 'Erreur lors de l\'activation.')
       },
     })
   }

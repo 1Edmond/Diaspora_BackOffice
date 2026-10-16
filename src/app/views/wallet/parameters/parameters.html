@@ -29,7 +29,9 @@
                   <td>{{p.value}}</td>
                   <td>{{p.description || '—'}}</td>
                   <td>
-                    <button class="btn btn-soft-info btn-sm" (click)="edit(p)">Edit</button>
+                    <button class="btn btn-soft-info btn-xs" (click)="edit(p)" title="Modifier">
+                      <i class="ri-pencil-line"></i>
+                    </button>
                   </td>
                 </tr>
                 } @empty {

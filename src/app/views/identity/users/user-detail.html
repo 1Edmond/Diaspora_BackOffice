@@ -58,8 +58,8 @@
               <p class="text-muted fs-13 mb-2">{{user.email}}</p>
               
               <div class="d-flex justify-content-center gap-2 mb-3">
-                <span class="badge" [class]="'bg-soft-' + (user.status === 'Active' ? 'success text-success' : user.status === 'Suspended' ? 'danger text-danger' : user.status === 'Deleted' ? 'dark text-dark' : 'secondary text-secondary')">
-                  {{user.status}}
+                <span class="badge" [class]="'bg-soft-' + (user.status === 'Active' ? 'success text-success' : user.status === 'Inactive' ? 'warning text-warning' : user.status === 'Suspended' ? 'danger text-danger' : user.status === 'Deleted' ? 'dark text-dark' : 'secondary text-secondary')">
+                  {{user.status === 'Inactive' ? 'Inactif' : user.status === 'Active' ? 'Actif' : user.status === 'Suspended' ? 'Suspendu' : user.status === 'Deleted' ? 'Archivé' : user.status}}
                 </span>
                 <span class="badge bg-soft-info text-info">KYC: {{user.kycLevel}}</span>
               </div>
@@ -72,9 +72,9 @@
                 <button type="button" class="btn btn-outline-danger btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="openSuspendModal()">
                   <i class="ri-forbid-line"></i> Suspendre le compte
                 </button>
-                } @else if (user.status === 'Suspended') {
+                } @else if (user.status === 'Suspended' || user.status === 'Inactive') {
                 <button type="button" class="btn btn-outline-success btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="confirmActivate()">
-                  <i class="ri-check-line"></i> Réactiver le compte
+                  <i class="ri-check-line"></i> {{ user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte' }}
                 </button>
                 }
 

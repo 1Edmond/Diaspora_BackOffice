@@ -130,12 +130,12 @@
                   </td>
                   <td class="text-end pe-3">
                     <div class="d-flex align-items-center justify-content-end gap-1">
-                      <button class="btn btn-xs btn-soft-info d-inline-flex align-items-center gap-1" (click)="openDetailsModal(detailsModal, dispute)" title="Consulter le dossier et les preuves">
-                        <i class="ri-eye-line"></i> Preuves
+                      <button class="btn btn-xs btn-soft-info" (click)="openDetailsModal(detailsModal, dispute)" title="Consulter le dossier et les preuves">
+                        <i class="ri-eye-line"></i>
                       </button>
                       @if (!isTerminalStatus(dispute.status)) {
-                        <button class="btn btn-xs btn-primary d-inline-flex align-items-center gap-1" (click)="openArbitrationModal(resolveModal, dispute)" title="Arbitrer le litige">
-                          <i class="ri-scales-3-line"></i> Arbitrer
+                        <button class="btn btn-xs btn-primary" (click)="openArbitrationModal(resolveModal, dispute)" title="Arbitrer le litige">
+                          <i class="ri-scales-3-line"></i>
                         </button>
                       }
                     </div>
