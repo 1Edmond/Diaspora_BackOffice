@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, effect, OnDestroy, OnInit } from '@angular/core'
+import { Component, EventEmitter, inject, Input, input, Output, output, signal, OnDestroy, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
@@ -6,9 +6,8 @@ import { ProfileStateService } from '@core/services/profile-state.service'
 import { ProfileService } from '@core/services/profile.service'
 import { ProfileStatusLabels } from '@core/models/shared/enums.model'
 import { ProfileDto } from '@core/models/profile/profile.model'
-import { Subject, Subscription } from 'rxjs'
+import { Subject, Subscription, of } from 'rxjs'
 import { debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators'
-import { of } from 'rxjs'
 
 @Component({
   selector: 'app-profile-search-dropdown',
@@ -52,7 +51,7 @@ import { of } from 'rxjs'
               <a
                 class="dropdown-item d-flex align-items-center justify-content-between gap-2 py-1"
                 (click)="onSelect(profile); dropdown.close()"
-                [class.active]="profile.id === selectedProfileId()"
+                [class.active]="profile.id === activeSelectedProfileId()"
               >
                 <span class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
                   <span class="fw-medium text-truncate">{{ profile.firstName }} {{ profile.lastName }}</span>
@@ -74,11 +73,13 @@ export class ProfileSearchDropdown implements OnInit, OnDestroy {
   private profileState = inject(ProfileStateService)
   private profileService = inject(ProfileService)
 
+  @Input() syncGlobalState = false
   readonly placeholder = input<string>('Select profile...')
   readonly onProfileSelect = output<string>()
+  @Output() profileSelected = new EventEmitter<string>()
 
-  protected readonly selectedProfileId = this.profileState.selectedProfileId
-  protected readonly stateProfiles = this.profileState.profiles
+  private localSelectedId = signal<string>('')
+  private initialProfiles = signal<ProfileDto[]>([])
 
   protected ProfileStatusLabels = ProfileStatusLabels
 
@@ -90,7 +91,19 @@ export class ProfileSearchDropdown implements OnInit, OnDestroy {
   private searchSubscription?: Subscription
 
   ngOnInit() {
-    this.filteredProfiles = this.stateProfiles()
+    this.isSearching = true
+    this.profileService.getProfiles({ pageSize: 20 }).subscribe({
+      next: (res) => {
+        const items = res.items || []
+        this.initialProfiles.set(items)
+        this.filteredProfiles = items
+        this.isSearching = false
+      },
+      error: () => {
+        this.filteredProfiles = this.profileState.profiles()
+        this.isSearching = false
+      },
+    })
 
     this.searchSubscription = this.searchSubject
       .pipe(
@@ -98,11 +111,11 @@ export class ProfileSearchDropdown implements OnInit, OnDestroy {
         distinctUntilChanged(),
         switchMap((term) => {
           if (!term) {
-            return of(this.stateProfiles())
+            return of(this.initialProfiles().length > 0 ? this.initialProfiles() : this.profileState.profiles())
           }
           this.isSearching = true
           return this.profileService.getProfiles({ searchTerm: term, pageSize: 20 }).pipe(
-            map(res => res.items || []),
+            map((res) => res.items || []),
             catchError(() => of([]))
           )
         })
@@ -115,6 +128,10 @@ export class ProfileSearchDropdown implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.searchSubscription?.unsubscribe()
+  }
+
+  activeSelectedProfileId(): string {
+    return this.syncGlobalState ? this.profileState.selectedProfileId() : this.localSelectedId()
   }
 
   onSearchChange(value: string) {
@@ -136,24 +153,35 @@ export class ProfileSearchDropdown implements OnInit, OnDestroy {
   }
 
   protected onSelect(profile: ProfileDto) {
-    this.profileState.selectProfile(profile.id)
+    this.localSelectedId.set(profile.id)
+    if (this.syncGlobalState) {
+      this.profileState.selectProfile(profile.id)
+    }
     this.searchInputValue = ''
     this.searchSubject.next('')
     this.onProfileSelect.emit(profile.id)
+    this.profileSelected.emit(profile.id)
   }
 
   protected onSelectCustomId(id: string) {
     if (!id) return
-    this.profileState.selectProfile(id)
+    this.localSelectedId.set(id)
+    if (this.syncGlobalState) {
+      this.profileState.selectProfile(id)
+    }
     this.searchInputValue = ''
     this.searchSubject.next('')
     this.onProfileSelect.emit(id)
+    this.profileSelected.emit(id)
   }
 
   selectedLabel(): string {
-    const selectedId = this.selectedProfileId()
+    const selectedId = this.activeSelectedProfileId()
     if (!selectedId) return this.placeholder()
-    const profile = this.stateProfiles().find(p => p.id === selectedId) || this.filteredProfiles.find(p => p.id === selectedId)
+    const profile =
+      this.initialProfiles().find((p) => p.id === selectedId) ||
+      this.filteredProfiles.find((p) => p.id === selectedId) ||
+      this.profileState.profiles().find((p) => p.id === selectedId)
     if (profile) return `${profile.firstName} ${profile.lastName}`
     return `ID: ${selectedId}`
   }

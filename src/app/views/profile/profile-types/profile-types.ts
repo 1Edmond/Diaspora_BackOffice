@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { ProfileService } from '@core/services/profile.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ProfileTypeDto } from '@core/models/profile/profile.model'
 
 @Component({
@@ -29,7 +31,9 @@ export class ProfileTypes implements OnInit {
   }
 
   constructor(
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -87,9 +91,11 @@ export class ProfileTypes implements OnInit {
           this.resetForm()
           this.loadTypes()
           this.successMessage = 'Pays / Profile Type mis à jour avec succès.'
+          this.toast.success(this.successMessage)
         },
         error: (err: any) => {
           this.error = err.error?.error || err.error?.message || 'Failed to update profile type'
+          this.toast.error(this.error)
         },
       })
     } else {
@@ -98,9 +104,11 @@ export class ProfileTypes implements OnInit {
           this.resetForm()
           this.loadTypes()
           this.successMessage = 'Nouveau pays / Profile Type ajouté avec succès.'
+          this.toast.success(this.successMessage)
         },
         error: (err: any) => {
           this.error = err.error?.error || err.error?.message || 'Failed to create profile type'
+          this.toast.error(this.error)
         },
       })
     }
@@ -116,8 +124,14 @@ export class ProfileTypes implements OnInit {
     })
   }
 
-  republishDirectory() {
-    if (!confirm("Republier l'annuaire des profils vers RabbitMQ pour tous les microservices (Marketplace, Document) ?")) {
+  async republishDirectory() {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Republier l\'annuaire',
+      message: "Republier l'annuaire des profils vers RabbitMQ pour tous les microservices (Marketplace, Document) ?",
+      confirmText: 'Republier',
+      variant: 'primary'
+    })
+    if (!confirmed) {
       return
     }
     this.republishing = true
@@ -127,10 +141,12 @@ export class ProfileTypes implements OnInit {
       next: (res) => {
         this.republishing = false
         this.successMessage = `Annuaire republié avec succès : ${res.totalProcessed ?? 'Tous les'} profils synchronisés.`
+        this.toast.success(this.successMessage)
       },
       error: (err: any) => {
         this.republishing = false
         this.error = err.error?.error || err.error?.message || "Échec de la republication de l'annuaire."
+        this.toast.error(this.error)
       },
     })
   }

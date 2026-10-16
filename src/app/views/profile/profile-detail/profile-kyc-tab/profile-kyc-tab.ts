@@ -1,15 +1,21 @@
-import { Component, OnInit, Input, signal } from '@angular/core'
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core'
 import { DatePipe, CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { Icon } from '@app/components/icon/icon'
 import { ProfileService } from '@core/services/profile.service'
+import { KycService } from '@core/services/kyc.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { KycVerification } from '@core/models/kyc/kyc.model'
+import {
+  CountryKycRequirementDto,
+  KycComplianceDto,
+} from '@core/models/kyc/kyc-requirement.model'
 import {
   KYCStatus,
   KYCStatusLabels,
   KYCStatusBadgeVariants,
 } from '@core/models/shared/enums.model'
-import { BaseResponse } from '@core/models/shared/base-response.model'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 
 @Component({
@@ -22,15 +28,20 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 export class ProfileKycTab implements OnInit {
   @Input() userId!: string
   @Input() profileId!: string
+  @Input() profileTypeId?: string
+  @Output() kycUpdated = new EventEmitter<void>()
 
   kycVerification: KycVerification | null = null
+  requirements: CountryKycRequirementDto[] = []
+  compliance: KycComplianceDto | null = null
+
   loading = false
+  loadingCompliance = false
   error = ''
   success = ''
 
   // Modal refs
   modalRef: NgbModalRef | null = null
-  modalContent: any = null
   modalAction: 'approve' | 'reject' | 'request-info' | 'start-review' = 'approve'
   modalNotes = ''
   modalReason = ''
@@ -42,11 +53,53 @@ export class ProfileKycTab implements OnInit {
 
   constructor(
     private profileService: ProfileService,
-    private modalService: NgbModal
+    private kycService: KycService,
+    private modalService: NgbModal,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
     this.loadKycVerification()
+    this.loadRequirementsAndCompliance()
+  }
+
+  loadRequirementsAndCompliance() {
+    if (this.profileTypeId) {
+      this.kycService.getRequirements(this.profileTypeId).subscribe({
+        next: (reqs) => {
+          this.requirements = (reqs || []).filter((r) => r.isActive)
+        },
+        error: () => {},
+      })
+    }
+
+    if (this.userId) {
+      this.loadingCompliance = true
+      this.kycService.getUserCompliance(this.userId, this.profileTypeId).subscribe({
+        next: (comp) => {
+          this.compliance = comp
+          this.loadingCompliance = false
+        },
+        error: () => {
+          this.loadingCompliance = false
+        },
+      })
+    }
+  }
+
+  isDocumentMissing(docTypeCode: string): boolean {
+    if (this.compliance?.missingMandatoryDocuments) {
+      return this.compliance.missingMandatoryDocuments.some(
+        (m) => m.toUpperCase() === docTypeCode.toUpperCase()
+      )
+    }
+    const docs = this.kycVerification?.documents || []
+    return !docs.some(
+      (d) =>
+        (d.documentType || '').toUpperCase() === docTypeCode.toUpperCase() ||
+        (d.fileName || '').toUpperCase().includes(docTypeCode.toUpperCase())
+    )
   }
 
   loadKycVerification() {
@@ -59,14 +112,13 @@ export class ProfileKycTab implements OnInit {
         this.loading = false
       },
       error: (err: any) => {
-        // KYC might not exist for this user
         if (err.status === 404) {
           this.kycVerification = null
         } else {
           this.error = err.error?.error || err.error?.message || 'Failed to load KYC'
         }
         this.loading = false
-      }
+      },
     })
   }
 
@@ -93,14 +145,14 @@ export class ProfileKycTab implements OnInit {
         break
       case 'reject':
         if (!this.modalReason.trim()) {
-          alert('Rejection reason is required')
+          this.toast.warning('Veuillez saisir le motif du rejet.')
           return
         }
         action$ = this.profileService.rejectKycVerification(this.kycVerification.id, this.modalReason, this.modalNotes)
         break
       case 'request-info':
         if (!this.modalReason.trim()) {
-          alert('Message is required')
+          this.toast.warning('Veuillez saisir le message de demande d\'informations complémentaires.')
           return
         }
         action$ = this.profileService.requestMoreInfoKyc(this.kycVerification.id, this.modalReason)
@@ -112,26 +164,50 @@ export class ProfileKycTab implements OnInit {
 
     action$.subscribe({
       next: () => {
-        this.success = `KYC ${this.modalAction} successful`
+        this.success = `Action KYC (${this.modalAction}) effectuée avec succès.`
+        this.toast.success(this.success)
         this.closeModal()
         this.loadKycVerification()
+        this.loadRequirementsAndCompliance()
+        this.kycUpdated.emit()
       },
       error: (err: any) => {
         this.error = err.error?.error || err.error?.message || `Failed to ${this.modalAction}`
-      }
+        this.toast.error(this.error)
+      },
     })
   }
 
-  manualVerifyProfile(level: number) {
+  async manualVerifyProfile(level: number) {
     if (!this.profileId) return
+    const levelLabel =
+      level === 1
+        ? 'L1 - Identité déclarée'
+        : level === 2
+          ? 'L2 - Identité vérifiée (KYC)'
+          : 'L3 - Vérification renforcée'
+
+    const confirmed = await this.confirmModal.confirm({
+      title: `Valider manuellement le niveau ${levelLabel}`,
+      message: `Voulez-vous définir manuellement le niveau de vérification de ce profil à ${levelLabel} ?`,
+      confirmText: `Valider L${level}`,
+      variant: level >= 2 ? 'success' : 'info',
+      icon: 'shield-check',
+    })
+    if (!confirmed) return
+
     this.profileService.setVerificationLevel(this.profileId, level).subscribe({
       next: () => {
         this.success = `Niveau de vérification défini à L${level} avec succès.`
+        this.toast.success(this.success)
         this.loadKycVerification()
+        this.loadRequirementsAndCompliance()
+        this.kycUpdated.emit()
       },
       error: (err: any) => {
         this.error = err.error?.error || err.error?.message || 'Erreur lors de la mise à jour.'
-      }
+        this.toast.error(this.error)
+      },
     })
   }
 
@@ -148,7 +224,8 @@ export class ProfileKycTab implements OnInit {
       },
       error: (err: any) => {
         this.error = err.error?.error || err.error?.message || 'Failed to download'
-      }
+        this.toast.error(this.error)
+      },
     })
   }
 

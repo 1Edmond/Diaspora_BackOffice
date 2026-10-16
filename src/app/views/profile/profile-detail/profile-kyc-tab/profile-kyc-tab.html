@@ -1,4 +1,105 @@
 <div class="p-3">
+  <!-- Conformité aux exigences KYC du profil -->
+  <div class="card mb-4 border shadow-none">
+    <div class="card-header bg-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h6 class="mb-0 d-flex align-items-center gap-2">
+        <app-icon icon="shield-check" class="text-primary"></app-icon>
+        Conformité aux exigences KYC du profil
+      </h6>
+      <span class="badge bg-soft-primary text-primary">
+        Seuil d'activation requis : L2 - Identité vérifiée
+      </span>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <div class="p-3 rounded bg-light h-100">
+            <span class="text-muted fs-12 d-block mb-1">Statut de conformité pour activation</span>
+            @if (compliance?.isCompliantForActivation) {
+              <span class="badge bg-success fs-12">
+                <app-icon icon="check-circle" class="me-1"></app-icon>Conforme (Prêt pour activation)
+              </span>
+            } @else {
+              <span class="badge bg-warning text-dark fs-12">
+                <app-icon icon="alert-triangle" class="me-1"></app-icon>Incomplet / En attente de validation L2
+              </span>
+            }
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 rounded bg-light h-100">
+            <span class="text-muted fs-12 d-block mb-1">Documents distincts soumis vs requis</span>
+            <strong class="fs-5 text-dark">
+              {{ compliance?.submittedDistinctDocumentsCount ?? (kycVerification?.documents?.length || 0) }}
+              /
+              {{ compliance?.requiredDistinctDocumentsCount ?? (requirements.length > 0 ? (requirements[0].requiredDistinctDocumentsCount || 1) : 1) }}
+            </strong>
+            <span class="text-muted fs-12 ms-1">document(s) distinct(s)</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 rounded bg-light h-100">
+            <span class="text-muted fs-12 d-block mb-1">Niveau KYC approuvé</span>
+            <span class="badge bg-soft-info text-info fs-12">
+              L{{ compliance?.approvedVerificationLevel ?? 0 }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      @if (requirements.length > 0) {
+        <h6 class="fs-12 text-uppercase text-muted mb-2">Checklist des pièces exigées par le type de profil</h6>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th>Code Document</th>
+                <th>Niveau cible</th>
+                <th>Caractère</th>
+                <th>Motif</th>
+                <th class="text-center">État dans le dossier</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of requirements; track req.id) {
+                @let missing = isDocumentMissing(req.documentTypeCode);
+                <tr>
+                  <td class="fw-semibold font-monospace text-primary">{{ req.documentTypeCode }}</td>
+                  <td>
+                    <span class="badge bg-soft-info text-info">L{{ req.targetLevel || 2 }}</span>
+                  </td>
+                  <td>
+                    @if (req.isRequired) {
+                      <span class="badge bg-soft-danger text-danger">Obligatoire</span>
+                    } @else {
+                      <span class="badge bg-soft-secondary text-secondary">Facultatif</span>
+                    }
+                  </td>
+                  <td class="text-muted small">{{ req.purpose }}</td>
+                  <td class="text-center">
+                    @if (!missing) {
+                      <span class="badge bg-soft-success text-success">
+                        <app-icon icon="check" class="me-1"></app-icon>Présent / Soumis
+                      </span>
+                    } @else {
+                      <span class="badge bg-soft-warning text-warning">
+                        <app-icon icon="alert-triangle" class="me-1"></app-icon>Manquant
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="text-muted small mb-0">
+          <app-icon icon="info" class="me-1"></app-icon>Aucune exigence documentaire spécifique configurée pour ce type de profil.
+        </p>
+      }
+    </div>
+  </div>
+
   @if (loading) {
   <div class="d-flex justify-content-center p-5">
     <div class="spinner-border text-primary" role="status">
@@ -13,13 +114,13 @@
       <p class="text-muted mb-4">Cet utilisateur n'a pas encore soumis de documents via le formulaire KYC mobile.</p>
       <div class="d-flex justify-content-center gap-2 flex-wrap">
         <button class="btn btn-outline-info btn-sm" (click)="manualVerifyProfile(1)">
-          <app-icon icon="check" class="me-1"></app-icon> Valider L1 (Identité Déclarée)
+          <app-icon icon="check" class="me-1"></app-icon> Valider L1 (Identité déclarée)
         </button>
         <button class="btn btn-outline-primary btn-sm" (click)="manualVerifyProfile(2)">
-          <app-icon icon="shield-check" class="me-1"></app-icon> Valider L2 (Identité Vérifiée / KYC)
+          <app-icon icon="shield-check" class="me-1"></app-icon> Valider L2 (Identité vérifiée / KYC)
         </button>
         <button class="btn btn-outline-success btn-sm" (click)="manualVerifyProfile(3)">
-          <app-icon icon="award" class="me-1"></app-icon> Valider L3 (Renforcé / Marketplace Colis)
+          <app-icon icon="award" class="me-1"></app-icon> Valider L3 (Vérification renforcée)
         </button>
       </div>
     </div>
@@ -93,7 +194,7 @@
               <app-icon icon="loader" class="me-1"></app-icon> Start Review
             </button>
             }
-            @if (kycVerification.status === KYCStatus.UnderReview) {
+            @if (kycVerification.status === KYCStatus.UnderReview || kycVerification.status === KYCStatus.Pending) {
             <button class="btn btn-success" (click)="openActionModal(approveModal, 'approve')">
               <app-icon icon="check" class="me-1"></app-icon> Approve
             </button>
@@ -189,11 +290,11 @@
       <div class="mb-3">
         <label class="form-label fw-medium">Niveau d'approbation KYC</label>
         <select class="form-select" [(ngModel)]="modalLevel">
-          <option value="Basic">Niveau 1 - Identité Déclarée (L1)</option>
-          <option value="Intermediate">Niveau 2 - Identité Vérifiée / KYC (L2)</option>
-          <option value="Advanced">Niveau 3 - Vérification Renforcée (L3)</option>
+          <option value="Basic">Niveau 1 - Identité déclarée (L1)</option>
+          <option value="Intermediate">Niveau 2 - Identité vérifiée / KYC (L2 - Requis pour activation)</option>
+          <option value="Advanced">Niveau 3 - Vérification renforcée (L3)</option>
         </select>
-        <small class="text-muted">Par défaut : Niveau 2 (Recommandé pour débloquer les services et le marketplace).</small>
+        <small class="text-muted">Par défaut : Niveau 2 (Recommandé pour débloquer l'activation du profil et les services).</small>
       </div>
       <div class="mb-3">
         <label class="form-label">Notes (optional)</label>

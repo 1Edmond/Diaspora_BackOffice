@@ -14,6 +14,7 @@ import {
 import {
   CountryKycRequirementDto,
   CreateCountryKycRequirementRequest,
+  KycComplianceDto,
   UpdateCountryKycRequirementRequest,
 } from '../models/kyc/kyc-requirement.model';
 
@@ -35,6 +36,12 @@ export class KycService {
 
   getMyVerification(): Observable<KycVerification> {
     return this.http.get<KycVerification>(`${this.apiUrl}/my-verification`);
+  }
+
+  getUserCompliance(userId: string, profileTypeId?: string): Observable<KycComplianceDto> {
+    const params: any = {};
+    if (profileTypeId) params.profileTypeId = profileTypeId;
+    return this.http.get<KycComplianceDto>(`${this.apiUrl}/user/${userId}/compliance`, { params });
   }
 
   getVerifications(query: KycListQuery = {}): Observable<PagedList<KycVerification>> {

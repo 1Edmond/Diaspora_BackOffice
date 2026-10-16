@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
 import { FreelanceService } from '@core/services/freelance.service';
 import { JobCategoryDto } from '@core/models/freelance/freelance.model';
 
 @Component({
   selector: 'app-job-categories',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, Icon],
   templateUrl: './job-categories.html',
 })
 export class JobCategoriesComponent implements OnInit {

@@ -264,10 +264,10 @@ export const PaymentModeLabels: Record<PaymentMode, string> = {
 }
 
 export const VerificationLevelLabels: Record<VerificationLevel, string> = {
-  [VerificationLevel.L0_Registered]: 'L0 - Enregistré',
-  [VerificationLevel.L1_IdentityDeclared]: 'L1 - Déclaré',
-  [VerificationLevel.L2_IdentityVerified]: 'L2 - Vérifié',
-  [VerificationLevel.L3_EnhancedVerified]: 'L3 - Renforcé',
+  [VerificationLevel.L0_Registered]: 'L0 - Inscrit',
+  [VerificationLevel.L1_IdentityDeclared]: 'L1 - Identité déclarée',
+  [VerificationLevel.L2_IdentityVerified]: 'L2 - Identité vérifiée (KYC)',
+  [VerificationLevel.L3_EnhancedVerified]: 'L3 - Vérification renforcée',
 }
 
 export const VerificationLevelBadgeVariants: Record<VerificationLevel, string> = {

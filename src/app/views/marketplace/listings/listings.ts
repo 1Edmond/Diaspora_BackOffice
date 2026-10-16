@@ -2,7 +2,10 @@ import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core'
 import { DecimalPipe, DatePipe, CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import {
   ListingStatus,
   ListingStatusLabels,
@@ -20,12 +23,12 @@ interface ListingWithActions extends ServiceListingSummaryDto {
 @Component({
   selector: 'app-listings',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, DatePipe, FormsModule, PageBreadcrumb],
+  imports: [CommonModule, DecimalPipe, DatePipe, FormsModule, PageBreadcrumb, Icon],
   templateUrl: './listings.html',
   styles: ``,
 })
 export class Listings implements OnInit, OnDestroy {
-private destroy$ = new Subject<void>()
+  private destroy$ = new Subject<void>()
   private searchSubject = new Subject<string>()
 
   listings = signal<any[]>([])
@@ -72,7 +75,9 @@ private destroy$ = new Subject<void>()
   categories: { id: string; name: string }[] = []
 
   constructor(
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -166,6 +171,13 @@ private destroy$ = new Subject<void>()
   async bulkApprove() {
     const selected = this.listings().filter(l => l.selected && l.status === 0)
     if (selected.length === 0) return
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Approuver la sélection',
+      message: `Voulez-vous approuver ${selected.length} annonce(s) sélectionnée(s) ?`,
+      confirmText: 'Approuver',
+      variant: 'success'
+    })
+    if (!confirmed) return
     this.bulkActionLoading = true
     for (const l of selected) {
       try {
@@ -175,13 +187,20 @@ private destroy$ = new Subject<void>()
       }
     }
     this.bulkActionLoading = false
+    this.toast.success(`${selected.length} annonce(s) approuvée(s).`)
     this.loadListings()
   }
 
   async bulkReject() {
     const selected = this.listings().filter(l => l.selected && l.status === 0)
     if (selected.length === 0) return
-    const reason = prompt('Rejection reason for all selected:')
+    const reason = await this.confirmModal.prompt({
+      title: 'Rejeter la sélection',
+      message: `Indiquez le motif de rejet pour les ${selected.length} annonce(s) sélectionnée(s) :`,
+      inputPlaceholder: 'Motif du rejet...',
+      confirmText: 'Rejeter',
+      variant: 'danger'
+    })
     if (!reason) return
     this.bulkActionLoading = true
     for (const l of selected) {
@@ -192,12 +211,20 @@ private destroy$ = new Subject<void>()
       }
     }
     this.bulkActionLoading = false
+    this.toast.success(`${selected.length} annonce(s) rejetée(s).`)
     this.loadListings()
   }
 
   async bulkSuspend() {
     const selected = this.listings().filter(l => l.selected && l.status === 1)
     if (selected.length === 0) return
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Suspendre la sélection',
+      message: `Voulez-vous suspendre ${selected.length} annonce(s) sélectionnée(s) ?`,
+      confirmText: 'Suspendre',
+      variant: 'warning'
+    })
+    if (!confirmed) return
     this.bulkActionLoading = true
     for (const l of selected) {
       try {
@@ -207,13 +234,20 @@ private destroy$ = new Subject<void>()
       }
     }
     this.bulkActionLoading = false
+    this.toast.success(`${selected.length} annonce(s) suspendue(s).`)
     this.loadListings()
   }
 
   async bulkDelete() {
     const selected = this.listings().filter(l => l.selected)
     if (selected.length === 0) return
-    if (!confirm(`Delete ${selected.length} listing(s)?`)) return
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer la sélection',
+      message: `Voulez-vous vraiment supprimer ${selected.length} annonce(s) ?`,
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!confirmed) return
     this.bulkActionLoading = true
     for (const l of selected) {
       try {
@@ -223,45 +257,73 @@ private destroy$ = new Subject<void>()
       }
     }
     this.bulkActionLoading = false
+    this.toast.success(`${selected.length} annonce(s) supprimée(s).`)
     this.loadListings()
   }
 
   async approveSingle(id: string) {
     try {
       await this.marketplaceService.approveListing(id).toPromise()
+      this.toast.success('Annonce approuvée.')
       this.loadListings()
     } catch (e) {
       console.error('Failed to approve', e)
+      this.toast.error('Erreur lors de l\'approbation.')
     }
   }
 
   async rejectSingle(id: string) {
-    const reason = prompt('Rejection reason:')
+    const reason = await this.confirmModal.prompt({
+      title: 'Rejeter l\'annonce',
+      message: 'Veuillez indiquer le motif du rejet :',
+      inputPlaceholder: 'Motif du rejet...',
+      confirmText: 'Rejeter',
+      variant: 'danger'
+    })
     if (!reason) return
     try {
       await this.marketplaceService.rejectListing(id, reason).toPromise()
+      this.toast.success('Annonce rejetée.')
       this.loadListings()
     } catch (e) {
       console.error('Failed to reject', e)
+      this.toast.error('Erreur lors du rejet.')
     }
   }
 
   async suspendSingle(id: string) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Suspendre l\'annonce',
+      message: 'Voulez-vous suspendre cette annonce ?',
+      confirmText: 'Suspendre',
+      variant: 'warning'
+    })
+    if (!confirmed) return
     try {
       await this.marketplaceService.suspendListing(id).toPromise()
+      this.toast.success('Annonce suspendue.')
       this.loadListings()
     } catch (e) {
       console.error('Failed to suspend', e)
+      this.toast.error('Erreur lors de la suspension.')
     }
   }
 
-async deleteSingle(id: string) {
-    if (!confirm('Delete this listing?')) return
+  async deleteSingle(id: string) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer l\'annonce',
+      message: 'Voulez-vous vraiment supprimer cette annonce ?',
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!confirmed) return
     try {
       await this.marketplaceService.deleteListing(id).toPromise()
+      this.toast.success('Annonce supprimée.')
       this.loadListings()
     } catch (e) {
       console.error('Failed to delete', e)
+      this.toast.error('Erreur lors de la suppression.')
     }
   }
 
@@ -304,7 +366,7 @@ async deleteSingle(id: string) {
     this.loadListings()
   }
 
-hasActiveFilters(): boolean {
+  hasActiveFilters(): boolean {
     return !!(
       this.search ||
       this.categoryId ||

@@ -2,14 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
 import { ChatService } from '@core/services/chat.service';
 import { IdentityService } from '@core/services/identity/identity.service';
+import { ConfirmModalService } from '@core/services/confirm-modal.service';
+import { ToastService } from '@core/services/toast.service';
 import { ChatReport, MessageDto } from '@core/models/chat/chat.model';
 
 @Component({
   selector: 'app-chat-moderation',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, Icon],
   templateUrl: './chat-moderation.html',
 })
 export class ChatModerationComponent implements OnInit {
@@ -47,7 +50,9 @@ export class ChatModerationComponent implements OnInit {
 
   constructor(
     private chatService: ChatService,
-    private identityService: IdentityService
+    private identityService: IdentityService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -92,7 +97,6 @@ export class ChatModerationComponent implements OnInit {
       },
       error: () => {
         this.loadingMessages = false;
-        // Fallback visuel avec le snippet de signalement
         this.conversationMessages = [
           {
             id: report.messageId || 'm-1',
@@ -117,8 +121,15 @@ export class ChatModerationComponent implements OnInit {
     this.conversationMessages = [];
   }
 
-  deleteMessage(msg: MessageDto) {
-    if (!confirm('Voulez-vous supprimer ce message illicite de la conversation ?')) return;
+  async deleteMessage(msg: MessageDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer le message illicite',
+      message: 'Voulez-vous supprimer ce message illicite de la conversation ?',
+      confirmText: 'Supprimer',
+      variant: 'danger',
+      icon: 'trash-2',
+    });
+    if (!confirmed) return;
 
     this.actionLoading = true;
     this.chatService.deleteMessageAsAdmin(msg.id).subscribe({
@@ -185,9 +196,11 @@ export class ChatModerationComponent implements OnInit {
   private showMessage(type: 'success' | 'error', msg: string) {
     if (type === 'success') {
       this.successMessage = msg;
+      this.toast.success(msg);
       setTimeout(() => (this.successMessage = ''), 5000);
     } else {
       this.errorMessage = msg;
+      this.toast.error(msg);
       setTimeout(() => (this.errorMessage = ''), 6000);
     }
   }

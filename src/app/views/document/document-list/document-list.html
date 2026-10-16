@@ -3,7 +3,7 @@
 
   @if (actionSuccessMessage) {
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-    <i class="ri-check-line fs-18 me-2"></i>
+    <app-icon icon="check" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{actionSuccessMessage}}</div>
     <button type="button" class="btn-close" (click)="actionSuccessMessage = ''"></button>
   </div>
@@ -11,7 +11,7 @@
 
   @if (actionErrorMessage) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{actionErrorMessage}}</div>
     <button type="button" class="btn-close" (click)="actionErrorMessage = ''"></button>
   </div>
@@ -23,7 +23,7 @@
       <ul class="nav nav-tabs nav-bordered mb-3">
         <li class="nav-item">
           <a class="nav-link" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')" style="cursor: pointer;">
-            <i class="ri-time-line me-1"></i> En Attente de Validation
+            <app-icon icon="clock" class="me-1"></app-icon> En Attente de Validation
             @if (activeTab === 'pending' && totalCount > 0) {
             <span class="badge bg-soft-warning text-warning ms-1.5 px-2 py-0.5 fs-11">{{totalCount}}</span>
             }
@@ -31,7 +31,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" [class.active]="activeTab === 'expiring'" (click)="switchTab('expiring')" style="cursor: pointer;">
-            <i class="ri-alarm-warning-line me-1"></i> Documents Expirants (&lt; 30j)
+            <app-icon icon="alert-triangle" class="me-1"></app-icon> Documents Expirants (&lt; 30j)
             @if (activeTab === 'expiring' && totalCount > 0) {
             <span class="badge bg-soft-danger text-danger ms-1.5 px-2 py-0.5 fs-11">{{totalCount}}</span>
             }
@@ -39,7 +39,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" [class.active]="activeTab === 'by-profile'" (click)="switchTab('by-profile')" style="cursor: pointer;">
-            <i class="ri-user-search-line me-1"></i> Recherche par Citoyen
+            <app-icon icon="search" class="me-1"></app-icon> Recherche par Citoyen
           </a>
         </li>
       </ul>
@@ -57,7 +57,7 @@
           <div class="d-flex align-items-center gap-2 mt-auto mb-1">
             @if (profileId) {
             <button class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm" (click)="openUploadModal(uploadModal)">
-              <i class="ri-upload-2-line fs-14"></i> Téléverser un Document
+              <app-icon icon="upload" class="fs-14"></app-icon> Téléverser un Document
             </button>
             }
           </div>
@@ -68,7 +68,7 @@
           </div>
           <div class="d-flex align-items-center gap-2">
             <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
-              <i class="ri-refresh-line"></i> Actualiser
+              <app-icon icon="refresh-cw"></app-icon> Actualiser
             </button>
           </div>
           } @else if (activeTab === 'expiring') {
@@ -78,7 +78,7 @@
           </div>
           <div class="d-flex align-items-center gap-2">
             <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadDocuments()" [disabled]="loading" title="Actualiser">
-              <i class="ri-refresh-line"></i> Actualiser
+              <app-icon icon="refresh-cw"></app-icon> Actualiser
             </button>
           </div>
           }
@@ -109,7 +109,7 @@
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar-sm flex-shrink-0">
                         <span class="avatar-title bg-soft-primary text-primary rounded fs-18">
-                          <i class="ri-file-text-line"></i>
+                          <app-icon icon="file-text"></app-icon>
                         </span>
                       </div>
                       <div>
@@ -117,7 +117,7 @@
                           {{doc.fileName}}
                         </a>
                         @if (doc.rejectionReason) {
-                        <div class="text-danger fs-11 mt-0.5"><i class="ri-error-warning-line me-1"></i>Rejet: {{doc.rejectionReason}}</div>
+                        <div class="text-danger fs-11 mt-0.5"><app-icon icon="alert-triangle" class="me-1"></app-icon>Rejet: {{doc.rejectionReason}}</div>
                         }
                       </div>
                     </div>
@@ -125,7 +125,7 @@
                   @if (activeTab !== 'by-profile') {
                   <td>
                     <span class="font-monospace fs-12 text-muted" [title]="doc.profileId">
-                      <i class="ri-user-line me-1"></i>{{doc.profileId.substring(0, 8)}}...
+                      <app-icon icon="user" class="me-1"></app-icon>{{doc.profileId.substring(0, 8)}}...
                     </span>
                   </td>
                   }
@@ -155,33 +155,33 @@
                       <!-- Validation Actions for Pending Documents -->
                       @if (doc.status === DocumentStatus.Pending) {
                       <button
-                        class="btn btn-xs btn-soft-success"
+                        class="btn btn-sm btn-icon btn-soft-success"
                         (click)="validateDocument(doc)"
                         [disabled]="validatingDocId === doc.id"
                         title="Valider ce document">
                         @if (validatingDocId === doc.id) {
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                         } @else {
-                        <i class="ri-check-line"></i>
+                        <app-icon icon="check"></app-icon>
                         }
                       </button>
                       <button
-                        class="btn btn-xs btn-soft-danger"
+                        class="btn btn-sm btn-icon btn-soft-danger"
                         (click)="openRejectModal(rejectModal, doc)"
                         title="Rejeter avec motif">
-                        <i class="ri-close-line"></i>
+                        <app-icon icon="x"></app-icon>
                       </button>
                       }
 
                       <!-- Standard Actions -->
-                      <a [routerLink]="['/documents', doc.id]" class="btn btn-xs btn-soft-secondary" title="Consulter la fiche">
-                        <i class="ri-eye-line"></i>
+                      <a [routerLink]="['/documents', doc.id]" class="btn btn-sm btn-icon btn-soft-secondary" title="Consulter la fiche">
+                        <app-icon icon="eye"></app-icon>
                       </a>
-                      <button class="btn btn-xs btn-soft-primary" (click)="downloadDocument(doc)" title="Télécharger le fichier">
-                        <i class="ri-download-2-line"></i>
+                      <button class="btn btn-sm btn-icon btn-soft-primary" (click)="downloadDocument(doc)" title="Télécharger le fichier">
+                        <app-icon icon="download"></app-icon>
                       </button>
-                      <button class="btn btn-xs btn-soft-danger" (click)="onDelete(doc)" title="Supprimer">
-                        <i class="ri-delete-bin-line"></i>
+                      <button class="btn btn-sm btn-icon btn-soft-danger" (click)="onDelete(doc)" title="Supprimer">
+                        <app-icon icon="trash-2"></app-icon>
                       </button>
                     </div>
                   </td>
@@ -195,7 +195,7 @@
                     } @else {
                       <div class="avatar-md mx-auto mb-3">
                         <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
-                          <i class="ri-folder-open-line"></i>
+                          <app-icon icon="inbox"></app-icon>
                         </span>
                       </div>
                       <h6 class="text-dark">Aucun document à afficher</h6>
@@ -222,10 +222,10 @@
           <span class="text-muted fs-12">Page {{page}} sur {{totalPages}} ({{totalCount}} documents au total)</span>
           <div class="d-flex gap-1">
             <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
-              <i class="ri-arrow-left-s-line me-1"></i>Précédent
+              <app-icon icon="arrow-left" class="me-1"></app-icon>Précédent
             </button>
             <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
-              Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+              Suivant<app-icon icon="arrow-right" class="ms-1"></app-icon>
             </button>
           </div>
         </div>
@@ -234,7 +234,7 @@
         <div class="card-body p-4 text-center">
           <div class="avatar-lg mx-auto mb-3">
             <span class="avatar-title bg-soft-info text-info rounded-circle fs-28">
-              <i class="ri-user-search-line"></i>
+              <app-icon icon="search"></app-icon>
             </span>
           </div>
           <h5 class="fs-15">Sélectionnez un profil citoyen</h5>
@@ -251,7 +251,7 @@
   <ng-template #rejectModal let-modal>
     <div class="modal-header bg-danger text-white">
       <h5 class="modal-title text-white d-flex align-items-center gap-2">
-        <i class="ri-close-circle-line"></i> Rejeter le Document Citoyen
+        <app-icon icon="x"></app-icon> Rejeter le Document Citoyen
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
@@ -287,7 +287,7 @@
         <span class="spinner-border spinner-border-sm" role="status"></span>
         Rejet en cours...
         } @else {
-        <i class="ri-check-line"></i> Confirmer le Rejet
+        <app-icon icon="check"></app-icon> Confirmer le Rejet
         }
       </button>
     </div>
@@ -297,7 +297,7 @@
   <ng-template #uploadModal let-modal>
     <div class="modal-header bg-primary text-white">
       <h5 class="modal-title text-white d-flex align-items-center gap-2">
-        <i class="ri-upload-2-line"></i> Téléverser un Document Administratif
+        <app-icon icon="upload"></app-icon> Téléverser un Document Administratif
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
@@ -327,7 +327,7 @@
           <span class="spinner-border spinner-border-sm" role="status"></span>
           Téléversement...
         } @else {
-          <i class="ri-upload-cloud-line"></i> Téléverser
+          <app-icon icon="upload"></app-icon> Téléverser
         }
       </button>
     </div>

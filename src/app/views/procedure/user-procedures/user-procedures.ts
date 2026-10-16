@@ -1,14 +1,14 @@
-import { Component, OnInit, inject, effect, TemplateRef } from '@angular/core'
+import { Component, OnInit, inject, TemplateRef } from '@angular/core'
 import { DatePipe, DecimalPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
 import { forkJoin, of } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
 import { ProcedureService } from '@core/services/procedure.service'
 import { ProfileService } from '@core/services/profile.service'
-import { ProfileStateService } from '@core/services/profile-state.service'
 import {
   UserProcedureDto,
   ProcedureProgressDto,
@@ -26,7 +26,7 @@ import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdow
 @Component({
   selector: 'app-user-procedures',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, RouterLink, ProfileSearchDropdown],
+  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, RouterLink, ProfileSearchDropdown, Icon],
   templateUrl: './user-procedures.html',
   styles: ``,
 })
@@ -73,31 +73,11 @@ export class UserProcedures implements OnInit {
 
   constructor(
     private procedureService: ProcedureService,
-    private profileService: ProfileService,
-    public profileState: ProfileStateService
-  ) {
-    effect(() => {
-      const pid = this.profileState.selectedProfileId()
-      if (pid && pid !== this.profileId) {
-        this.profileId = pid
-        this.manualProfileId = pid
-        this.selectedProfileIds.clear()
-        if (this.activeTab === 'by-profile') {
-          this.loadProfileData()
-        }
-      }
-    })
-  }
+    private profileService: ProfileService
+  ) {}
 
   ngOnInit() {
-    // 1. In global mode (default), immediately load citizen procedures
     this.loadGlobalData()
-
-    // 2. Pre-fill profile if available in state
-    if (this.profileState.selectedProfileId()) {
-      this.profileId = this.profileState.selectedProfileId()
-      this.manualProfileId = this.profileId
-    }
   }
 
   setTab(tab: 'global' | 'by-profile') {
@@ -277,7 +257,6 @@ export class UserProcedures implements OnInit {
   applyManualProfileId() {
     const pid = this.manualProfileId.trim()
     if (pid) {
-      this.profileState.selectProfile(pid)
       this.onProfileSelect(pid)
     }
   }
@@ -473,7 +452,6 @@ export class UserProcedures implements OnInit {
     this.clearMessages()
 
     if (this.selectedProc) {
-      // Single procedure action
       const proc = this.selectedProc
       if (this.modalAction === 'complete') {
         const req: CompleteUserProcedureRequest = {
@@ -510,7 +488,6 @@ export class UserProcedures implements OnInit {
         })
       }
     } else {
-      // Bulk action across selected items
       const selected =
         this.activeTab === 'global'
           ? this.getSelectedGlobalProcedures()

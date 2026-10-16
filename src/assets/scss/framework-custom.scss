@@ -627,3 +627,22 @@ ngb-modal-window .modal-content {
   margin-bottom: -2rem;
   z-index: 10;
 }
+
+// Soft background and text utilities
+@each $state in ('primary', 'secondary', 'success', 'info', 'warning', 'danger', 'dark', 'light', 'purple') {
+  .bg-soft-#{$state} {
+    background-color: rgba(var(--theme-#{$state}-rgb), 0.15) !important;
+    color: var(--theme-#{$state}) !important;
+  }
+
+  .text-soft-#{$state} {
+    color: rgba(var(--theme-#{$state}-rgb), 0.75) !important;
+  }
+}
+
+.btn-xs {
+  padding: 0.18rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border-radius: 0.2rem;
+}

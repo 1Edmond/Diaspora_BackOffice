@@ -5,6 +5,8 @@ import { Icon } from '@app/components/icon/icon'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { DocumentService } from '@core/services/document.service'
 import { ProfileService } from '@core/services/profile.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { DocumentTypeDto } from '@core/models/document/document.model'
 import { ProfileTypeDto } from '@core/models/profile/profile.model'
 
@@ -54,7 +56,9 @@ export class DocumentTypes implements OnInit {
   constructor(
     private documentService: DocumentService,
     private profileService: ProfileService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -120,6 +124,7 @@ export class DocumentTypes implements OnInit {
           renewalAlertDays: 30,
           isRequired: false,
         }
+        this.toast.success('Type de document créé avec succès.')
         this.loadTypes()
       },
       error: (err) => {
@@ -129,10 +134,20 @@ export class DocumentTypes implements OnInit {
     })
   }
 
-  deactivateType(id: string) {
-    if (confirm('Désactiver ce type de document ?')) {
+  async deactivateType(id: string) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Désactiver le type de document',
+      message: 'Voulez-vous désactiver ce type de document ?',
+      confirmText: 'Désactiver',
+      variant: 'warning',
+      icon: 'alert-triangle',
+    })
+    if (confirmed) {
       this.documentService.deactivateDocumentType(id).subscribe({
-        next: () => this.loadTypes(),
+        next: () => {
+          this.toast.warning('Type de document désactivé.')
+          this.loadTypes()
+        },
         error: (err) => {
           this.errorMessage = err?.status === 403 ? 'Permission refusée pour désactiver' : 'Erreur de désactivation'
           console.error('deactivateDocumentType error:', err)

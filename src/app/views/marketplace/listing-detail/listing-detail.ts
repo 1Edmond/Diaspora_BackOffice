@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ServiceListingDto } from '@core/models/marketplace/marketplace.model'
 import { ListingStatus, ListingStatusLabels, ListingStatusBadgeVariants, PaymentModeLabels } from '@core/models/shared/enums.model'
 
@@ -28,7 +30,9 @@ export class ListingDetail implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -45,38 +49,70 @@ export class ListingDetail implements OnInit {
     })
   }
 
-  approve() {
+  async approve() {
     if (!this.listing) return
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Approuver l\'annonce',
+      message: `Voulez-vous approuver l'annonce "${this.listing.title}" ?`,
+      confirmText: 'Approuver',
+      variant: 'success'
+    })
+    if (!confirmed) return
     this.marketplaceService.approveListing(this.listing.id).subscribe({
       next: (res) => {
-        this.success = res.message || 'Listing approved'
+        this.success = res.message || 'Annonce approuvée'
+        this.toast.success(this.success)
         this.reload()
       },
-      error: (err: any) => { this.error = err.error?.error || err.error?.message || 'Failed to approve' },
+      error: (err: any) => {
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de l\'approbation'
+        this.toast.error(this.error)
+      },
     })
   }
 
-  reject() {
+  async reject() {
     if (!this.listing) return
-    const reason = prompt('Rejection reason:')
+    const reason = await this.confirmModal.prompt({
+      title: 'Rejeter l\'annonce',
+      message: 'Veuillez indiquer le motif du rejet :',
+      inputPlaceholder: 'Motif du rejet...',
+      confirmText: 'Rejeter',
+      variant: 'danger'
+    })
     if (reason == null) return
     this.marketplaceService.rejectListing(this.listing.id, reason).subscribe({
       next: (res) => {
-        this.success = res.message || 'Listing rejected'
+        this.success = res.message || 'Annonce rejetée'
+        this.toast.success(this.success)
         this.reload()
       },
-      error: (err: any) => { this.error = err.error?.error || err.error?.message || 'Failed to reject' },
+      error: (err: any) => {
+        this.error = err.error?.error || err.error?.message || 'Erreur lors du rejet'
+        this.toast.error(this.error)
+      },
     })
   }
 
-  suspend() {
+  async suspend() {
     if (!this.listing) return
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Suspendre l\'annonce',
+      message: `Voulez-vous suspendre l'annonce "${this.listing.title}" ?`,
+      confirmText: 'Suspendre',
+      variant: 'warning'
+    })
+    if (!confirmed) return
     this.marketplaceService.suspendListing(this.listing.id).subscribe({
       next: (res) => {
-        this.success = res.message || 'Listing suspended'
+        this.success = res.message || 'Annonce suspendue'
+        this.toast.success(this.success)
         this.reload()
       },
-      error: (err: any) => { this.error = err.error?.error || err.error?.message || 'Failed to suspend' },
+      error: (err: any) => {
+        this.error = err.error?.error || err.error?.message || 'Erreur lors de la suspension'
+        this.toast.error(this.error)
+      },
     })
   }
 

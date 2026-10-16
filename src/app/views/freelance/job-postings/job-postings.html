@@ -3,13 +3,13 @@
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <i class="ri-checkbox-circle-line me-1 fs-16 align-middle"></i> {{ successMessage }}
+    <app-icon icon="check" class="me-1 fs-16 align-middle"></app-icon> {{ successMessage }}
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <i class="ri-error-warning-line me-1 fs-16 align-middle"></i> {{ errorMessage }}
+    <app-icon icon="alert-triangle" class="me-1 fs-16 align-middle"></app-icon> {{ errorMessage }}
     <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
   </div>
   }
@@ -28,7 +28,7 @@
             <div class="flex-shrink-0">
               <div class="avatar-sm">
                 <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-20">
-                  <i class="ri-briefcase-line"></i>
+                  <app-icon icon="briefcase"></app-icon>
                 </span>
               </div>
             </div>
@@ -49,7 +49,7 @@
             <div class="flex-shrink-0">
               <div class="avatar-sm">
                 <span class="avatar-title bg-soft-success text-success rounded-circle fs-20">
-                  <i class="ri-folder-open-line"></i>
+                  <app-icon icon="inbox"></app-icon>
                 </span>
               </div>
             </div>
@@ -72,7 +72,7 @@
             <div class="flex-shrink-0">
               <div class="avatar-sm">
                 <span class="avatar-title bg-soft-info text-info rounded-circle fs-20">
-                  <i class="ri-filter-3-line"></i>
+                  <app-icon icon="search"></app-icon>
                 </span>
               </div>
             </div>
@@ -95,7 +95,7 @@
             <div class="flex-shrink-0">
               <div class="avatar-sm">
                 <span class="avatar-title bg-soft-warning text-warning rounded-circle fs-20">
-                  <i class="ri-earth-line"></i>
+                  <app-icon icon="globe"></app-icon>
                 </span>
               </div>
             </div>
@@ -154,10 +154,10 @@
             </div>
             <div class="col-md-2 d-flex gap-2 justify-content-end">
               <button class="btn btn-primary w-100" (click)="onFilter()">
-                <i class="ri-filter-3-line me-1"></i> Filtrer
+                <app-icon icon="search" class="me-1"></app-icon> Filtrer
               </button>
               <button class="btn btn-outline-secondary" (click)="onResetFilters()" title="Réinitialiser les filtres">
-                <i class="ri-refresh-line"></i>
+                <app-icon icon="refresh-cw"></app-icon>
               </button>
             </div>
           </div>
@@ -202,7 +202,7 @@
                 } @else if (jobPostings.length === 0) {
                 <tr>
                   <td colspan="8" class="text-center p-4 text-muted">
-                    <i class="ri-inbox-line fs-24 d-block mb-1"></i>
+                    <app-icon icon="inbox" class="fs-24 d-block mb-1"></app-icon>
                     Aucune mission freelance trouvée pour ces critères de filtrage.
                   </td>
                 </tr>
@@ -214,11 +214,11 @@
                       <div class="fs-12 text-muted mt-1">
                         @if (job.isRemote) {
                         <span class="badge bg-soft-info text-info me-1">
-                          <i class="ri-earth-line me-1"></i>Distanciel
+                          <app-icon icon="globe" class="me-1"></app-icon>Distanciel
                         </span>
                         } @else {
                         <span>
-                          <i class="ri-map-pin-line me-1 text-danger"></i>{{ job.city || '' }} {{ job.country || '' }}
+                          <app-icon icon="map-pin" class="me-1 text-danger"></app-icon>{{ job.city || '' }} {{ job.country || '' }}
                         </span>
                         }
                       </div>
@@ -230,7 +230,7 @@
                       <div class="d-flex align-items-center">
                         <div class="avatar-xs me-2">
                           <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-12">
-                            <i class="ri-user-3-line"></i>
+                            <app-icon icon="user"></app-icon>
                           </span>
                         </div>
                         <div>
@@ -268,27 +268,27 @@
                       </span>
                     </td>
                     <td class="text-end">
-                      <div class="btn-group">
-                        <button class="btn btn-soft-primary btn-sm" (click)="viewDetail(job.id)" title="Consulter la fiche complète">
-                          <i class="ri-eye-line"></i>
+                      <div class="d-inline-flex gap-1">
+                        <button class="btn btn-soft-primary btn-sm btn-icon" (click)="viewDetail(job.id)" title="Consulter la fiche complète">
+                          <app-icon icon="eye"></app-icon>
                         </button>
                         @if (job.status === JobPostingStatus.Draft) {
-                        <button class="btn btn-soft-success btn-sm" (click)="publishJob(job)" title="Valider et publier" [disabled]="actionLoading">
-                          <i class="ri-check-line"></i>
+                        <button class="btn btn-soft-success btn-sm btn-icon" (click)="publishJob(job)" title="Valider et publier" [disabled]="actionLoading">
+                          <app-icon icon="check"></app-icon>
                         </button>
                         }
                         @if (job.status === JobPostingStatus.Published) {
-                        <button class="btn btn-soft-warning btn-sm" (click)="closeRegistration(job)" title="Clôturer les inscriptions" [disabled]="actionLoading">
-                          <i class="ri-lock-line"></i>
+                        <button class="btn btn-soft-warning btn-sm btn-icon" (click)="closeRegistration(job)" title="Clôturer les inscriptions" [disabled]="actionLoading">
+                          <app-icon icon="lock"></app-icon>
                         </button>
                         }
                         @if (job.status !== JobPostingStatus.Cancelled && job.status !== JobPostingStatus.Completed) {
-                        <button class="btn btn-soft-danger btn-sm" (click)="cancelJob(job)" title="Annuler la mission" [disabled]="actionLoading">
-                          <i class="ri-close-circle-line"></i>
+                        <button class="btn btn-soft-danger btn-sm btn-icon" (click)="cancelJob(job)" title="Annuler la mission" [disabled]="actionLoading">
+                          <app-icon icon="x"></app-icon>
                         </button>
                         }
-                        <button class="btn btn-soft-secondary btn-sm" (click)="deleteJob(job)" title="Supprimer la mission" [disabled]="actionLoading">
-                          <i class="ri-delete-bin-line"></i>
+                        <button class="btn btn-soft-secondary btn-sm btn-icon" (click)="deleteJob(job)" title="Supprimer la mission" [disabled]="actionLoading">
+                          <app-icon icon="trash-2"></app-icon>
                         </button>
                       </div>
                     </td>
@@ -307,10 +307,10 @@
             </span>
             <div class="btn-group">
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
-                <i class="ri-arrow-left-s-line me-1"></i>Précédent
+                <app-icon icon="arrow-left" class="me-1"></app-icon>Précédent
               </button>
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
-                Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+                Suivant<app-icon icon="arrow-right" class="ms-1"></app-icon>
               </button>
             </div>
           </div>
@@ -327,7 +327,7 @@
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">
-            <i class="ri-briefcase-line me-2"></i>{{ selectedJob?.title || 'Fiche Mission Freelance' }}
+            <app-icon icon="briefcase" class="me-2"></app-icon>{{ selectedJob?.title || 'Fiche Mission Freelance' }}
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeDetailModal()"></button>
         </div>
@@ -346,7 +346,7 @@
                   </span>
                   <span class="badge bg-light text-dark border me-2">{{ selectedJob.categoryName }}</span>
                   @if (selectedJob.isRemote) {
-                  <span class="badge bg-soft-info text-info"><i class="ri-earth-line me-1"></i>Distanciel</span>
+                  <span class="badge bg-soft-info text-info"><app-icon icon="globe" class="me-1"></app-icon>Distanciel</span>
                   }
                 </div>
                 <div class="text-end">
@@ -390,7 +390,7 @@
               <div>
                 @for (skill of selectedJob.requiredSkills; track skill) {
                 <span class="badge bg-soft-primary text-primary me-1 mb-1 px-2 py-1 fs-12">
-                  <i class="ri-checkbox-circle-fill me-1"></i>{{ skill }}
+                  <app-icon icon="check" class="me-1"></app-icon>{{ skill }}
                 </span>
                 }
               </div>
@@ -403,7 +403,7 @@
               <div>
                 @for (doc of selectedJob.requiredDocuments; track doc) {
                 <span class="badge bg-soft-warning text-warning me-1 mb-1 px-2 py-1 fs-12">
-                  <i class="ri-file-text-line me-1"></i>{{ doc }}
+                  <app-icon icon="file-text" class="me-1"></app-icon>{{ doc }}
                 </span>
                 }
               </div>

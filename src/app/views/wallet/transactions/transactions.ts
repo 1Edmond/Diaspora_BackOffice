@@ -1,11 +1,12 @@
-import { Component, OnInit, effect } from '@angular/core'
-import { DatePipe, CurrencyPipe, DecimalPipe } from '@angular/common'
+import { Component, OnInit } from '@angular/core'
+import { DatePipe, DecimalPipe } from '@angular/common'
+import { ActivatedRoute } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { WalletService } from '@core/services/wallet.service'
-import { ProfileStateService } from '@core/services/profile-state.service'
 import { TransactionDto } from '@core/models/wallet/wallet.model'
-import { ProfileDropdown } from '@shared/components/profile-dropdown/profile-dropdown'
+import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdown/profile-search-dropdown'
 import {
   TransactionType,
   TransactionStatus,
@@ -20,7 +21,7 @@ import {
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, ProfileDropdown],
+  imports: [PageBreadcrumb, DatePipe, DecimalPipe, FormsModule, ProfileSearchDropdown, Icon],
   templateUrl: './transactions.html',
   styles: ``,
 })
@@ -33,6 +34,9 @@ export class Transactions implements OnInit {
   typeFilter = ''
   statusFilter = ''
   loading = false
+
+  selectedProfileId = ''
+  selectedWalletId = ''
 
   TransactionType = TransactionType
   TransactionStatus = TransactionStatus
@@ -68,23 +72,41 @@ export class Transactions implements OnInit {
 
   constructor(
     private walletService: WalletService,
-    public profileState: ProfileStateService
-  ) {
-    effect(() => {
-      const pid = this.profileState.selectedProfileId()
-      if (pid && this.activeTab === 'by-profile') {
-        this.page = 1
-        this.loadTransactions()
-      }
-    })
-  }
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
-    this.loadTransactions()
+    this.route.queryParamMap.subscribe((params) => {
+      const profileId = params.get('profileId')
+      const walletId = params.get('walletId')
+      if (profileId) {
+        this.selectedProfileId = profileId
+        this.activeTab = 'by-profile'
+      }
+      if (walletId) {
+        this.selectedWalletId = walletId
+      }
+      this.loadTransactions()
+    })
   }
 
   setTab(tab: 'all' | 'by-profile') {
     this.activeTab = tab
+    this.page = 1
+    this.loadTransactions()
+  }
+
+  onProfileSelected(profileId: string) {
+    this.selectedProfileId = profileId
+    this.activeTab = 'by-profile'
+    this.page = 1
+    this.loadTransactions()
+  }
+
+  clearProfileFilter() {
+    this.selectedProfileId = ''
+    this.selectedWalletId = ''
+    this.activeTab = 'all'
     this.page = 1
     this.loadTransactions()
   }
@@ -95,8 +117,7 @@ export class Transactions implements OnInit {
     const status = this.statusFilter ? (Number(this.statusFilter) as TransactionStatus) : undefined
 
     if (this.activeTab === 'by-profile') {
-      const profileId = this.profileState.selectedProfileId()
-      if (!profileId) {
+      if (!this.selectedProfileId) {
         this.transactions = []
         this.totalCount = 0
         this.totalPages = 1
@@ -104,35 +125,47 @@ export class Transactions implements OnInit {
         return
       }
 
-      this.walletService.getTransactions(profileId, {
-        pageNumber: this.page,
-        pageSize: this.pageSize,
-        type,
-        status,
-      }).subscribe({
-        next: (res) => {
-          this.transactions = res.items
-          this.totalCount = res.totalCount
-          this.totalPages = res.totalPages
-          this.loading = false
-        },
-        error: () => { this.loading = false },
-      })
+      this.walletService
+        .getTransactions(this.selectedProfileId, {
+          pageNumber: this.page,
+          pageSize: this.pageSize,
+          type,
+          status,
+        })
+        .subscribe({
+          next: (res) => {
+            this.transactions = res.items
+            this.totalCount = res.totalCount
+            this.totalPages = res.totalPages
+            this.loading = false
+          },
+          error: () => {
+            this.loading = false
+          },
+        })
     } else {
-      this.walletService.getAllTransactions({
-        pageNumber: this.page,
-        pageSize: this.pageSize,
-        type,
-        status,
-      }).subscribe({
-        next: (res) => {
-          this.transactions = res.items
-          this.totalCount = res.totalCount
-          this.totalPages = res.totalPages
-          this.loading = false
-        },
-        error: () => { this.loading = false },
-      })
+      this.walletService
+        .getAllTransactions({
+          pageNumber: this.page,
+          pageSize: this.pageSize,
+          type,
+          status,
+        })
+        .subscribe({
+          next: (res) => {
+            let items = res.items || []
+            if (this.selectedWalletId) {
+              items = items.filter((t) => t.walletId === this.selectedWalletId)
+            }
+            this.transactions = items
+            this.totalCount = res.totalCount
+            this.totalPages = res.totalPages
+            this.loading = false
+          },
+          error: () => {
+            this.loading = false
+          },
+        })
     }
   }
 
@@ -150,7 +183,7 @@ export class Transactions implements OnInit {
     if (!this.transactions || this.transactions.length === 0) return
 
     const headers = ['Date', 'ID Transaction', 'Type', 'Direction', 'Montant', 'Frais', 'Solde Après', 'Devise', 'Statut', 'Description']
-    const rows = this.transactions.map(t => [
+    const rows = this.transactions.map((t) => [
       t.createdAt,
       t.id,
       TransactionTypeLabels[t.type] || t.type,
@@ -160,10 +193,10 @@ export class Transactions implements OnInit {
       t.balanceAfter,
       t.currency,
       TransactionStatusLabels[t.status] || t.status,
-      `"${(t.description || '').replace(/"/g, '""')}"`
+      `"${(t.description || '').replace(/"/g, '""')}"`,
     ])
 
-    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n')
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n')
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')

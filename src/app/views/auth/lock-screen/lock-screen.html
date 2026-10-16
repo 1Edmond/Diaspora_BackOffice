@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-xxl-4 col-md-6 col-sm-8">
-        <div class="card p-4">
+        <div class="card p-4 shadow-sm">
           <div class="position-absolute top-0 end-0" style="width: 180px">
             <img src="assets/images/auth-card-bg.svg" class="auth-card-bg-img" alt="auth-card-bg" />
           </div>
@@ -16,49 +16,82 @@
             </a>
           </div>
 
-          <div class="text-center mb-4">
-            <img src="assets/images/users/user-1.jpg" class="rounded-circle img-thumbnail avatar-xxl mb-2" alt="thumbnail" />
-            <h5 class="fs-md">{{ username }}</h5>
+          <div class="text-center mb-4 position-relative">
+            <div
+              class="rounded-circle bg-soft-primary text-primary fw-bold d-inline-flex align-items-center justify-content-center mb-2 border border-primary-subtle"
+              style="width: 72px; height: 72px; font-size: 1.5rem;"
+            >
+              {{ initials }}
+            </div>
+            <h5 class="fs-md fw-bold mb-1">{{ displayName }}</h5>
+            @if (currentUser?.email) {
+              <p class="text-muted fs-xs mb-2">{{ currentUser?.email }}</p>
+            }
+            <span class="badge bg-soft-warning text-warning">
+              <app-icon icon="lock" class="me-1 align-middle"></app-icon>
+              Session verrouillée
+            </span>
           </div>
 
           <form (ngSubmit)="onSubmit(f)" #f="ngForm">
             <div class="mb-3">
-              <label for="userPassword" class="form-label">
-                Password
+              <label for="userPassword" class="form-label fw-medium">
+                Mot de passe
                 <span class="text-danger">*</span>
               </label>
               <div class="input-group">
-                <input type="password" class="form-control" id="userPassword" name="password" placeholder="••••••••" required [(ngModel)]="password" />
+                <span class="input-group-text bg-light-subtle">
+                  <app-icon icon="key-round" class="text-muted"></app-icon>
+                </span>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="userPassword"
+                  name="password"
+                  placeholder="Saisissez votre mot de passe"
+                  required
+                  [(ngModel)]="password"
+                />
               </div>
             </div>
 
             @if (error) {
-              <div class="alert alert-danger">{{ error }}</div>
+              <div class="alert alert-danger py-2 fs-sm d-flex align-items-center gap-2">
+                <app-icon icon="alert-circle" class="flex-shrink-0"></app-icon>
+                <span>{{ error }}</span>
+              </div>
             }
 
             <div class="d-grid">
               <button type="submit" class="btn btn-primary fw-semibold py-2" [disabled]="loading">
                 @if (loading) {
                   <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Unlocking...
+                  Déverrouillage en cours...
                 } @else {
-                  Unlock
+                  <app-icon icon="unlock" class="me-1 align-middle"></app-icon>
+                  Déverrouiller la session
                 }
               </button>
             </div>
           </form>
 
-          <p class="text-muted text-center mt-4 mb-0">
-            Not you? Return to
-            <a routerLink="/auth/sign-in" class="text-decoration-underline link-offset-3 fw-semibold">Sign in</a>
-          </p>
+          <div class="text-center mt-4 pt-2 border-top">
+            <button
+              type="button"
+              class="btn btn-link text-decoration-underline link-offset-3 fw-semibold p-0 fs-sm"
+              (click)="logout()"
+            >
+              Ce n'est pas vous ? Se connecter avec un autre compte
+            </button>
+          </div>
         </div>
 
         <p class="text-center text-muted mt-4 mb-0">
-          © {{currentYear}} {{name}} — by
-          <span class="fw-semibold">{{author}}</span>
+          © {{ currentYear }} {{ name }} — par
+          <span class="fw-semibold">{{ author }}</span>
         </p>
       </div>
     </div>
   </div>
 </div>
+

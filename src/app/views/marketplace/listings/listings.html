@@ -5,10 +5,10 @@
   <div class="card mb-3">
     <div class="card-header border-light d-flex align-items-center justify-content-between">
       <h5 class="card-title mb-0 d-flex align-items-center gap-2">
-        <i class="ri-filter-3-line text-primary"></i> Filtres Avancés des Annonces
+        <app-icon icon="filter" class="text-primary"></app-icon> Filtres Avancés des Annonces
       </h5>
       <button class="btn btn-sm btn-soft-secondary d-flex align-items-center gap-1" type="button" (click)="showFilters = !showFilters">
-        <i [class]="showFilters ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+        <app-icon [icon]="showFilters ? 'chevron-up' : 'chevron-down'"></app-icon>
         {{ showFilters ? 'Masquer' : 'Afficher' }} les filtres
       </button>
     </div>
@@ -17,7 +17,7 @@
         <div class="col-md-3">
           <label class="form-label fs-12 fw-semibold">Recherche libre</label>
           <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-search-line"></i></span>
+            <span class="input-group-text bg-light text-muted border-end-0"><app-icon icon="search"></app-icon></span>
             <input type="text" class="form-control border-start-0" placeholder="Titre, description..." [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" />
           </div>
         </div>
@@ -81,11 +81,11 @@
         <div class="col-12 d-flex gap-2 pt-2 border-top">
           <button class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm" (click)="loadListings()" [disabled]="loading">
             @if (loading) { <span class="spinner-border spinner-border-sm"></span> }
-            <i class="ri-search-line"></i> Appliquer les Filtres
+            <app-icon icon="search"></app-icon> Appliquer les Filtres
           </button>
           @if (hasActiveFilters()) {
           <button class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" (click)="clearFilters()">
-            <i class="ri-close-line"></i> Réinitialiser
+            <app-icon icon="x"></app-icon> Réinitialiser
           </button>
           }
         </div>
@@ -96,7 +96,7 @@
   <!-- Error Alert -->
   @if (error) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ error }}</div>
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
@@ -116,20 +116,20 @@
       <div class="d-flex gap-2">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-success" (click)="bulkApprove()" [disabled]="bulkActionLoading || !canBulkApprove()" title="Approuver la sélection">
-            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-check-line me-1"></i>Approuver }
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="check" class="me-1"></app-icon>Approuver }
           </button>
           <button class="btn btn-danger" (click)="bulkReject()" [disabled]="bulkActionLoading || !canBulkReject()" title="Rejeter la sélection">
-            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-close-line me-1"></i>Rejeter }
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="x" class="me-1"></app-icon>Rejeter }
           </button>
           <button class="btn btn-warning" (click)="bulkSuspend()" [disabled]="bulkActionLoading || !canBulkSuspend()" title="Suspendre la sélection">
-            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-pause-line me-1"></i>Suspendre }
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="player-pause" class="me-1"></app-icon>Suspendre }
           </button>
           <button class="btn btn-outline-danger" (click)="bulkDelete()" [disabled]="bulkActionLoading" title="Supprimer la sélection">
-            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <i class="ri-delete-bin-line me-1"></i>Supprimer }
+            @if (bulkActionLoading) { <span class="spinner-border spinner-border-sm"></span> } @else { <app-icon icon="trash" class="me-1"></app-icon>Supprimer }
           </button>
         </div>
         <button class="btn btn-outline-secondary btn-sm" (click)="toggleSelectAll()" [attr.aria-label]="allSelected() ? 'Tout désélectionner' : 'Tout sélectionner'">
-          <i [class]="allSelected() ? 'ri-checkbox-line' : 'ri-checkbox-blank-line'" class="me-1"></i>
+          <app-icon [icon]="allSelected() ? 'square-check' : 'square'" class="me-1"></app-icon>
           {{ allSelected() ? 'Désélectionner tout' : 'Tout sélectionner' }}
         </button>
       </div>
@@ -176,7 +176,7 @@
                 <div class="d-flex align-items-center gap-2">
                   <div class="avatar-sm flex-shrink-0">
                     <span class="avatar-title bg-soft-primary text-primary rounded fs-18">
-                      <i [class]="listing.departureCountryCode ? 'ri-plane-line' : 'ri-store-2-line'"></i>
+                      <app-icon [icon]="listing.departureCountryCode ? 'plane' : 'building-store'"></app-icon>
                     </span>
                   </div>
                   <div>
@@ -184,11 +184,11 @@
                     @if(listing.departureCountryCode && listing.arrivalCountryCode) {
                     <div class="d-flex align-items-center gap-1.5 fs-12 text-primary mt-1">
                       <span class="badge bg-soft-primary text-primary px-2 py-0.5 font-monospace">
-                        <i class="ri-flight-takeoff-line me-1"></i>{{listing.departureCity || listing.departureCountryCode}} ➔ {{listing.arrivalCity || listing.arrivalCountryCode}}
+                        <app-icon icon="plane-departure" class="me-1"></app-icon>{{listing.departureCity || listing.departureCountryCode}} ➔ {{listing.arrivalCity || listing.arrivalCountryCode}}
                       </span>
                       @if(listing.capacityKg) {
                       <span class="badge" [class.bg-soft-success]="(listing.remainingKg ?? listing.capacityKg) > (listing.capacityKg * 0.5)" [class.text-success]="(listing.remainingKg ?? listing.capacityKg) > (listing.capacityKg * 0.5)" [class.bg-soft-warning]="(listing.remainingKg ?? listing.capacityKg) <= (listing.capacityKg * 0.5) && (listing.remainingKg ?? listing.capacityKg) > 0" [class.text-warning]="(listing.remainingKg ?? listing.capacityKg) <= (listing.capacityKg * 0.5) && (listing.remainingKg ?? listing.capacityKg) > 0" [class.bg-soft-danger]="(listing.remainingKg ?? listing.capacityKg) <= 0" [class.text-danger]="(listing.remainingKg ?? listing.capacityKg) <= 0">
-                        <i class="ri-scales-3-line me-1"></i>{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg
+                        <app-icon icon="scale" class="me-1"></app-icon>{{listing.remainingKg ?? listing.capacityKg}} / {{listing.capacityKg}} kg
                       </span>
                       }
                     </div>
@@ -207,13 +207,13 @@
                   <div>
                     <span class="text-muted fs-11 font-monospace d-block">{{ listing.providerId?.slice(0, 8) }}...</span>
                     <button class="btn btn-link p-0 text-primary fs-11 text-decoration-none" (click)="onProviderClick(listing.providerId)">
-                      Voir profil <i class="ri-external-link-line"></i>
+                      Voir profil <app-icon icon="external-link"></app-icon>
                     </button>
                   </div>
                 </div>
               </td>
               <td class="text-muted fs-12">
-                <i class="ri-map-pin-line me-1 text-secondary"></i>{{ listing.city || '—' }}, {{ listing.country || '—' }}
+                <app-icon icon="map-pin" class="me-1 text-secondary"></app-icon>{{ listing.city || '—' }}, {{ listing.country || '—' }}
               </td>
               <td class="text-center">
                 <span class="badge" [class]="'bg-soft-' + getStatusBadge(listing.status) + ' text-' + getStatusBadge(listing.status)">
@@ -228,7 +228,7 @@
               </td>
               <td>
                 <div class="d-flex align-items-center gap-1">
-                  <i class="ri-star-fill text-warning fs-13"></i>
+                  <app-icon icon="star" class="text-warning fs-13"></app-icon>
                   <span class="fw-semibold fs-12">{{ listing.averageRating ? (listing.averageRating | number:'1.0-1') : '—' }}</span>
                   <span class="text-muted fs-11">({{ listing.reviewCount }})</span>
                 </div>
@@ -236,20 +236,20 @@
               <td class="text-muted fs-12">{{ listing.createdAt | date:'dd/MM/yyyy' }}</td>
               <td class="text-end pe-3">
                 <div class="d-flex align-items-center justify-content-end gap-1">
-                  <button class="btn btn-xs btn-soft-primary" (click)="openDetail(listing)" title="Consulter la fiche">
-                    <i class="ri-eye-line"></i>
+                  <button class="btn btn-sm btn-icon btn-soft-info" (click)="openDetail(listing)" title="Consulter la fiche">
+                    <app-icon icon="eye"></app-icon>
                   </button>
-                  <button class="btn btn-xs btn-soft-success" (click)="approveSingle(listing.id)" [disabled]="listing.status !== 0" title="Approuver">
-                    <i class="ri-check-line"></i>
+                  <button class="btn btn-sm btn-icon btn-soft-success" (click)="approveSingle(listing.id)" [disabled]="listing.status !== 0" title="Approuver">
+                    <app-icon icon="check"></app-icon>
                   </button>
-                  <button class="btn btn-xs btn-soft-danger" (click)="rejectSingle(listing.id)" [disabled]="listing.status !== 0" title="Rejeter">
-                    <i class="ri-close-line"></i>
+                  <button class="btn btn-sm btn-icon btn-soft-danger" (click)="rejectSingle(listing.id)" [disabled]="listing.status !== 0" title="Rejeter">
+                    <app-icon icon="x"></app-icon>
                   </button>
-                  <button class="btn btn-xs btn-soft-warning" (click)="suspendSingle(listing.id)" [disabled]="listing.status !== 1" title="Suspendre">
-                    <i class="ri-pause-line"></i>
+                  <button class="btn btn-sm btn-icon btn-soft-warning" (click)="suspendSingle(listing.id)" [disabled]="listing.status !== 1" title="Suspendre">
+                    <app-icon icon="player-pause"></app-icon>
                   </button>
-                  <button class="btn btn-xs btn-soft-danger" (click)="deleteSingle(listing.id)" title="Supprimer">
-                    <i class="ri-delete-bin-line"></i>
+                  <button class="btn btn-sm btn-icon btn-soft-danger" (click)="deleteSingle(listing.id)" title="Supprimer">
+                    <app-icon icon="trash"></app-icon>
                   </button>
                 </div>
               </td>
@@ -259,7 +259,7 @@
               <td colspan="11" class="text-center text-muted p-5">
                 <div class="avatar-md mx-auto mb-3">
                   <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
-                    <i class="ri-store-2-line"></i>
+                    <app-icon icon="building-store"></app-icon>
                   </span>
                 </div>
                 <h6 class="text-dark">Aucune annonce trouvée</h6>
@@ -277,10 +277,10 @@
         <span class="text-muted fs-12">Page {{page}} sur {{totalPages}} ({{totalCount}} annonces au total)</span>
         <div class="d-flex gap-1">
           <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
-            <i class="ri-arrow-left-s-line me-1"></i>Précédent
+            <app-icon icon="chevron-left" class="me-1"></app-icon>Précédent
           </button>
           <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
-            Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+            Suivant<app-icon icon="chevron-right" class="ms-1"></app-icon>
           </button>
         </div>
       </div>
@@ -335,7 +335,7 @@
           @if(detailListing.departureCountryCode && detailListing.arrivalCountryCode) {
           <div class="card border border-info mb-3 bg-soft-info">
             <div class="card-body p-3">
-              <h6 class="fw-semibold text-info mb-2"><i class="ri-flight-takeoff-line me-1"></i> Détails du Trajet Colis P2P</h6>
+              <h6 class="fw-semibold text-info mb-2"><app-icon icon="plane-departure" class="me-1"></app-icon> Détails du Trajet Colis P2P</h6>
               <div class="row g-2 fs-12">
                 <div class="col-6">
                   <span class="text-muted d-block">Départ :</span>
@@ -367,13 +367,13 @@
         <div class="modal-footer border-top">
           <button type="button" class="btn btn-light" (click)="closeDetail()">Fermer</button>
           <button type="button" class="btn btn-success d-inline-flex align-items-center gap-1" (click)="approveSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
-            <i class="ri-check-line"></i> Approuver
+            <app-icon icon="check"></app-icon> Approuver
           </button>
           <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-1" (click)="rejectSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 0">
-            <i class="ri-close-line"></i> Rejeter
+            <app-icon icon="x"></app-icon> Rejeter
           </button>
           <button type="button" class="btn btn-warning d-inline-flex align-items-center gap-1" (click)="suspendSingle(detailListing.id); closeDetail()" [disabled]="detailListing.status !== 1">
-            <i class="ri-pause-line"></i> Suspendre
+            <app-icon icon="player-pause"></app-icon> Suspendre
           </button>
         </div>
       </div>

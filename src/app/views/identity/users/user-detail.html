@@ -2,19 +2,19 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <app-page-breadcrumb title="Fiche Utilisateur" subTitle="Identity" />
     <a routerLink="/identity/users" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
-      <i class="ri-arrow-left-line"></i> Retour à la liste
+      <app-icon icon="arrow-left"></app-icon> Retour à la liste
     </a>
   </div>
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-check-line fs-18 me-2"></i>
+    <app-icon icon="check" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ successMessage }}</div>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ errorMessage }}</div>
   </div>
   }
@@ -29,14 +29,14 @@
 
   @if (user.status === 'Suspended') {
   <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
-    <i class="ri-spam-line fs-20 flex-shrink-0"></i>
+    <app-icon icon="ban" class="fs-20 flex-shrink-0"></app-icon>
     <div>
       <strong>Compte Administratif Suspendu :</strong> Cet utilisateur a été suspendu par l'administration. Ses jetons d'accès ont été invalidés et toute interaction sur l'application mobile ou backoffice lui est refusée.
     </div>
   </div>
   } @else if (user.status === 'Deleted') {
   <div class="alert alert-dark d-flex align-items-center gap-2 mb-3">
-    <i class="ri-delete-bin-line fs-20 flex-shrink-0"></i>
+    <app-icon icon="trash" class="fs-20 flex-shrink-0"></app-icon>
     <div>
       <strong>Compte Supprimé :</strong> Ce compte a fait l'objet d'un archivage (soft-delete). Les données sont conservées pour traçabilité légale.
     </div>
@@ -70,25 +70,25 @@
 
                 @if (user.status === 'Active') {
                 <button type="button" class="btn btn-outline-danger btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="openSuspendModal()">
-                  <i class="ri-forbid-line"></i> Suspendre le compte
+                  <app-icon icon="ban"></app-icon> Suspendre le compte
                 </button>
                 } @else if (user.status === 'Suspended' || user.status === 'Inactive') {
                 <button type="button" class="btn btn-outline-success btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="confirmActivate()">
-                  <i class="ri-check-line"></i> {{ user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte' }}
+                  <app-icon icon="check"></app-icon> {{ user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte' }}
                 </button>
                 }
 
                 <button type="button" class="btn btn-outline-warning btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="confirmRevokeAllTokens()">
-                  <i class="ri-logout-box-r-line"></i> Révoquer toutes les sessions actives
+                  <app-icon icon="logout"></app-icon> Révoquer toutes les sessions actives
                 </button>
 
                 @if (user.status !== 'Deleted') {
                 <button type="button" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="confirmDelete()">
-                  <i class="ri-delete-bin-line"></i> Supprimer (Soft Delete)
+                  <app-icon icon="trash"></app-icon> Supprimer (Soft Delete)
                 </button>
                 } @else {
                 <button type="button" class="btn btn-outline-info btn-sm text-start d-flex align-items-center gap-1.5" [disabled]="actionLoading" (click)="confirmRestore()">
-                  <i class="ri-restart-line"></i> Restaurer le compte
+                  <app-icon icon="refresh"></app-icon> Restaurer le compte
                 </button>
                 }
               </div>
@@ -98,12 +98,12 @@
               <ul class="nav nav-tabs nav-bordered mb-3">
                 <li class="nav-item">
                   <a class="nav-link cursor-pointer" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
-                    <i class="ri-user-line me-1"></i> Vue Générale du Citoyen
+                    <app-icon icon="user" class="me-1"></app-icon> Vue Générale du Citoyen
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link cursor-pointer" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">
-                    <i class="ri-shield-keyhole-line me-1"></i> Sécurité & Sessions Actives ({{ refreshTokens.length }})
+                    <app-icon icon="shield-lock" class="me-1"></app-icon> Sécurité & Sessions Actives ({{ refreshTokens.length }})
                   </a>
                 </li>
               </ul>
@@ -132,9 +132,9 @@
                       <span class="text-muted fs-11 fw-semibold text-uppercase d-block mb-1">Email Vérifié</span>
                       <div>
                         @if (user.emailVerified) {
-                        <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i> Oui</span>
+                        <span class="badge bg-soft-success text-success"><app-icon icon="circle-check" class="me-1"></app-icon> Oui</span>
                         } @else {
-                        <span class="badge bg-soft-secondary text-secondary"><i class="ri-close-circle-line me-1"></i> Non vérifié</span>
+                        <span class="badge bg-soft-secondary text-secondary"><app-icon icon="circle-x" class="me-1"></app-icon> Non vérifié</span>
                         }
                       </div>
                     </div>
@@ -160,7 +160,7 @@
                     <h6 class="card-title mb-0">Sessions Actives & Jetons de Rafraîchissement</h6>
                     @if (refreshTokens.length > 0) {
                     <button type="button" class="btn btn-xs btn-outline-danger d-inline-flex align-items-center gap-1" [disabled]="actionLoading" (click)="confirmRevokeAllTokens()">
-                      <i class="ri-logout-box-r-line"></i> Révoquer tous les jetons
+                      <app-icon icon="logout"></app-icon> Révoquer tous les jetons
                     </button>
                     }
                   </div>
@@ -173,7 +173,7 @@
                   <div class="text-center p-4 text-muted bg-light rounded border">
                     <div class="avatar-sm mx-auto mb-2">
                       <span class="avatar-title bg-soft-success text-success rounded-circle fs-20">
-                        <i class="ri-shield-check-line"></i>
+                        <app-icon icon="shield-check"></app-icon>
                       </span>
                     </div>
                     <span class="fs-13">Aucune session active ou jeton en cours pour cet utilisateur.</span>
@@ -204,9 +204,9 @@
                           </td>
                           <td class="text-center">
                             @if (tok.isActive) {
-                            <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                            <span class="badge bg-soft-success text-success"><app-icon icon="circle-check" class="me-1"></app-icon>Actif</span>
                             } @else if (tok.isRevoked) {
-                            <span class="badge bg-soft-danger text-danger"><i class="ri-close-circle-line me-1"></i>Révoqué</span>
+                            <span class="badge bg-soft-danger text-danger"><app-icon icon="circle-x" class="me-1"></app-icon>Révoqué</span>
                             } @else if (tok.isExpired) {
                             <span class="badge bg-soft-secondary text-secondary">Expiré</span>
                             }
@@ -251,7 +251,7 @@
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title text-white d-flex align-items-center gap-2">
-            <i class="ri-forbid-line"></i> Suspendre l'utilisateur
+            <app-icon icon="ban"></app-icon> Suspendre l'utilisateur
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeSuspendModal()"></button>
         </div>
@@ -271,7 +271,7 @@
             <span class="spinner-border spinner-border-sm" role="status"></span>
             Suspension...
             } @else {
-            <i class="ri-check-line"></i> Confirmer la suspension
+            <app-icon icon="check"></app-icon> Confirmer la suspension
             }
           </button>
         </div>

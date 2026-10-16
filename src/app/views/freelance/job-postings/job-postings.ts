@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
 import { FreelanceService } from '@core/services/freelance.service';
+import { ConfirmModalService } from '@core/services/confirm-modal.service';
+import { ToastService } from '@core/services/toast.service';
 import {
   JobCategoryDto,
   JobPostingDto,
@@ -15,7 +18,7 @@ import {
 @Component({
   selector: 'app-job-postings',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, DecimalPipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, DecimalPipe, Icon],
   templateUrl: './job-postings.html',
 })
 export class JobPostingsComponent implements OnInit {
@@ -47,7 +50,11 @@ export class JobPostingsComponent implements OnInit {
   PaymentTiming = PaymentTiming;
   Math = Math;
 
-  constructor(private freelanceService: FreelanceService) {}
+  constructor(
+    private freelanceService: FreelanceService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.loadCategories();
@@ -127,8 +134,16 @@ export class JobPostingsComponent implements OnInit {
     this.selectedJob = null;
   }
 
-  publishJob(job: JobPostingSummaryDto) {
-    if (!confirm(`Confirmez-vous la publication de la mission "${job.title}" ?`)) return;
+  async publishJob(job: JobPostingSummaryDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Publier la mission',
+      message: `Confirmez-vous la publication de la mission "${job.title}" ?`,
+      confirmText: 'Publier',
+      variant: 'success',
+      icon: 'check-circle',
+    });
+    if (!confirmed) return;
+
     this.actionLoading = true;
     this.freelanceService.publishJobPosting(job.id).subscribe({
       next: () => {
@@ -143,8 +158,16 @@ export class JobPostingsComponent implements OnInit {
     });
   }
 
-  closeRegistration(job: JobPostingSummaryDto) {
-    if (!confirm(`Fermer les candidatures pour la mission "${job.title}" ?`)) return;
+  async closeRegistration(job: JobPostingSummaryDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Clôturer les inscriptions',
+      message: `Voulez-vous fermer les candidatures pour la mission "${job.title}" ?`,
+      confirmText: 'Clôturer',
+      variant: 'warning',
+      icon: 'lock',
+    });
+    if (!confirmed) return;
+
     this.actionLoading = true;
     this.freelanceService.closeRegistration(job.id).subscribe({
       next: () => {
@@ -159,8 +182,16 @@ export class JobPostingsComponent implements OnInit {
     });
   }
 
-  cancelJob(job: JobPostingSummaryDto) {
-    if (!confirm(`Annuler définitivement la mission "${job.title}" ?`)) return;
+  async cancelJob(job: JobPostingSummaryDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Annuler la mission',
+      message: `Voulez-vous annuler définitivement la mission "${job.title}" ?`,
+      confirmText: 'Annuler la mission',
+      variant: 'danger',
+      icon: 'alert-triangle',
+    });
+    if (!confirmed) return;
+
     this.actionLoading = true;
     this.freelanceService.cancelJobPosting(job.id).subscribe({
       next: () => {
@@ -175,8 +206,16 @@ export class JobPostingsComponent implements OnInit {
     });
   }
 
-  deleteJob(job: JobPostingSummaryDto) {
-    if (!confirm(`ATTENTION : Supprimer la mission "${job.title}" ?`)) return;
+  async deleteJob(job: JobPostingSummaryDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer la mission',
+      message: `ATTENTION : Êtes-vous sûr de vouloir supprimer la mission "${job.title}" ?`,
+      confirmText: 'Supprimer',
+      variant: 'danger',
+      icon: 'trash-2',
+    });
+    if (!confirmed) return;
+
     this.actionLoading = true;
     this.freelanceService.deleteJobPosting(job.id).subscribe({
       next: () => {
@@ -245,9 +284,11 @@ export class JobPostingsComponent implements OnInit {
   private showMessage(type: 'success' | 'error', msg: string) {
     if (type === 'success') {
       this.successMessage = msg;
+      this.toast.success(msg);
       setTimeout(() => (this.successMessage = ''), 5000);
     } else {
       this.errorMessage = msg;
+      this.toast.error(msg);
       setTimeout(() => (this.errorMessage = ''), 6000);
     }
   }

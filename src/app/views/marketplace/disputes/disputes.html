@@ -4,7 +4,7 @@
   <!-- Success Notification -->
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-check-line fs-18 me-2"></i>
+    <app-icon icon="check" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ successMessage }}</div>
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
@@ -13,7 +13,7 @@
   <!-- Error Notification -->
   @if (error) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ error }}</div>
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
@@ -24,24 +24,24 @@
     <ul class="nav nav-tabs nav-bordered mb-0">
       <li class="nav-item">
         <a class="nav-link cursor-pointer" [class.active]="tab === 'all'" (click)="switchTab('all')">
-          <i class="ri-list-unordered me-1"></i> Tous les dossiers
+          <app-icon icon="list" class="me-1"></app-icon> Tous les dossiers
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link cursor-pointer" [class.active]="tab === 'active'" (click)="switchTab('active')">
-          <i class="ri-time-line me-1"></i> Litiges Ouverts & En Cours
+          <app-icon icon="clock" class="me-1"></app-icon> Litiges Ouverts & En Cours
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link cursor-pointer" [class.active]="tab === 'resolved'" (click)="switchTab('resolved')">
-          <i class="ri-checkbox-circle-line me-1"></i> Litiges Arbitrés & Clos
+          <app-icon icon="circle-check" class="me-1"></app-icon> Litiges Arbitrés & Clos
         </a>
       </li>
     </ul>
 
     <div class="d-flex align-items-center gap-2">
       <div class="input-group input-group-sm" style="min-width: 220px;">
-        <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-filter-3-line"></i></span>
+        <span class="input-group-text bg-light text-muted border-end-0"><app-icon icon="filter"></app-icon></span>
         <select class="form-select form-select-sm border-start-0" [(ngModel)]="statusFilter" (change)="onFilterChange()">
           <option [ngValue]="null">Tous les statuts</option>
           @if (tab === 'all' || tab === 'active') {
@@ -58,7 +58,7 @@
       </div>
 
       <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadDisputes()" [disabled]="loading" title="Actualiser">
-        <i class="ri-refresh-line" [class.spin]="loading"></i>
+        <app-icon icon="refresh" [class.spin]="loading"></app-icon>
       </button>
     </div>
   </div>
@@ -116,7 +116,7 @@
                     <div class="text-muted fs-12 text-truncate" style="max-width: 250px;">{{ dispute.description }}</div>
                     @if (dispute.evidenceUrls && dispute.evidenceUrls.length > 0) {
                       <span class="badge bg-soft-primary text-primary mt-1 fs-11">
-                        <i class="ri-attachment-2 me-1"></i>{{ dispute.evidenceUrls.length }} preuve(s)
+                        <app-icon icon="paperclip" class="me-1"></app-icon>{{ dispute.evidenceUrls.length }} preuve(s)
                       </span>
                     }
                   </td>
@@ -130,12 +130,12 @@
                   </td>
                   <td class="text-end pe-3">
                     <div class="d-flex align-items-center justify-content-end gap-1">
-                      <button class="btn btn-xs btn-soft-info" (click)="openDetailsModal(detailsModal, dispute)" title="Consulter le dossier et les preuves">
-                        <i class="ri-eye-line"></i>
+                      <button class="btn btn-sm btn-icon btn-soft-info" (click)="openDetailsModal(detailsModal, dispute)" title="Consulter le dossier et les preuves">
+                        <app-icon icon="eye"></app-icon>
                       </button>
                       @if (!isTerminalStatus(dispute.status)) {
-                        <button class="btn btn-xs btn-primary" (click)="openArbitrationModal(resolveModal, dispute)" title="Arbitrer le litige">
-                          <i class="ri-scales-3-line"></i>
+                        <button class="btn btn-sm btn-icon btn-primary" (click)="openArbitrationModal(resolveModal, dispute)" title="Arbitrer le litige">
+                          <app-icon icon="scale"></app-icon>
                         </button>
                       }
                     </div>
@@ -146,7 +146,7 @@
                   <td colspan="7" class="text-center py-5 text-muted">
                     <div class="avatar-md mx-auto mb-3">
                       <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
-                        <i class="ri-shield-check-line"></i>
+                        <app-icon icon="shield-check"></app-icon>
                       </span>
                     </div>
                     <h6 class="text-dark">Aucun litige signalé</h6>
@@ -164,10 +164,10 @@
             <span class="text-muted fs-12">Page {{ page }} sur {{ totalPages }} ({{ totalCount }} litiges au total)</span>
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
-                <i class="ri-arrow-left-s-line me-1"></i>Précédent
+                <app-icon icon="chevron-left" class="me-1"></app-icon>Précédent
               </button>
               <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
-                Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+                Suivant<app-icon icon="chevron-right" class="ms-1"></app-icon>
               </button>
             </div>
           </div>
@@ -180,7 +180,7 @@
   <ng-template #detailsModal let-modal>
     <div class="modal-header bg-info text-white">
       <h5 class="modal-title text-white d-flex align-items-center gap-2">
-        <i class="ri-folder-shield-2-line"></i>
+        <app-icon icon="folder"></app-icon>
         Dossier de Litige #{{ selectedDispute?.id?.substring(0, 8) }}
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()"></button>
@@ -240,7 +240,7 @@
         <!-- Evidence Section -->
         <div class="mb-3">
           <label class="form-label fs-12 fw-semibold text-muted text-uppercase d-flex align-items-center gap-1">
-            <i class="ri-image-line text-primary"></i> Pièces Justificatives & Photographies
+            <app-icon icon="photo" class="text-primary"></app-icon> Pièces Justificatives & Photographies
           </label>
           @if (selectedDispute.evidenceUrls && selectedDispute.evidenceUrls.length > 0) {
             <div class="row g-2">
@@ -253,12 +253,12 @@
                       </a>
                     } @else {
                       <div class="py-4 text-center">
-                        <i class="ri-file-text-line fs-2 text-secondary mb-1"></i>
+                        <app-icon icon="file-text" class="fs-2 text-secondary mb-1"></app-icon>
                         <span class="small text-truncate d-block px-1 text-muted">Document justificatif</span>
                       </div>
                     }
                     <a [href]="url" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-soft-primary mt-1 d-inline-flex align-items-center justify-content-center gap-1">
-                      <i class="ri-external-link-line"></i> Agrandir
+                      <app-icon icon="external-link"></app-icon> Agrandir
                     </a>
                   </div>
                 </div>
@@ -266,7 +266,7 @@
             </div>
           } @else {
             <div class="alert alert-light border text-muted fs-13 mb-0">
-              <i class="ri-information-line me-1"></i> Aucune pièce justificative n'a été soumise pour ce litige.
+              <app-icon icon="info-circle" class="me-1"></app-icon> Aucune pièce justificative n'a été soumise pour ce litige.
             </div>
           }
         </div>
@@ -276,7 +276,7 @@
           <div class="card border border-success bg-soft-success mt-3 mb-0">
             <div class="card-body p-3">
               <h6 class="fw-bold mb-2 text-success d-flex align-items-center gap-1">
-                <i class="ri-checkbox-circle-line fs-16"></i> Sentence d'Arbitrage Clôturée
+                <app-icon icon="circle-check" class="fs-16"></app-icon> Sentence d'Arbitrage Clôturée
               </h6>
               <div class="row g-2 mb-2 fs-13">
                 <div class="col-md-6">
@@ -301,7 +301,7 @@
       <button type="button" class="btn btn-light" (click)="closeDetailsModal()">Fermer</button>
       @if (selectedDispute && !isTerminalStatus(selectedDispute.status)) {
         <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" (click)="closeDetailsModal(); openArbitrationModal(resolveModal, selectedDispute)">
-          <i class="ri-scales-3-line"></i> Passer à l'Arbitrage
+          <app-icon icon="scale"></app-icon> Passer à l'Arbitrage
         </button>
       }
     </div>
@@ -311,7 +311,7 @@
   <ng-template #resolveModal let-modal>
     <div class="modal-header bg-primary text-white">
       <h5 class="modal-title text-white d-flex align-items-center gap-2">
-        <i class="ri-scales-3-line"></i> Arbitrage du Séquestre — Litige #{{ arbitratingDispute?.id?.substring(0, 8) }}
+        <app-icon icon="scale"></app-icon> Arbitrage du Séquestre — Litige #{{ arbitratingDispute?.id?.substring(0, 8) }}
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeArbitrationModal()"></button>
     </div>
@@ -380,7 +380,7 @@
           <div class="card bg-soft-warning border border-warning mb-3">
             <div class="card-body p-3">
               <h6 class="fw-bold mb-2 text-warning d-flex align-items-center gap-1">
-                <i class="ri-sliders-line"></i> Curseur de Répartition Interactive
+                <app-icon icon="adjustments"></app-icon> Curseur de Répartition Interactive
               </h6>
 
               <!-- Interactive Range Slider -->
@@ -434,7 +434,7 @@
           <span class="spinner-border spinner-border-sm" role="status"></span>
           Exécution de la décision...
         } @else {
-          <i class="ri-check-line"></i> Confirmer la Sentence d'Arbitrage
+          <app-icon icon="check"></app-icon> Confirmer la Sentence d'Arbitrage
         }
       </button>
     </div>

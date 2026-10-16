@@ -1,59 +1,92 @@
 import { currentYear, META_DATA } from '@/app/constants'
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { FormsModule, NgForm } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
+import { Icon } from '@app/components/icon/icon'
+import { UserDto } from '@core/models/auth.models'
 import { AuthService } from '@core/services/auth.service'
-import { LoginPinRequest } from '@core/models/auth.models'
 
 @Component({
   selector: 'app-lock-screen',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, Icon],
   templateUrl: './lock-screen.html',
   styles: ``,
 })
-export class LockScreen {
+export class LockScreen implements OnInit {
   currentYear = currentYear
   name = META_DATA.name
   author = META_DATA.author
-  username = META_DATA.username
 
+  currentUser: UserDto | null = null
   password = ''
   error = ''
   loading = false
 
   constructor(
-    private auth: AuthService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
-  onSubmit(form: NgForm) {
-    if (form.invalid) return
+  ngOnInit(): void {
+    this.currentUser = this.authService.getCurrentUser()
+    if (!this.currentUser?.email) {
+      this.router.navigate(['/auth/sign-in'])
+    }
+  }
+
+  get displayName(): string {
+    if (!this.currentUser) return 'Utilisateur'
+    const full = `${this.currentUser.firstName || ''} ${this.currentUser.lastName || ''}`.trim()
+    return full || this.currentUser.email
+  }
+
+  get initials(): string {
+    if (!this.currentUser) return 'AD'
+    const first = (this.currentUser.firstName || '').trim()
+    const last = (this.currentUser.lastName || '').trim()
+    if (first && last) return `${first[0]}${last[0]}`.toUpperCase()
+    if (first) return first.substring(0, 2).toUpperCase()
+    if (this.currentUser.email) return this.currentUser.email.substring(0, 2).toUpperCase()
+    return 'AD'
+  }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid || !this.password.trim()) {
+      this.error = 'Veuillez saisir votre mot de passe.'
+      return
+    }
+
+    if (!this.currentUser?.email) {
+      this.router.navigate(['/auth/sign-in'])
+      return
+    }
 
     this.error = ''
     this.loading = true
 
-    // Use the loginPin endpoint with the stored email and pin/password
-    const user = this.auth.getCurrentUser()
-    const email = user?.email || ''
-
-    const request: LoginPinRequest = {
-      email: email,
-      pin: this.password,
-    }
-
-    this.auth.loginPin(request).subscribe({
-      next: () => {
-        this.loading = false
-        this.router.navigate([''])
-      },
-      error: (err) => {
-        this.loading = false
-        this.error = err.error?.error || err.error?.message || 'Invalid password'
-      }
-    })
+    this.authService
+      .login({
+        email: this.currentUser.email,
+        password: this.password,
+      })
+      .subscribe({
+        next: () => {
+          this.loading = false
+          sessionStorage.removeItem('diaspora_is_locked')
+          const returnUrl = sessionStorage.getItem('diaspora_lock_return_url') || '/dashboard'
+          sessionStorage.removeItem('diaspora_lock_return_url')
+          this.router.navigateByUrl(returnUrl)
+        },
+        error: () => {
+          this.loading = false
+          this.error = 'Mot de passe incorrect.'
+        },
+      })
   }
 
-  logout() {
-    this.auth.logout()
+  logout(): void {
+    sessionStorage.removeItem('diaspora_is_locked')
+    sessionStorage.removeItem('diaspora_lock_return_url')
+    this.authService.logout()
   }
 }

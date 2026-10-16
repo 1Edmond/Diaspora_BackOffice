@@ -2,13 +2,13 @@
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     <app-page-breadcrumb title="Exigences KYC par Pays" subTitle="KYC" />
     <button class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm" (click)="openCreateModal()" [disabled]="!selectedProfileTypeId">
-      <i class="ri-add-circle-line"></i> Nouvelle Exigence
+      <app-icon icon="plus"></app-icon> Nouvelle Exigence
     </button>
   </div>
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-check-line fs-18 me-2"></i>
+    <app-icon icon="check" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ successMessage }}</div>
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
@@ -16,7 +16,7 @@
 
   @if (error) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ error }}</div>
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
@@ -48,13 +48,13 @@
         <div class="col-md-7 col-lg-8">
           <div class="d-flex align-items-center flex-wrap gap-2 pt-md-3">
             <span class="badge bg-soft-primary text-primary fs-11">
-              <i class="ri-global-line me-1"></i>ISO: {{ selectedProfileType.countryCode }}
+              <app-icon icon="globe" class="me-1"></app-icon>ISO: {{ selectedProfileType.countryCode }}
             </span>
             <span class="badge bg-soft-info text-info fs-11">
-              <i class="ri-money-dollar-circle-line me-1"></i>Devise: {{ selectedProfileType.currency || 'N/A' }}
+              <app-icon icon="credit-card" class="me-1"></app-icon>Devise: {{ selectedProfileType.currency || 'N/A' }}
             </span>
             <span class="badge bg-soft-secondary text-secondary fs-11">
-              <i class="ri-phone-line me-1"></i>Indicatif: {{ selectedProfileType.phoneIndicatif || 'N/A' }}
+              <app-icon icon="phone" class="me-1"></app-icon>Indicatif: {{ selectedProfileType.phoneIndicatif || 'N/A' }}
             </span>
             <span class="badge" [class]="selectedProfileType.isActive ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
               {{ selectedProfileType.isActive ? 'Pays Actif' : 'Pays Inactif' }}
@@ -68,6 +68,33 @@
       </div>
     </div>
   </div>
+
+  <!-- Summary Banner by KYC Level -->
+  @if (selectedProfileType) {
+  <div class="row g-3 mb-3">
+    @for (lvl of kycLevels; track lvl.level) {
+      @let summary = getLevelSummary(lvl.level);
+      <div class="col-md-4">
+        <div class="card mb-0 border shadow-none h-100">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge fs-12" [class]="lvl.badgeClass">{{ getLevelLabel(lvl.level) }}</span>
+              @if (lvl.level === 2) {
+                <span class="badge bg-warning-subtle text-warning fs-11">
+                  <app-icon icon="shield-check" class="me-1"></app-icon>Requis pour activation
+                </span>
+              }
+            </div>
+            <div class="d-flex align-items-center justify-content-between text-muted fs-12 mt-2 pt-2 border-top">
+              <span>Pièces obligatoires : <strong class="text-dark">{{ summary.mandatoryCount }}</strong> / {{ summary.totalActive }}</span>
+              <span>Min. distincts : <strong class="text-primary">{{ summary.distinctDocsRequired }} doc(s)</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  }
 
   <!-- Requirements Table Card -->
   <div class="card">
@@ -86,6 +113,8 @@
             <tr>
               <th scope="col" class="ps-3">Code Document</th>
               <th scope="col">Intitulé du Document</th>
+              <th scope="col">Niveau KYC</th>
+              <th scope="col" class="text-center">Nb docs distincts requis</th>
               <th scope="col">Motif / Justification Consulaire</th>
               <th scope="col" class="text-center">Caractère</th>
               <th scope="col" class="text-center">Statut</th>
@@ -110,20 +139,30 @@
                 <span class="fw-semibold text-dark fs-13">{{ getDocumentTypeName(req.documentTypeId, req.documentTypeCode) }}</span>
               </td>
               <td>
+                <span class="badge" [class]="getLevelBadgeClass(req.targetLevel)">
+                  {{ getLevelLabel(req.targetLevel) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-soft-dark text-dark">
+                  {{ req.requiredDistinctDocumentsCount || 1 }} doc(s) distinct(s)
+                </span>
+              </td>
+              <td>
                 <span class="text-muted fs-13">{{ req.purpose }}</span>
               </td>
               <td class="text-center">
                 @if (req.isRequired) {
-                <span class="badge bg-soft-danger text-danger"><i class="ri-alert-line me-1"></i>Obligatoire</span>
+                <span class="badge bg-soft-danger text-danger"><app-icon icon="alert-triangle" class="me-1"></app-icon>Obligatoire</span>
                 } @else {
                 <span class="badge bg-soft-secondary text-secondary">Facultatif</span>
                 }
               </td>
               <td class="text-center">
                 @if (req.isActive) {
-                <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                <span class="badge bg-soft-success text-success"><app-icon icon="check" class="me-1"></app-icon>Actif</span>
                 } @else {
-                <span class="badge bg-soft-secondary text-secondary"><i class="ri-close-circle-line me-1"></i>Inactif</span>
+                <span class="badge bg-soft-secondary text-secondary"><app-icon icon="x" class="me-1"></app-icon>Inactif</span>
                 }
               </td>
               <td class="text-muted fs-12">
@@ -132,33 +171,33 @@
               <td class="text-end pe-3">
                 <div class="d-inline-flex gap-1">
                   <button
-                    class="btn btn-xs btn-soft-primary"
+                    class="btn btn-soft-primary btn-sm btn-icon"
                     title="Modifier l'exigence"
                     (click)="openEditModal(req)"
                   >
-                    <i class="ri-pencil-line"></i>
+                    <app-icon icon="pencil"></app-icon>
                   </button>
                   <button
-                    class="btn btn-xs"
+                    class="btn btn-sm btn-icon"
                     [class]="req.isActive ? 'btn-soft-warning' : 'btn-soft-success'"
                     [title]="req.isActive ? 'Désactiver' : 'Activer'"
                     (click)="toggleActive(req)"
                   >
-                    <i [class]="req.isActive ? 'ri-shut-down-line' : 'ri-check-line'"></i>
+                    <app-icon [icon]="req.isActive ? 'pause-circle' : 'check'"></app-icon>
                   </button>
                   <button
-                    class="btn btn-xs btn-soft-danger"
+                    class="btn btn-sm btn-icon btn-soft-danger"
                     title="Supprimer"
                     (click)="deleteRequirement(req)"
                   >
-                    <i class="ri-delete-bin-line"></i>
+                    <app-icon icon="trash-2"></app-icon>
                   </button>
                 </div>
               </td>
             </tr>
             } @empty {
             <tr>
-              <td colspan="7" class="text-center text-muted p-5">
+              <td colspan="9" class="text-center text-muted p-5">
                 @if (loadingRequirements) {
                 <div class="d-flex align-items-center justify-content-center gap-2">
                   <span class="spinner-border spinner-border-sm text-primary"></span>
@@ -168,7 +207,7 @@
                 <div class="py-3">
                   <div class="avatar-md mx-auto mb-3">
                     <span class="avatar-title rounded-circle bg-soft-secondary text-secondary fs-24">
-                      <i class="ri-file-shield-line"></i>
+                      <app-icon icon="shield-check"></app-icon>
                     </span>
                   </div>
                   <h6 class="text-dark">Aucune exigence KYC configurée pour ce pays</h6>
@@ -180,7 +219,7 @@
                     (click)="openCreateModal()"
                     [disabled]="!selectedProfileTypeId"
                   >
-                    <i class="ri-add-circle-line"></i> Ajouter la première exigence
+                    <app-icon icon="plus"></app-icon> Ajouter la première exigence
                   </button>
                 </div>
                 }
@@ -197,7 +236,7 @@
   <ng-template #requirementModal let-modal>
     <div class="modal-header bg-primary text-white">
       <h5 class="modal-title text-white d-flex align-items-center gap-2">
-        <i class="ri-file-shield-line"></i>
+        <app-icon icon="shield-check"></app-icon>
         {{ isEditing ? 'Modifier l\'exigence KYC' : 'Ajouter une exigence KYC' }}
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
@@ -232,6 +271,32 @@
         <input type="text" class="form-control" [value]="formDocumentTypeCode" readonly disabled />
       </div>
       }
+
+      <div class="mb-3">
+        <label class="form-label fs-13 fw-semibold">Niveau de KYC cible <span class="text-danger">*</span></label>
+        <select class="form-select" [(ngModel)]="formTargetLevel">
+          @for (lvl of kycLevels; track lvl.level) {
+            <option [ngValue]="lvl.level">{{ lvl.level }} - {{ lvl.title }}</option>
+          }
+        </select>
+        <div class="form-text fs-11">
+          Le niveau L2 (Identité vérifiée) est le seuil requis pour l'activation d'un profil citoyen.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fs-13 fw-semibold">Nombre minimum de documents distincts exigés pour ce niveau <span class="text-danger">*</span></label>
+        <input
+          type="number"
+          class="form-control"
+          min="1"
+          max="10"
+          [(ngModel)]="formRequiredDistinctDocumentsCount"
+        />
+        <div class="form-text fs-11">
+          Nombre minimum de pièces justificatives distinctes à fournir pour valider ce niveau KYC (défaut : 1).
+        </div>
+      </div>
 
       <div class="mb-3">
         <label class="form-label fs-13 fw-semibold">Motif / Justification consulaire de l'exigence <span class="text-danger">*</span></label>
@@ -279,7 +344,7 @@
         <span class="spinner-border spinner-border-sm" role="status"></span>
         Enregistrement...
         } @else {
-        <i class="ri-check-line"></i>
+        <app-icon icon="check"></app-icon>
         {{ isEditing ? 'Mettre à jour' : 'Créer l\'exigence' }}
         }
       </button>

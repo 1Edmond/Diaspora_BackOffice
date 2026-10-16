@@ -3,13 +3,13 @@
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <i class="ri-checkbox-circle-line me-1 fs-16 align-middle"></i> {{ successMessage }}
+    <app-icon icon="circle-check" class="me-1 fs-16 align-middle"></app-icon> {{ successMessage }}
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <i class="ri-error-warning-line me-1 fs-16 align-middle"></i> {{ errorMessage }}
+    <app-icon icon="alert-triangle" class="me-1 fs-16 align-middle"></app-icon> {{ errorMessage }}
     <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
   </div>
   }
@@ -23,7 +23,7 @@
             <p class="text-muted fs-12 mb-0">Gérez l'activation des canaux (In-App, Push Mobile, Email) et les templates par événement</p>
           </div>
           <span class="badge bg-soft-primary text-primary px-2 py-1 fs-12">
-            <i class="ri-mail-settings-line me-1"></i>{{ systemCatalog.length }} événements configurables
+            <app-icon icon="mail-cog" class="me-1"></app-icon>{{ systemCatalog.length }} événements configurables
           </span>
         </div>
         <div class="card-body p-0">
@@ -56,7 +56,7 @@
                     <td>
                       <div class="fw-semibold text-dark fs-13">{{ tpl.label }}</div>
                       <small class="text-muted font-monospace fs-11">
-                        <i class="ri-flashlight-line text-warning me-1"></i>{{ tpl.eventType }}
+                        <app-icon icon="bolt" class="text-warning me-1"></app-icon>{{ tpl.eventType }}
                       </small>
                     </td>
                     <td>
@@ -66,17 +66,17 @@
                       <div class="d-flex gap-1">
                         @if (hasChannel(tpl.eventType, 1)) {
                         <span class="badge bg-soft-info text-info fs-11">
-                          <i class="ri-smartphone-line me-1"></i>In-App
+                          <app-icon icon="device-mobile" class="me-1"></app-icon>In-App
                         </span>
                         }
                         @if (hasChannel(tpl.eventType, 2)) {
                         <span class="badge bg-soft-primary text-primary fs-11">
-                          <i class="ri-notification-3-line me-1"></i>Push
+                          <app-icon icon="bell" class="me-1"></app-icon>Push
                         </span>
                         }
                         @if (hasChannel(tpl.eventType, 4)) {
                         <span class="badge bg-soft-success text-success fs-11">
-                          <i class="ri-mail-line me-1"></i>Email
+                          <app-icon icon="mail" class="me-1"></app-icon>Email
                         </span>
                         }
                       </div>
@@ -84,17 +84,17 @@
                     <td>
                       @if (getRuleFor(tpl.eventType)?.isActive ?? true) {
                       <span class="badge bg-soft-success text-success">
-                        <i class="ri-checkbox-circle-line me-1"></i>Actif
+                        <app-icon icon="circle-check" class="me-1"></app-icon>Actif
                       </span>
                       } @else {
                       <span class="badge bg-soft-secondary text-secondary">
-                        <i class="ri-pause-circle-line me-1"></i>Suspendu
+                        <app-icon icon="player-pause" class="me-1"></app-icon>Suspendu
                       </span>
                       }
                     </td>
                     <td class="text-end">
-                      <button class="btn btn-soft-primary btn-xs" (click)="openEdit(tpl)" title="Configurer canaux et modèle">
-                        <i class="ri-settings-4-line"></i>
+                      <button class="btn btn-soft-primary btn-sm btn-icon" (click)="openEdit(tpl)" title="Configurer canaux et modèle">
+                        <app-icon icon="pencil"></app-icon>
                       </button>
                     </td>
                   </tr>
@@ -115,7 +115,7 @@
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">
-            <i class="ri-edit-line me-2"></i>{{ selectedTemplate.label }}
+            <app-icon icon="pencil" class="me-2"></app-icon>{{ selectedTemplate.label }}
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeEdit()"></button>
         </div>
@@ -136,19 +136,19 @@
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" [(ngModel)]="editInApp" id="checkInApp">
                 <label class="form-check-label fs-13" for="checkInApp">
-                  <i class="ri-smartphone-line me-1 text-info"></i>Notification In-App
+                  <app-icon icon="device-mobile" class="me-1 text-info"></app-icon>Notification In-App
                 </label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" [(ngModel)]="editPush" id="checkPush">
                 <label class="form-check-label fs-13" for="checkPush">
-                  <i class="ri-notification-3-line me-1 text-primary"></i>Push Mobile
+                  <app-icon icon="bell" class="me-1 text-primary"></app-icon>Push Mobile
                 </label>
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" [(ngModel)]="editEmail" id="checkEmail">
                 <label class="form-check-label fs-13" for="checkEmail">
-                  <i class="ri-mail-line me-1 text-success"></i>Email Transactionnel
+                  <app-icon icon="mail" class="me-1 text-success"></app-icon>Email Transactionnel
                 </label>
               </div>
             </div>
@@ -162,7 +162,7 @@
               <div class="d-inline-flex gap-1 flex-wrap">
                 @for (ph of selectedTemplate.supportedPlaceholders; track ph) {
                 <button type="button" class="btn btn-xs btn-outline-secondary" (click)="insertPlaceholder(ph)">
-                  <i class="ri-add-line me-1"></i>{{ ph }}
+                  <app-icon icon="plus" class="me-1"></app-icon>{{ ph }}
                 </button>
                 }
               </div>

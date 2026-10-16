@@ -11,7 +11,6 @@ import { CustomizerToggler } from './components/customizer-toggler'
 import { MenuToggler } from './components/menu-toggler'
 import { SimpleUserDropdown } from './components/simple-user-dropdown'
 import { SearchBoxRoundedRight } from './components/search-box-rounded-right'
-import { ProfileSelector } from './components/profile-selector'
 
 @Component({
   selector: 'app-topbar',
@@ -26,7 +25,6 @@ import { ProfileSelector } from './components/profile-selector'
     MenuToggler,
     SearchBoxRoundedRight,
     ModulesDropdown,
-    ProfileSelector,
   ],
   template: `
     <header class="app-topbar">
@@ -61,11 +59,9 @@ import { ProfileSelector } from './components/profile-selector'
         <div class="d-flex align-items-center gap-2">
           <search-box-rounded-right class="d-none d-xl-flex" />
 
-          <profile-selector class="d-flex" />
-
           <theme-dropdown class="d-none d-sm-flex" />
 
-          <modules-dropdown class="d-none d-xl-flex" />
+          <modules-dropdown class="d-none d-sm-flex" />
 
           <notification-dropdown-people />
 

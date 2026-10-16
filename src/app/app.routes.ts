@@ -15,6 +15,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard, LayoutService],
     children: [
       {
+        path: 'dashboard',
+        redirectTo: 'dashboard/ecommerce',
+        pathMatch: 'full',
+      },
+      {
         path: 'dashboard/ecommerce',
         loadComponent: () => import('./views/dashboard/ecommerce/ecommerce').then((m) => m.Ecommerce),
         data: { title: 'Ecommerce' },
@@ -247,12 +252,17 @@ export const routes: Routes = [
       {
         path: 'wallet/all',
         loadComponent: () => import('./views/wallet/all-wallets/all-wallets').then((m) => m.AllWallets),
-        data: { title: 'All Wallets' },
+        data: { title: 'Tous les Portefeuilles' },
       },
       {
         path: 'wallet',
+        pathMatch: 'full',
+        redirectTo: 'wallet/all',
+      },
+      {
+        path: 'wallet/detail/:profileId',
         loadComponent: () => import('./views/wallet/wallet/wallet').then((m) => m.WalletComponent),
-        data: { title: 'Wallet' },
+        data: { title: 'Détail Portefeuille' },
       },
       {
         path: 'wallet/transactions',

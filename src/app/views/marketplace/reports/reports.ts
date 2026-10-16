@@ -6,9 +6,8 @@ import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ToastService } from '@core/services/toast.service'
 import { ReportDto } from '@core/models/marketplace/marketplace.model'
-import { BaseResponse, PagedList } from '@core/models/shared/base-response.model'
-import { Observable } from 'rxjs'
 
 interface ReportWithActions extends ReportDto {
   selected?: boolean
@@ -66,7 +65,8 @@ export class Reports implements OnInit {
 
   constructor(
     private marketplaceService: MarketplaceService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -117,17 +117,19 @@ export class Reports implements OnInit {
   async resolveReport() {
     if (!this.resolvingReport) return
     if (this.resolveStatus === 3 && !this.resolveNotes.trim()) {
-      alert('Notes are required for Action Taken')
+      this.toast.warning('Veuillez renseigner une note justificative pour cette action.')
       return
     }
 
     this.resolveLoading = true
     try {
       await this.marketplaceService.resolveReport(this.resolvingReport.id, this.resolveStatus, this.resolveNotes).toPromise()
+      this.toast.success('Signalement résolu avec succès.')
       this.closeResolveModal()
       this.loadReports()
     } catch (e) {
       console.error('Failed to resolve report', e)
+      this.toast.error('Erreur lors du traitement du signalement.')
     } finally {
       this.resolveLoading = false
     }

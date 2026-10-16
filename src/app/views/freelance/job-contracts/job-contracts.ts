@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
 import { FreelanceService } from '@core/services/freelance.service';
 import {
   CheckInMethod,
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-job-contracts',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, Icon],
   templateUrl: './job-contracts.html',
 })
 export class JobContractsComponent implements OnInit {

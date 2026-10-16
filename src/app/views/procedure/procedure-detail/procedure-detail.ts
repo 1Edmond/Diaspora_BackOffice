@@ -1,10 +1,9 @@
-﻿import { Component, OnInit, effect } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { ProcedureService } from '@core/services/procedure.service'
-import { ProfileStateService } from '@core/services/profile-state.service'
 import { DocumentService } from '@core/services/document.service'
 import { ProcedureDto, LocationDto } from '@core/models/procedure/procedure.model'
 import { DocumentTypeDto } from '@core/models/document/document.model'
@@ -21,7 +20,6 @@ export class ProcedureDetail implements OnInit {
   procedure: ProcedureDto | null = null
   loading = true
   error = ''
-  selectedProfileId = ''
   documentTypes: DocumentTypeDto[] = []
   dependencyProcedures: ProcedureDto[] = []
 
@@ -29,18 +27,13 @@ export class ProcedureDetail implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private procedureService: ProcedureService,
-    private profileState: ProfileStateService,
     private documentService: DocumentService
   ) {}
 
   ngOnInit() {
-    this.selectedProfileId = this.profileState.selectedProfileId() || ''
     this.route.paramMap.subscribe(params => {
       const id = params.get('id')
       if (id) this.loadProcedure(id)
-    })
-    effect(() => {
-      this.selectedProfileId = this.profileState.selectedProfileId() || ''
     })
   }
 
@@ -100,14 +93,6 @@ export class ProcedureDetail implements OnInit {
   dayLabel(day: number): string {
     const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
     return days[day] || ''
-  }
-
-  startProcedure() {
-    if (!this.selectedProfileId) return
-    this.procedureService.startProcedure({ profileId: this.selectedProfileId, procedureId: this.procedure!.id }).subscribe({
-      next: () => this.router.navigate(['/procedures/user-procedures']),
-      error: () => {},
-    })
   }
 
   goBack() {

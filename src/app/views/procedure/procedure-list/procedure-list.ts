@@ -6,6 +6,8 @@ import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { ProcedureService } from '@core/services/procedure.service'
 import { ProfileService } from '@core/services/profile.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ProcedureDto } from '@core/models/procedure/procedure.model'
 import { ProfileTypeDto } from '@core/models/profile/profile.model'
 import { ProcedureProfileType, ProcedureProfileTypeLabels } from '@core/models/shared/enums.model'
@@ -33,7 +35,9 @@ export class ProcedureList implements OnInit {
 
   constructor(
     private procedureService: ProcedureService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -68,13 +72,21 @@ export class ProcedureList implements OnInit {
     this.loadProcedures()
   }
 
-  onDelete(id: string) {
-    if (confirm('Deactivate this procedure?')) {
-      this.procedureService.deleteProcedure(id).subscribe({
-        next: () => this.loadProcedures(),
-        error: () => {},
-      })
-    }
+  async onDelete(id: string) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Désactiver la démarche',
+      message: 'Voulez-vous vraiment désactiver cette démarche administrative ?',
+      confirmText: 'Désactiver',
+      variant: 'danger'
+    })
+    if (!confirmed) return
+    this.procedureService.deleteProcedure(id).subscribe({
+      next: () => {
+        this.toast.success('Démarche désactivée avec succès.')
+        this.loadProcedures()
+      },
+      error: () => this.toast.error('Erreur lors de la désactivation.'),
+    })
   }
 
   onPageChange(page: number) {

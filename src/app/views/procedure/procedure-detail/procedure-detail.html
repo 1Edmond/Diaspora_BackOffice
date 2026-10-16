@@ -43,7 +43,7 @@
 
             <hr />
 
-<h6 class="fw-semibold mb-2">Documents de sortie (<code>outputDocumentType</code>)</h6>
+            <h6 class="fw-semibold mb-2">Documents de sortie (<code>outputDocumentType</code>)</h6>
             @if (procedure.outputDocumentType.length) {
               <div class="mb-3">
                 @for (doc of procedure.outputDocumentType; track doc) {
@@ -107,13 +107,12 @@
 
         <div class="card">
           <div class="card-body d-flex flex-column gap-2">
-            <button class="btn btn-primary" (click)="goBack()"><app-icon icon="arrow-left" class="me-1"></app-icon>Retour</button>
-            @if (procedure.isActive && selectedProfileId) {
-              <button class="btn btn-success" (click)="startProcedure()"><app-icon icon="play" class="me-1"></app-icon>Démarrer pour ce profil</button>
-            } @else if (!selectedProfileId) {
-              <button class="btn btn-outline-secondary" disabled>Sélectionnez un profil dans la topbar</button>
-            }
-            <a [routerLink]="['/procedures', procedure.id, 'edit']" class="btn btn-outline-primary"><app-icon icon="pencil" class="me-1"></app-icon>Éditer</a>
+            <a [routerLink]="['/procedures', procedure.id, 'edit']" class="btn btn-soft-primary d-inline-flex align-items-center justify-content-center gap-1">
+              <app-icon icon="pencil"></app-icon>Modifier la procédure
+            </a>
+            <button class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center gap-1" (click)="goBack()">
+              <app-icon icon="arrow-left"></app-icon>Retour
+            </button>
           </div>
         </div>
       </div>

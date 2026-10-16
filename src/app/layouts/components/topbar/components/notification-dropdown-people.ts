@@ -1,200 +1,300 @@
-import { Component } from '@angular/core'
+import { DatePipe } from '@angular/common'
+import { Component, OnInit } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { Icon } from '@app/components/icon/icon'
+import {
+  parseNotificationPayload,
+  UserNotificationDto,
+} from '@core/models/notification/notification.model'
+import { AuthService } from '@core/services/auth.service'
+import { NotificationService } from '@core/services/notification.service'
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
 import { SimplebarAngularModule } from 'simplebar-angular'
 
-const user4 = 'assets/images/users/user-4.jpg'
-const user5 = 'assets/images/users/user-5.jpg'
-const user6 = 'assets/images/users/user-6.jpg'
-const user7 = 'assets/images/users/user-7.jpg'
-const user8 = 'assets/images/users/user-8.jpg'
-
-type NotificationType = {
-  user?: {
-    name: string
-    image: string
-  }
-  icon?: string
-  badge: { icon: string; className: string }
-  action: string
-  context: string
-  time: string
+interface TopbarNotificationView {
+  id: string
+  title: string
+  message: string
+  eventType: string
+  isRead: boolean
+  createdAt: string
+  icon: string
+  color: string
+  route: string
 }
 
 @Component({
   selector: 'notification-dropdown-people',
-  imports: [Icon, RouterLink, SimplebarAngularModule, NgbDropdownModule],
+  imports: [Icon, RouterLink, SimplebarAngularModule, NgbDropdownModule, DatePipe],
   template: `
     <div id="notification-dropdown-people" class="topbar-item">
-      <div ngbDropdown placement="bottom-end" autoClose="outside">
-        <button ngbDropdownToggle class="topbar-link dropdown-toggle drop-arrow-none" type="button">
-          <app-icon icon="bell" class="topbar-link-icon animate-ring"></app-icon>
-          <span class="badge text-bg-danger badge-circle topbar-badge">5</span>
+      <div
+        #dropdown="ngbDropdown"
+        ngbDropdown
+        placement="bottom-end"
+        autoClose="outside"
+        (openChange)="onDropdownOpen($event)"
+      >
+        <button
+          ngbDropdownToggle
+          class="topbar-link dropdown-toggle drop-arrow-none position-relative"
+          type="button"
+          title="Notifications"
+        >
+          <app-icon icon="bell" class="topbar-link-icon" [class.animate-ring]="unreadCount > 0"></app-icon>
+          @if (unreadCount > 0) {
+            <span class="badge text-bg-danger badge-circle topbar-badge">
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
+          }
         </button>
 
-        <div ngbDropdownMenu class="p-0 dropdown-menu-end dropdown-menu-lg">
-          <div class="px-3 py-2 border-bottom">
-            <div class="row align-items-center">
-              <div class="col">
-                <h6 class="m-0 fs-md fw-semibold">Notifications</h6>
-              </div>
-              <div class="col text-end">
-                <a [routerLink]="[]" class="badge badge-soft-success badge-label py-1">07 Notifications</a>
-              </div>
+        <div ngbDropdownMenu class="p-0 dropdown-menu-end dropdown-menu-lg shadow-lg border-0" style="width: 360px; max-width: 92vw;">
+          <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <h6 class="m-0 fs-md fw-bold">Notifications</h6>
+              @if (unreadCount > 0) {
+                <span class="badge bg-soft-danger text-danger">{{ unreadCount }} non lue(s)</span>
+              } @else {
+                <span class="badge bg-soft-success text-success">À jour</span>
+              }
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              @if (unreadCount > 0) {
+                <button
+                  type="button"
+                  class="btn btn-xs btn-soft-primary text-primary border-0"
+                  (click)="markAllRead()"
+                  [disabled]="loading"
+                  title="Tout marquer comme lu"
+                >
+                  <app-icon icon="check-check" class="me-1"></app-icon>Tout lire
+                </button>
+              }
+              <button
+                type="button"
+                class="btn btn-xs btn-light"
+                (click)="loadNotifications()"
+                [disabled]="loading"
+                title="Rafraîchir"
+              >
+                <app-icon icon="refresh-cw" [class.spin]="loading"></app-icon>
+              </button>
             </div>
           </div>
 
-          <ngx-simplebar style="max-height: 300px">
-            @for (item of notificationData; track $index) {
-              <div ngbDropdownItem class="notification-item py-2 text-wrap">
-                <span class="d-flex align-items-center gap-3">
-                  <!-- Avatar or Icon -->
-                  <span class="flex-shrink-0 position-relative">
-                    <!-- If user image -->
-                    @if (item.user) {
-                      <img [src]="item.user.image" class="avatar-md rounded-circle" alt="User Avatar" />
-                    }
-
-                    <!-- If only icon -->
-                    @else {
-                      <span class="avatar-md rounded-circle bg-light d-flex align-items-center justify-content-center">
-                        <app-icon [icon]="item.icon!" class="fs-4"></app-icon>
-                      </span>
-                    }
-
-                    <!-- Badge -->
-                    <span class="position-absolute rounded-pill {{ item.badge.className }} notification-badge">
-                      <app-icon [icon]="item.badge.icon" class="align-middle"></app-icon>
-                      <span class="visually-hidden">notification</span>
-                    </span>
-                  </span>
-
-                  <!-- Message -->
-                  <span class="flex-grow-1 text-muted">
-                    <!-- User Name -->
-
-                    <span class="fw-medium text-body">{{ item.user ? item.user.name : item.context }}</span>
-
-                    {{ item.action }}
-                    @if (item.user) {
-                      <span class="fw-medium text-body">{{ item.context }}</span>
-                    }
-                    <br />
-                    <span class="fs-xs">{{ item.time }}</span>
-                  </span>
-
-                  <!-- Close Button -->
-                  <button type="button" class="flex-shrink-0 text-muted btn btn-link p-0 position-absolute end-0 me-2 d-none noti-close-btn">
-                    <app-icon icon="x-square" class="fs-xxl"></app-icon>
-                  </button>
-                </span>
+          <ngx-simplebar style="max-height: 320px">
+            @if (loading && notifications.length === 0) {
+              <div class="p-4 text-center text-muted">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                <span>Chargement des notifications...</span>
               </div>
+            } @else if (notifications.length === 0) {
+              <div class="p-4 text-center text-muted">
+                <span class="avatar-md rounded-circle bg-soft-info text-info d-inline-flex align-items-center justify-content-center mb-2">
+                  <app-icon icon="bell-off" class="fs-4"></app-icon>
+                </span>
+                <p class="mb-1 fw-medium text-body">Aucune notification récente</p>
+                <small class="d-block">Les alertes système et activités du BackOffice apparaîtront ici.</small>
+              </div>
+            } @else {
+              @for (item of notifications; track item.id) {
+                <div
+                  class="px-3 py-2 border-bottom notification-row d-flex align-items-start gap-2"
+                  [class.bg-light-subtle]="!item.isRead"
+                >
+                  <span
+                    class="avatar-sm rounded-circle bg-soft-{{ item.color }} text-{{ item.color }} d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
+                  >
+                    <app-icon [icon]="item.icon" class="fs-16"></app-icon>
+                  </span>
+
+                  <div class="flex-grow-1 min-w-0">
+                    <div class="d-flex align-items-center justify-content-between gap-1">
+                      <a
+                        [routerLink]="item.route"
+                        (click)="onSelectNotification(item, dropdown)"
+                        class="fw-semibold text-body text-decoration-none text-truncate d-block fs-sm"
+                      >
+                        {{ item.title }}
+                      </a>
+                      @if (!item.isRead) {
+                        <span class="badge bg-primary rounded-circle p-1" title="Non lu"></span>
+                      }
+                    </div>
+                    <p class="text-muted mb-1 fs-xs text-break" style="line-height: 1.35;">
+                      {{ item.message }}
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span class="text-muted" style="font-size: 0.7rem;">
+                        {{ item.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                      </span>
+                      @if (!item.isRead) {
+                        <button
+                          type="button"
+                          class="btn btn-link p-0 text-primary text-decoration-none"
+                          style="font-size: 0.72rem;"
+                          (click)="markRead(item)"
+                        >
+                          Marquer lu
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
             }
           </ngx-simplebar>
 
-          <!-- All-->
-          <a [routerLink]="[]" ngbDropdownItem class="d-block w-100 text-center text-reset text-decoration-underline link-offset-2 fw-bold notify-item border-top border-light py-2">Read All Messages</a>
+          <a
+            routerLink="/notifications"
+            (click)="dropdown.close()"
+            class="d-block w-100 text-center text-primary text-decoration-none fw-semibold border-top py-2 bg-light-subtle"
+          >
+            Voir toutes les notifications
+            <app-icon icon="arrow-right" class="ms-1 align-middle"></app-icon>
+          </a>
         </div>
-        <!-- End dropdown-menu -->
       </div>
-      <!-- end dropdown-->
     </div>
   `,
-  styles: ``,
+  styles: `
+    .notification-row {
+      transition: background-color 0.15s ease;
+    }
+    .notification-row:hover {
+      background-color: rgba(var(--theme-primary-rgb), 0.05);
+    }
+  `,
 })
-export class NotificationDropdownPeople {
-  notificationData: NotificationType[] = [
-    {
-      user: {
-        name: 'Emily Johnson',
-        image: user4,
-      },
-      badge: {
-        icon: 'bell',
-        className: 'bg-success',
-      },
-      action: 'commented on a task in',
-      context: 'Design Sprint',
-      time: '12 minutes ago',
-    },
+export class NotificationDropdownPeople implements OnInit {
+  notifications: TopbarNotificationView[] = []
+  unreadCount = 0
+  loading = false
 
-    {
-      user: {
-        name: 'Michael Lee',
-        image: user5,
-      },
-      badge: {
-        icon: 'cloud-upload',
-        className: 'bg-info',
-      },
-      action: 'uploaded files to',
-      context: 'Marketing Assets',
-      time: '25 minutes ago',
-    },
+  constructor(
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {}
 
-    {
-      icon: 'database',
-      badge: {
-        icon: 'circle-alert',
-        className: 'bg-danger',
-      },
-      action: 'CPU usage exceeded 90%',
-      context: 'Server #3',
-      time: 'Just now',
-    },
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      this.loadNotifications()
+    }
+  }
 
-    {
-      user: {
-        name: 'Sophia Ray',
-        image: user6,
-      },
-      badge: {
-        icon: 'alert-triangle',
-        className: 'bg-warning',
-      },
-      action: 'flagged an issue in',
-      context: 'Bug Tracker',
-      time: '40 minutes ago',
-    },
+  onDropdownOpen(isOpen: boolean): void {
+    if (isOpen && this.authService.isAuthenticated()) {
+      this.loadNotifications()
+    }
+  }
 
-    {
-      user: {
-        name: 'David Kim',
-        image: user7,
-      },
-      badge: {
-        icon: 'calendar-check',
-        className: 'bg-primary',
-      },
-      action: 'scheduled a meeting for',
-      context: 'UX Review',
-      time: '1 hour ago',
-    },
+  loadNotifications(): void {
+    if (!this.authService.isAuthenticated()) return
+    this.loading = true
 
-    {
-      user: {
-        name: 'Isabella White',
-        image: user8,
+    this.notificationService.getUnreadCount().subscribe({
+      next: (res) => {
+        this.unreadCount = res?.count ?? 0
       },
-      badge: {
-        icon: 'square-pen',
-        className: 'bg-secondary',
+      error: () => {
+        this.unreadCount = this.notifications.filter((n) => !n.isRead).length
       },
-      action: 'updated the document in',
-      context: 'Product Specs',
-      time: '2 hours ago',
-    },
+    })
 
-    {
-      icon: 'rocket',
-      badge: {
-        icon: 'check',
-        className: 'bg-success',
+    this.notificationService.getNotifications({ pageNumber: 1, pageSize: 8 }).subscribe({
+      next: (res) => {
+        this.loading = false
+        const items = res?.items || []
+        this.notifications = items.map((dto) => this.mapDto(dto))
+        if (!this.unreadCount) {
+          this.unreadCount = this.notifications.filter((n) => !n.isRead).length
+        }
       },
-      action: 'deployment completed successfully',
-      context: 'Production Server',
-      time: '30 minutes ago',
-    },
-  ]
+      error: () => {
+        this.loading = false
+        this.notifications = []
+      },
+    })
+  }
+
+  markRead(item: TopbarNotificationView): void {
+    if (item.isRead) return
+    item.isRead = true
+    this.unreadCount = Math.max(0, this.unreadCount - 1)
+    this.notificationService.markAsRead(item.id).subscribe({
+      error: () => {},
+    })
+  }
+
+  markAllRead(): void {
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notifications.forEach((n) => (n.isRead = true))
+        this.unreadCount = 0
+      },
+      error: () => {
+        this.notifications.forEach((n) => (n.isRead = true))
+        this.unreadCount = 0
+      },
+    })
+  }
+
+  onSelectNotification(item: TopbarNotificationView, dropdown: { close: () => void }): void {
+    if (!item.isRead) {
+      this.markRead(item)
+    }
+    dropdown.close()
+  }
+
+  private mapDto(dto: UserNotificationDto): TopbarNotificationView {
+    const parsed = parseNotificationPayload(dto.payload)
+    const eventType = dto.eventType || 'Notification'
+    const title = parsed.title || this.formatEventType(eventType)
+    const message = parsed.message || parsed.body || dto.payload || 'Nouvelle notification système'
+    const { icon, color, route } = this.resolveMeta(eventType)
+
+    return {
+      id: dto.id,
+      title,
+      message,
+      eventType,
+      isRead: dto.isRead,
+      createdAt: dto.createdAt,
+      icon,
+      color,
+      route,
+    }
+  }
+
+  private formatEventType(eventType: string): string {
+    return eventType
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/[._-]/g, ' ')
+      .trim()
+  }
+
+  private resolveMeta(eventType: string): { icon: string; color: string; route: string } {
+    const lower = eventType.toLowerCase()
+    if (lower.includes('kyc')) {
+      return { icon: 'user-check', color: 'success', route: '/kyc/list' }
+    }
+    if (lower.includes('wallet') || lower.includes('payment') || lower.includes('transaction')) {
+      return { icon: 'credit-card', color: 'primary', route: '/wallet/transactions' }
+    }
+    if (lower.includes('document')) {
+      return { icon: 'file-text', color: 'warning', route: '/documents' }
+    }
+    if (lower.includes('procedure')) {
+      return { icon: 'clipboard-list', color: 'purple', route: '/procedures/user-procedures' }
+    }
+    if (lower.includes('dispute') || lower.includes('report')) {
+      return { icon: 'alert-triangle', color: 'danger', route: '/marketplace/disputes' }
+    }
+    if (lower.includes('chat') || lower.includes('message')) {
+      return { icon: 'message-square', color: 'warning', route: '/chat/moderation' }
+    }
+    return { icon: 'bell', color: 'info', route: '/notifications' }
+  }
 }
+

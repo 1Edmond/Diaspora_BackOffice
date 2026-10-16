@@ -2,8 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
 import { NotificationService } from '@core/services/notification.service';
 import { ProfileService } from '@core/services/profile.service';
+import { ConfirmModalService } from '@core/services/confirm-modal.service';
+import { ToastService } from '@core/services/toast.service';
 import { ProfileTypeDto } from '@core/models/profile/profile.model';
 
 interface SentCampaign {
@@ -18,7 +21,7 @@ interface SentCampaign {
 @Component({
   selector: 'app-broadcast-campaigns',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, Icon],
   templateUrl: './broadcast-campaigns.html',
 })
 export class BroadcastCampaignsComponent implements OnInit {
@@ -38,7 +41,9 @@ export class BroadcastCampaignsComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -52,13 +57,20 @@ export class BroadcastCampaignsComponent implements OnInit {
     });
   }
 
-  sendCampaign() {
+  async sendCampaign() {
     if (!this.title.trim() || !this.message.trim()) {
       this.errorMessage = 'Le titre et le message de la campagne sont obligatoires.';
+      this.toast.warning(this.errorMessage);
       return;
     }
 
-    if (!confirm(`Confirmez-vous l'envoi immédiat de cette campagne de diffusion (${this.channel}) aux utilisateurs ciblés ?`)) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Diffuser la campagne',
+      message: `Confirmez-vous l'envoi immédiat de cette campagne de diffusion (${this.channel}) aux utilisateurs ciblés ?`,
+      confirmText: 'Diffuser',
+      variant: 'primary'
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -78,6 +90,7 @@ export class BroadcastCampaignsComponent implements OnInit {
       next: (res) => {
         this.sending = false;
         this.successMessage = `Campagne diffusée avec succès (Réf: ${res.id || 'N/A'}).`;
+        this.toast.success(this.successMessage);
         this.recentCampaigns.unshift({
           id: res.id || 'ID-' + Date.now(),
           title: this.title,
@@ -94,6 +107,7 @@ export class BroadcastCampaignsComponent implements OnInit {
       error: (err) => {
         this.sending = false;
         this.errorMessage = err?.error?.error || 'Erreur lors de la diffusion de la campagne.';
+        this.toast.error(this.errorMessage);
       },
     });
   }

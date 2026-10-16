@@ -3,6 +3,7 @@ import { DatePipe, DecimalPipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { WalletService } from '@core/services/wallet.service'
 import { WalletDto, PlatformRevenueDto } from '@core/models/wallet/wallet.model'
@@ -10,7 +11,7 @@ import { WalletDto, PlatformRevenueDto } from '@core/models/wallet/wallet.model'
 @Component({
   selector: 'app-all-wallets',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, DecimalPipe, RouterLink, FormsModule],
+  imports: [PageBreadcrumb, DatePipe, DecimalPipe, RouterLink, FormsModule, Icon],
   templateUrl: './all-wallets.html',
   styles: ``,
 })

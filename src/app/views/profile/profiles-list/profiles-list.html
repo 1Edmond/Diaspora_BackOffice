@@ -53,7 +53,7 @@
                   </th>
                   <th>Phone Number</th>
                   <th class="cursor-pointer" (click)="onSort('status')">
-                    Status
+                    Status & Niveau KYC
                     @if (sortBy === 'status') {
                       <app-icon [icon]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" class="ms-1"></app-icon>
                     }
@@ -64,7 +64,7 @@
                       <app-icon [icon]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" class="ms-1"></app-icon>
                     }
                   </th>
-                  <th style="width: 140px;">Actions</th>
+                  <th style="width: 170px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,21 +102,32 @@
                   <td>{{profile.createdAt | date:'short'}}</td>
                   <td>
                     <div class="d-flex align-items-center gap-1">
-                      <a [routerLink]="['/profiles', profile.id]" class="btn btn-default btn-icon btn-sm rounded-circle" title="View Detail">
-                        <app-icon icon="eye" class="fs-lg"></app-icon>
+                      <a [routerLink]="['/profiles', profile.id]" class="btn btn-soft-primary btn-sm btn-icon" title="Modifier / Détails du profil">
+                        <app-icon icon="pencil"></app-icon>
                       </a>
                       @if (profile.status === ProfileStatus.PendingVerification) {
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-success" (click)="verifyProfile(profile)" title="Verify">
-                        <app-icon icon="check-circle" class="fs-lg"></app-icon>
+                      <button class="btn btn-soft-info btn-icon btn-sm" (click)="verifyProfile(profile)" title="Vérifier l'identité déclarée (Passer L1)">
+                        <app-icon icon="check-circle"></app-icon>
                       </button>
                       }
+                      @if (profile.status === ProfileStatus.Verified) {
+                        @if ((profile.verificationLevel ?? 0) < 2) {
+                        <button class="btn btn-soft-warning btn-icon btn-sm" (click)="activateProfile(profile)" title="KYC L2 requis avant activation">
+                          <app-icon icon="info"></app-icon>
+                        </button>
+                        } @else {
+                        <button class="btn btn-soft-success btn-icon btn-sm" (click)="activateProfile(profile)" title="Activer le profil (KYC L2+ validé)">
+                          <app-icon icon="shield-check"></app-icon>
+                        </button>
+                        }
+                      }
                       @if (profile.status === ProfileStatus.Suspended) {
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-success" (click)="activateProfile(profile)" title="Activate">
-                        <app-icon icon="check" class="fs-lg"></app-icon>
+                      <button class="btn btn-soft-success btn-icon btn-sm" (click)="reactivateProfile(profile)" title="Réactiver le profil">
+                        <app-icon icon="refresh-cw"></app-icon>
                       </button>
                       } @else if (profile.status === ProfileStatus.Activate || profile.status === ProfileStatus.Verified) {
-                      <button class="btn btn-default btn-icon btn-sm rounded-circle text-danger" (click)="suspendProfile(profile)" title="Suspend">
-                        <app-icon icon="slash" class="fs-lg"></app-icon>
+                      <button class="btn btn-soft-danger btn-icon btn-sm" (click)="suspendProfile(profile)" title="Suspendre le profil">
+                        <app-icon icon="slash"></app-icon>
                       </button>
                       }
                     </div>

@@ -18,7 +18,7 @@
               </div>
             </div>
             <div class="col-md-7 text-end text-muted fs-13">
-              <i class="ri-folder-open-line me-1"></i>Total : <strong class="text-dark">{{ filteredCategories.length }}</strong> catégorie(s)
+              <app-icon icon="folder" class="me-1"></app-icon>Total : <strong class="text-dark">{{ filteredCategories.length }}</strong> catégorie(s)
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@
                 } @else if (filteredCategories.length === 0) {
                 <tr>
                   <td colspan="4" class="text-center p-4 text-muted">
-                    <i class="ri-inbox-line fs-24 d-block mb-1"></i>
+                    <app-icon icon="inbox" class="fs-24 d-block mb-1"></app-icon>
                     Aucune catégorie freelance trouvée selon ces critères.
                   </td>
                 </tr>
@@ -76,11 +76,11 @@
                     <td>
                       @if (cat.isActive) {
                       <span class="badge bg-soft-success text-success">
-                        <i class="ri-checkbox-circle-line me-1"></i>Actif
+                        <app-icon icon="circle-check" class="me-1"></app-icon>Actif
                       </span>
                       } @else {
                       <span class="badge bg-soft-secondary text-secondary">
-                        <i class="ri-indeterminate-circle-line me-1"></i>Inactif
+                        <app-icon icon="circle-minus" class="me-1"></app-icon>Inactif
                       </span>
                       }
                     </td>

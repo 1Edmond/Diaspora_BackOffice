@@ -1,11 +1,13 @@
-import { Component, OnInit, inject, TemplateRef, effect } from '@angular/core'
+import { Component, OnInit, inject, TemplateRef } from '@angular/core'
 import { DatePipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
 import { DocumentService } from '@core/services/document.service'
-import { ProfileStateService } from '@core/services/profile-state.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { DocumentDto, DocumentTypeDto } from '@core/models/document/document.model'
 import { DocumentStatus, DocumentStatusLabels, DocumentStatusBadgeVariants } from '@core/models/shared/enums.model'
 import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdown/profile-search-dropdown'
@@ -13,7 +15,7 @@ import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdow
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, ProfileSearchDropdown],
+  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, ProfileSearchDropdown, Icon],
   templateUrl: './document-list.html',
   styles: ``,
 })
@@ -54,26 +56,11 @@ export class DocumentList implements OnInit {
 
   constructor(
     private documentService: DocumentService,
-    public profileState: ProfileStateService
-  ) {
-    effect(() => {
-      const pid = this.profileState.selectedProfileId()
-      if (pid && pid !== this.profileId) {
-        this.profileId = pid
-        this.manualProfileId = pid
-        if (this.activeTab === 'by-profile') {
-          this.page = 1
-          this.loadDocuments()
-        }
-      }
-    })
-  }
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
-    if (this.profileState.selectedProfileId()) {
-      this.profileId = this.profileState.selectedProfileId()
-      this.manualProfileId = this.profileId
-    }
     this.loadDocuments()
     this.loadDocumentTypes()
   }
@@ -90,7 +77,6 @@ export class DocumentList implements OnInit {
   onProfileSelect(profileId: string) {
     this.profileId = profileId
     this.manualProfileId = profileId
-    this.profileState.selectProfile(profileId)
     this.activeTab = 'by-profile'
     this.page = 1
     this.loadDocuments()
@@ -99,7 +85,6 @@ export class DocumentList implements OnInit {
   applyManualProfileId() {
     const pid = this.manualProfileId.trim()
     if (pid) {
-      this.profileState.selectProfile(pid)
       this.onProfileSelect(pid)
     }
   }
@@ -143,7 +128,6 @@ export class DocumentList implements OnInit {
         },
       })
     } else {
-      // By profile
       if (!this.profileId) {
         this.documents = []
         this.totalCount = 0
@@ -171,8 +155,16 @@ export class DocumentList implements OnInit {
     this.loadDocuments()
   }
 
-  validateDocument(doc: DocumentDto) {
-    if (!confirm(`Valider le document "${doc.fileName}" ?`)) return
+  async validateDocument(doc: DocumentDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Valider le document',
+      message: `Voulez-vous valider le document "${doc.fileName}" ?`,
+      confirmText: 'Valider',
+      variant: 'success',
+      icon: 'check-circle',
+    })
+    if (!confirmed) return
+
     this.validatingDocId = doc.id
     this.actionSuccessMessage = ''
     this.actionErrorMessage = ''
@@ -181,11 +173,13 @@ export class DocumentList implements OnInit {
       next: () => {
         this.validatingDocId = null
         this.actionSuccessMessage = `Document "${doc.fileName}" validé avec succès.`
+        this.toast.success(this.actionSuccessMessage)
         this.loadDocuments()
       },
       error: (err) => {
         this.validatingDocId = null
         this.actionErrorMessage = err.error?.error || err.error?.message || 'Erreur lors de la validation du document'
+        this.toast.error(this.actionErrorMessage)
       },
     })
   }
@@ -214,6 +208,7 @@ export class DocumentList implements OnInit {
         this.rejecting = false
         this.modalService.dismissAll()
         this.actionSuccessMessage = `Document "${doc.fileName}" rejeté.`
+        this.toast.warning(this.actionSuccessMessage)
         this.loadDocuments()
       },
       error: (err) => {
@@ -249,6 +244,7 @@ export class DocumentList implements OnInit {
         this.uploading = false
         this.modalService.dismissAll()
         this.actionSuccessMessage = 'Document téléversé avec succès.'
+        this.toast.success(this.actionSuccessMessage)
         this.loadDocuments()
       },
       error: (err) => {
@@ -272,15 +268,23 @@ export class DocumentList implements OnInit {
     })
   }
 
-  onDelete(doc: DocumentDto) {
-    if (confirm(`Delete document ${doc.fileName}?`)) {
-      this.documentService.deleteDocument(doc.id).subscribe({
-        next: () => {
-          this.actionSuccessMessage = `Document "${doc.fileName}" supprimé.`
-          this.loadDocuments()
-        },
-        error: () => {},
-      })
-    }
+  async onDelete(doc: DocumentDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer le document',
+      message: `Êtes-vous sûr de vouloir supprimer le document "${doc.fileName}" ?`,
+      confirmText: 'Supprimer',
+      variant: 'danger',
+      icon: 'trash-2',
+    })
+    if (!confirmed) return
+
+    this.documentService.deleteDocument(doc.id).subscribe({
+      next: () => {
+        this.actionSuccessMessage = `Document "${doc.fileName}" supprimé.`
+        this.toast.success(this.actionSuccessMessage)
+        this.loadDocuments()
+      },
+      error: () => {},
+    })
   }
 }

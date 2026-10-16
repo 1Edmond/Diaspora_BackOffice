@@ -3,9 +3,12 @@ import { CommonModule, DatePipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { KycService } from '@core/services/kyc.service'
 import { ProfileService } from '@core/services/profile.service'
 import { DocumentService } from '@core/services/document.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ProfileTypeDto } from '@core/models/profile/profile.model'
 import { DocumentTypeDto } from '@core/models/document/document.model'
 import {
@@ -17,7 +20,7 @@ import {
 @Component({
   selector: 'app-kyc-requirements',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe],
+  imports: [CommonModule, FormsModule, PageBreadcrumb, DatePipe, Icon],
   templateUrl: './kyc-requirements.html',
   styles: ``,
 })
@@ -47,12 +50,37 @@ export class KycRequirements implements OnInit {
   formPurpose: string = ''
   formIsRequired: boolean = true
   formIsActive: boolean = true
+  formTargetLevel: number = 2
+  formRequiredDistinctDocumentsCount: number = 1
+
+  kycLevels = [
+    {
+      level: 1,
+      shortLabel: 'L1',
+      title: 'Niveau 1 (L1 : Identité déclarée / Basic)',
+      badgeClass: 'bg-soft-info text-info',
+    },
+    {
+      level: 2,
+      shortLabel: 'L2',
+      title: 'Niveau 2 (L2 : Identité vérifiée / Intermediate - Requis pour activation)',
+      badgeClass: 'bg-soft-success text-success',
+    },
+    {
+      level: 3,
+      shortLabel: 'L3',
+      title: 'Niveau 3 (L3 : Vérification renforcée / Advanced)',
+      badgeClass: 'bg-soft-primary text-primary',
+    },
+  ]
 
   constructor(
     private kycService: KycService,
     private profileService: ProfileService,
     private documentService: DocumentService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -116,6 +144,37 @@ export class KycRequirements implements OnInit {
     return doc ? doc.name : code
   }
 
+  getLevelBadgeClass(level: number): string {
+    const found = this.kycLevels.find((l) => l.level === (level || 2))
+    return found ? found.badgeClass : 'bg-soft-secondary text-secondary'
+  }
+
+  getLevelLabel(level: number): string {
+    const lvl = level || 2
+    if (lvl === 1) return 'L1 - Identité déclarée'
+    if (lvl === 2) return 'L2 - Identité vérifiée'
+    if (lvl === 3) return 'L3 - Vérification renforcée'
+    return `L${lvl}`
+  }
+
+  getLevelSummary(level: number): {
+    totalActive: number
+    mandatoryCount: number
+    distinctDocsRequired: number
+  } {
+    const activeReqs = this.requirements.filter((r) => r.isActive && (r.targetLevel || 2) === level)
+    const mandatoryCount = activeReqs.filter((r) => r.isRequired).length
+    const distinctDocsRequired = activeReqs.reduce(
+      (max, r) => Math.max(max, r.requiredDistinctDocumentsCount || 1),
+      activeReqs.length > 0 ? 1 : 0
+    )
+    return {
+      totalActive: activeReqs.length,
+      mandatoryCount,
+      distinctDocsRequired,
+    }
+  }
+
   openCreateModal() {
     this.isEditing = false
     this.editingRequirementId = null
@@ -124,6 +183,8 @@ export class KycRequirements implements OnInit {
     this.formPurpose = ''
     this.formIsRequired = true
     this.formIsActive = true
+    this.formTargetLevel = 2
+    this.formRequiredDistinctDocumentsCount = 1
     this.error = ''
     this.modalRef = this.modalService.open(this.requirementModal, { centered: true, size: 'md' })
   }
@@ -136,6 +197,8 @@ export class KycRequirements implements OnInit {
     this.formPurpose = req.purpose
     this.formIsRequired = req.isRequired
     this.formIsActive = req.isActive
+    this.formTargetLevel = req.targetLevel || 2
+    this.formRequiredDistinctDocumentsCount = req.requiredDistinctDocumentsCount || 1
     this.error = ''
     this.modalRef = this.modalService.open(this.requirementModal, { centered: true, size: 'md' })
   }
@@ -162,6 +225,9 @@ export class KycRequirements implements OnInit {
       return
     }
 
+    const distinctCount = Math.max(1, Number(this.formRequiredDistinctDocumentsCount) || 1)
+    const targetLevel = Number(this.formTargetLevel) || 2
+
     this.saving = true
     this.error = ''
     this.successMessage = ''
@@ -171,12 +237,15 @@ export class KycRequirements implements OnInit {
         purpose: this.formPurpose.trim(),
         isRequired: this.formIsRequired,
         isActive: this.formIsActive,
+        targetLevel,
+        requiredDistinctDocumentsCount: distinctCount,
       }
       this.kycService.updateRequirement(this.editingRequirementId, updateData).subscribe({
         next: () => {
           this.saving = false
           this.closeModal()
           this.successMessage = 'Exigence KYC mise à jour avec succès.'
+          this.toast.success(this.successMessage)
           this.loadRequirements()
         },
         error: (err) => {
@@ -197,6 +266,8 @@ export class KycRequirements implements OnInit {
         documentTypeCode: this.formDocumentTypeCode.trim().toUpperCase(),
         purpose: this.formPurpose.trim(),
         isRequired: this.formIsRequired,
+        targetLevel,
+        requiredDistinctDocumentsCount: distinctCount,
       }
 
       this.kycService.createRequirement(createData).subscribe({
@@ -204,6 +275,7 @@ export class KycRequirements implements OnInit {
           this.saving = false
           this.closeModal()
           this.successMessage = 'Exigence KYC créée avec succès.'
+          this.toast.success(this.successMessage)
           this.loadRequirements()
         },
         error: (err) => {
@@ -219,10 +291,13 @@ export class KycRequirements implements OnInit {
       purpose: req.purpose,
       isRequired: req.isRequired,
       isActive: !req.isActive,
+      targetLevel: req.targetLevel || 2,
+      requiredDistinctDocumentsCount: req.requiredDistinctDocumentsCount || 1,
     }
     this.kycService.updateRequirement(req.id, updateData).subscribe({
       next: () => {
         this.successMessage = `Exigence ${!req.isActive ? 'activée' : 'désactivée'} avec succès.`
+        this.toast.success(this.successMessage)
         this.loadRequirements()
       },
       error: (err) => {
@@ -231,14 +306,22 @@ export class KycRequirements implements OnInit {
     })
   }
 
-  deleteRequirement(req: CountryKycRequirementDto) {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'exigence "${req.documentTypeCode}" pour ce pays ?`)) {
+  async deleteRequirement(req: CountryKycRequirementDto) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer l\'exigence KYC',
+      message: `Êtes-vous sûr de vouloir supprimer l'exigence "${req.documentTypeCode}" pour ce pays ?`,
+      confirmText: 'Supprimer',
+      variant: 'danger',
+      icon: 'trash-2',
+    })
+    if (!confirmed) {
       return
     }
 
     this.kycService.deleteRequirement(req.id).subscribe({
       next: () => {
         this.successMessage = 'Exigence supprimée avec succès.'
+        this.toast.success(this.successMessage)
         this.loadRequirements()
       },
       error: (err) => {

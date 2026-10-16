@@ -3,13 +3,16 @@ import { DatePipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { IdentityService } from '@core/services/identity/identity.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { User, UserListResponse } from '@core/models/identity/user.model'
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule],
+  imports: [PageBreadcrumb, DatePipe, RouterLink, FormsModule, Icon],
   templateUrl: './users-list.html',
   styles: ``,
 })
@@ -31,7 +34,9 @@ export class UsersList implements OnInit {
   actionLoading = false
 
   constructor(
-    private identityService: IdentityService
+    private identityService: IdentityService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -94,38 +99,65 @@ export class UsersList implements OnInit {
       next: () => {
         this.actionLoading = false
         this.closeSuspendModal()
+        this.toast.success('Utilisateur suspendu avec succès.')
         this.loadUsers()
       },
       error: () => {
         this.actionLoading = false
+        this.toast.error('Erreur lors de la suspension.')
       },
     })
   }
 
-  onActivate(user: User) {
+  async onActivate(user: User) {
     const actionLabel = user.status === 'Inactive' ? "l'activation" : "la réactivation"
-    if (!confirm(`Confirmez-vous ${actionLabel} du compte ${user.email} ?`)) return
+    const confirmed = await this.confirmModal.confirm({
+      title: user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte',
+      message: `Confirmez-vous ${actionLabel} du compte ${user.email} ?`,
+      confirmText: 'Confirmer',
+      variant: 'success'
+    })
+    if (!confirmed) return
     this.identityService.activateUser(user.id).subscribe({
-      next: () => this.loadUsers(),
-      error: () => {},
+      next: () => {
+        this.toast.success('Compte activé avec succès.')
+        this.loadUsers()
+      },
+      error: () => this.toast.error('Erreur lors de l\'activation.'),
     })
   }
 
-  onDelete(user: User) {
-    if (confirm(`Confirmez-vous la suppression (soft-delete) du compte ${user.email} ?`)) {
-      this.identityService.deleteUser(user.id).subscribe({
-        next: () => this.loadUsers(),
-        error: () => {},
-      })
-    }
+  async onDelete(user: User) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Supprimer le compte',
+      message: `Confirmez-vous la suppression (soft-delete) du compte ${user.email} ?`,
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!confirmed) return
+    this.identityService.deleteUser(user.id).subscribe({
+      next: () => {
+        this.toast.success('Compte archivé avec succès.')
+        this.loadUsers()
+      },
+      error: () => this.toast.error('Erreur lors de la suppression.'),
+    })
   }
 
-  onRestore(user: User) {
-    if (confirm(`Confirmez-vous la restauration du compte ${user.email} ?`)) {
-      this.identityService.restoreUser(user.id).subscribe({
-        next: () => this.loadUsers(),
-        error: () => {},
-      })
-    }
+  async onRestore(user: User) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Restaurer le compte',
+      message: `Confirmez-vous la restauration du compte ${user.email} ?`,
+      confirmText: 'Restaurer',
+      variant: 'warning'
+    })
+    if (!confirmed) return
+    this.identityService.restoreUser(user.id).subscribe({
+      next: () => {
+        this.toast.success('Compte restauré avec succès.')
+        this.loadUsers()
+      },
+      error: () => this.toast.error('Erreur lors de la restauration.'),
+    })
   }
 }

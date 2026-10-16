@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ServiceListingSummaryDto } from '@core/models/marketplace/marketplace.model'
 
 @Component({
@@ -22,7 +24,9 @@ export class PendingListings implements OnInit {
   loading = false
 
   constructor(
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -42,14 +46,39 @@ export class PendingListings implements OnInit {
     })
   }
 
-  approve(id: string) {
-    this.marketplaceService.approveListing(id).subscribe({ next: () => this.loadPending(), error: () => {} })
+  async approve(id: string) {
+    const confirmed = await this.confirmModal.confirm({
+      title: 'Approuver l\'annonce',
+      message: 'Voulez-vous approuver cette annonce en attente ?',
+      confirmText: 'Approuver',
+      variant: 'success'
+    })
+    if (!confirmed) return
+    this.marketplaceService.approveListing(id).subscribe({
+      next: () => {
+        this.toast.success('Annonce approuvée.')
+        this.loadPending()
+      },
+      error: () => this.toast.error('Erreur lors de l\'approbation.'),
+    })
   }
 
-  reject(id: string) {
-    const reason = prompt('Rejection reason:')
+  async reject(id: string) {
+    const reason = await this.confirmModal.prompt({
+      title: 'Rejeter l\'annonce',
+      message: 'Veuillez indiquer le motif du rejet :',
+      inputPlaceholder: 'Motif du rejet...',
+      confirmText: 'Rejeter',
+      variant: 'danger'
+    })
     if (reason == null) return
-    this.marketplaceService.rejectListing(id, reason).subscribe({ next: () => this.loadPending(), error: () => {} })
+    this.marketplaceService.rejectListing(id, reason).subscribe({
+      next: () => {
+        this.toast.success('Annonce rejetée.')
+        this.loadPending()
+      },
+      error: () => this.toast.error('Erreur lors du rejet.'),
+    })
   }
 
   onPageChange(page: number) {

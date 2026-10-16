@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core'
 import { DatePipe, CurrencyPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ConfirmModalService } from '@core/services/confirm-modal.service'
+import { ToastService } from '@core/services/toast.service'
 import { ServiceRequestDto, AdminServiceRequestQuery } from '@core/models/marketplace/marketplace.model'
 import {
   ServiceRequestStatus,
@@ -16,13 +19,12 @@ import {
 @Component({
   selector: 'app-service-requests',
   standalone: true,
-  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, FormsModule],
+  imports: [PageBreadcrumb, DatePipe, CurrencyPipe, FormsModule, Icon],
   templateUrl: './service-requests.html',
   styles: ``,
 })
 export class ServiceRequests implements OnInit {
   requests: ServiceRequestDto[] = []
-  tab: 'all' | 'received' | 'sent' = 'all'
   page = 1
   pageSize = 10
   totalCount = 0
@@ -40,7 +42,9 @@ export class ServiceRequests implements OnInit {
   PaymentStatusBadgeVariants = PaymentStatusBadgeVariants
 
   constructor(
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private confirmModal: ConfirmModalService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -49,44 +53,23 @@ export class ServiceRequests implements OnInit {
 
   loadRequests() {
     this.loading = true
-    if (this.tab === 'all') {
-      const query: AdminServiceRequestQuery = {
-        page: this.page,
-        pageSize: this.pageSize,
-        status: this.selectedStatus != null ? (this.selectedStatus as ServiceRequestStatus) : undefined,
-        paymentStatus: this.selectedPaymentStatus != null ? (this.selectedPaymentStatus as PaymentStatus) : undefined,
-      }
-      this.marketplaceService.getAllServiceRequestsAdmin(query).subscribe({
-        next: (res) => {
-          this.requests = res.items
-          this.totalCount = res.totalCount
-          this.totalPages = res.totalPages
-          this.loading = false
-        },
-        error: () => { this.loading = false },
-      })
-    } else {
-      const obs = this.tab === 'received'
-        ? this.marketplaceService.getReceivedRequests(this.page, this.pageSize)
-        : this.marketplaceService.getSentRequests(this.page, this.pageSize)
-
-      obs.subscribe({
-        next: (res) => {
-          this.requests = res.items
-          this.totalCount = res.totalCount
-          this.totalPages = res.totalPages
-          this.loading = false
-        },
-        error: () => { this.loading = false },
-      })
+    const query: AdminServiceRequestQuery = {
+      page: this.page,
+      pageSize: this.pageSize,
+      status: this.selectedStatus != null ? (this.selectedStatus as ServiceRequestStatus) : undefined,
+      paymentStatus: this.selectedPaymentStatus != null ? (this.selectedPaymentStatus as PaymentStatus) : undefined,
     }
-  }
-
-  switchTab(tab: 'all' | 'received' | 'sent') {
-    this.tab = tab
-    this.page = 1
-    this.selectedRequest = null
-    this.loadRequests()
+    this.marketplaceService.getAllServiceRequestsAdmin(query).subscribe({
+      next: (res) => {
+        this.requests = res.items
+        this.totalCount = res.totalCount
+        this.totalPages = res.totalPages
+        this.loading = false
+      },
+      error: () => {
+        this.loading = false
+      },
+    })
   }
 
   onFilterChange() {
@@ -102,24 +85,26 @@ export class ServiceRequests implements OnInit {
     this.selectedRequest = null
   }
 
-  accept(id: string) {
-    this.marketplaceService.acceptServiceRequest(id).subscribe({ next: () => this.loadRequests(), error: () => {} })
-  }
-
-  decline(id: string) {
-    const reason = prompt('Decline reason:')
-    if (reason == null) return
-    this.marketplaceService.declineServiceRequest(id, reason).subscribe({ next: () => this.loadRequests(), error: () => {} })
-  }
-
-  complete(id: string) {
-    this.marketplaceService.completeServiceRequest(id).subscribe({ next: () => this.loadRequests(), error: () => {} })
-  }
-
-  cancel(id: string) {
-    const reason = prompt('Cancellation reason:')
-    if (reason == null) return
-    this.marketplaceService.cancelServiceRequest(id, reason).subscribe({ next: () => this.loadRequests(), error: () => {} })
+  async cancel(id: string) {
+    const reason = await this.confirmModal.prompt({
+      title: 'Annuler la demande de service',
+      message: 'Veuillez indiquer le motif administratif de l\'annulation :',
+      inputLabel: 'Motif d\'annulation',
+      inputPlaceholder: 'Ex: Demande frauduleuse ou à la demande des parties...',
+      confirmText: 'Annuler la demande',
+      variant: 'danger',
+      icon: 'x',
+    })
+    if (!reason) return
+    this.marketplaceService.cancelServiceRequest(id, reason).subscribe({
+      next: () => {
+        this.toast.warning('Demande annulée.')
+        this.loadRequests()
+      },
+      error: () => {
+        this.toast.error('Erreur lors de l\'annulation.')
+      },
+    })
   }
 
   onPageChange(page: number) {

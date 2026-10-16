@@ -3,13 +3,13 @@
 
   @if(success) {
     <div class="alert alert-success alert-dismissible d-flex align-items-center justify-content-between" role="alert">
-      <span>{{ success }}</span>
+      <span><app-icon icon="check" class="me-1"></app-icon>{{ success }}</span>
       <button type="button" class="btn-close" (click)="clearMessages()"></button>
     </div>
   }
   @if(error) {
     <div class="alert alert-danger alert-dismissible d-flex align-items-center justify-content-between" role="alert">
-      <span>{{ error }}</span>
+      <span><app-icon icon="alert-triangle" class="me-1"></app-icon>{{ error }}</span>
       <button type="button" class="btn-close" (click)="clearMessages()"></button>
     </div>
   }
@@ -45,15 +45,15 @@
                     {{verificationLevelLabels[profile.verificationLevel ?? 0]}}
                   </span>
                   <div class="dropdown d-inline-block" ngbDropdown placement="bottom-end">
-                    <button class="btn btn-xs btn-outline-primary dropdown-toggle py-0 px-1 fs-xs" type="button" ngbDropdownToggle>
-                      Modifier
+                    <button class="btn btn-soft-primary btn-sm btn-icon dropdown-toggle" type="button" ngbDropdownToggle title="Modifier le niveau">
+                      <app-icon icon="pencil"></app-icon>
                     </button>
                     <div class="dropdown-menu shadow" ngbDropdownMenu>
                       <h6 class="dropdown-header">Définir le niveau KYC</h6>
-                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(0)"><span class="badge bg-secondary me-1">L0</span> L0 - Enregistré</button>
-                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(1)"><span class="badge bg-info me-1">L1</span> L1 - Identité Déclarée</button>
-                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(2)"><span class="badge bg-primary me-1">L2</span> L2 - Identité Vérifiée (KYC)</button>
-                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(3)"><span class="badge bg-success me-1">L3</span> L3 - Vérification Renforcée</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(0)"><span class="badge bg-secondary me-1">L0</span> L0 - Inscrit</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(1)"><span class="badge bg-info me-1">L1</span> L1 - Identité déclarée</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(2)"><span class="badge bg-success me-1">L2</span> L2 - Identité vérifiée (KYC)</button>
+                      <button class="dropdown-item fs-sm" (click)="updateVerificationLevel(3)"><span class="badge bg-primary me-1">L3</span> L3 - Vérification renforcée</button>
                     </div>
                   </div>
                 </div>
@@ -87,24 +87,82 @@
           </div>
           <div class="card-body p-0">
             @if (activeTab() === 'overview') {
-              <div class="p-3">
-                <div class="d-flex gap-2 flex-wrap mt-3">
-                  @if(isPendingVerification()) { <button class="btn btn-success" (click)="verify()">Vérifier le Profil</button> }
-                  @if(isSuspended()) {
-                    <button class="btn btn-warning" (click)="reactivate()">
-                      <app-icon icon="refresh-cw" class="me-1"></app-icon> Réactiver le Profil
+              <div class="p-4">
+                <h6 class="text-uppercase text-muted fs-12 mb-3">Cycle de vie du profil & Conformité KYC</h6>
+
+                <!-- Workflow Stepper Indicator -->
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-4 p-3 rounded bg-light border">
+                  <span class="badge" [class]="isPendingVerification() ? 'bg-warning text-dark' : 'bg-soft-secondary text-secondary'">
+                    1. En attente (L0)
+                  </span>
+                  <app-icon icon="arrow-right" class="text-muted"></app-icon>
+                  <span class="badge" [class]="isVerifiedStatus() ? 'bg-info' : 'bg-soft-secondary text-secondary'">
+                    2. Vérifié (L1 - Identité déclarée)
+                  </span>
+                  <app-icon icon="arrow-right" class="text-muted"></app-icon>
+                  <span class="badge" [class]="(profile.verificationLevel ?? 0) >= 2 ? 'bg-success' : 'bg-soft-warning text-warning'">
+                    3. KYC Validé (L2/L3)
+                  </span>
+                  <app-icon icon="arrow-right" class="text-muted"></app-icon>
+                  <span class="badge" [class]="isActivated() ? 'bg-primary' : 'bg-soft-secondary text-secondary'">
+                    4. Profil Actif
+                  </span>
+                </div>
+
+                @if (isVerifiedStatus() && (profile.verificationLevel ?? 0) < 2) {
+                  <div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3" role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                      <app-icon icon="alert-triangle" class="fs-4"></app-icon>
+                      <span>
+                        Pour activer ce profil, son dossier KYC doit être validé (L2 minimum) conformément aux exigences KYC du pays (<strong>{{ getCountryCode() }}</strong>).
+                      </span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1" (click)="setActiveTab('kyc')">
+                      <app-icon icon="shield-check"></app-icon> Ouvrir l'onglet KYC
                     </button>
-                  } @else if(!isActivated()) {
-                    <button class="btn btn-primary" (click)="activate()">Activer le Profil</button>
+                  </div>
+                }
+
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                  @if (isPendingVerification()) {
+                    <button class="btn btn-info d-inline-flex align-items-center gap-1" (click)="verify()">
+                      <app-icon icon="check-circle"></app-icon> Vérifier l'identité déclarée (Passer L1)
+                    </button>
                   }
-                  @if(!isSuspended()) { <button class="btn btn-danger" (click)="suspend()">Suspendre</button> }
-                  <a routerLink="/profiles/pending" class="btn btn-outline-secondary">Retour</a>
+
+                  @if (isSuspended()) {
+                    <button class="btn btn-warning d-inline-flex align-items-center gap-1" (click)="reactivate()">
+                      <app-icon icon="refresh-cw"></app-icon> Réactiver le Profil
+                    </button>
+                  } @else if (isVerifiedStatus()) {
+                    <button
+                      class="btn btn-primary d-inline-flex align-items-center gap-1"
+                      [disabled]="(profile.verificationLevel ?? 0) < 2"
+                      (click)="activate()"
+                    >
+                      <app-icon icon="shield-check"></app-icon> Activer le profil
+                    </button>
+                  }
+
+                  @if (!isSuspended()) {
+                    <button class="btn btn-danger d-inline-flex align-items-center gap-1" (click)="suspend()">
+                      <app-icon icon="slash"></app-icon> Suspendre
+                    </button>
+                  }
+                  <a routerLink="/profiles" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
+                    <app-icon icon="arrow-left"></app-icon> Retour
+                  </a>
                 </div>
               </div>
             } @else if (activeTab() === 'documents') {
               <app-profile-documents-tab [profileId]="profile.id" [userId]="profile.userId" />
             } @else if (activeTab() === 'kyc') {
-              <app-profile-kyc-tab [userId]="profile.userId" [profileId]="profile.id" />
+              <app-profile-kyc-tab
+                [userId]="profile.userId"
+                [profileId]="profile.id"
+                [profileTypeId]="profile.profileTypeId"
+                (kycUpdated)="loadProfile(profile.id)"
+              />
             } @else if (activeTab() === 'services') {
               <app-profile-services-tab [profileId]="profile.id" [userId]="profile.userId" />
             } @else if (activeTab() === 'procedures') {
@@ -114,13 +172,6 @@
             }
           </div>
         </div>
-
-        @if(success) {
-          <div class="alert alert-success alert-dismissible" (click)="clearMessages()">{{success}}</div>
-        }
-        @if(error) {
-          <div class="alert alert-danger alert-dismissible" (click)="clearMessages()">{{error}}</div>
-        }
       </div>
     </div>
   } @else {

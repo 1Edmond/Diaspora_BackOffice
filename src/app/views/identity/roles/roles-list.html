@@ -45,9 +45,9 @@
                   <td>{{role.permissionCount}}</td>
                   <td>
                     <div class="d-flex gap-1">
-                      <a [routerLink]="['/identity/roles', role.id]" class="btn btn-soft-primary btn-sm"><app-icon icon="eye"></app-icon></a>
-                      <a [routerLink]="['/identity/roles', role.id, 'edit']" class="btn btn-soft-success btn-sm"><app-icon icon="pencil"></app-icon></a>
-                      <button class="btn btn-soft-danger btn-sm" (click)="onDelete(role)"><app-icon icon="trash"></app-icon></button>
+                      <a [routerLink]="['/identity/roles', role.id]" class="btn btn-soft-info btn-sm btn-icon"><app-icon icon="eye"></app-icon></a>
+                      <a [routerLink]="['/identity/roles', role.id, 'edit']" class="btn btn-soft-primary btn-sm btn-icon"><app-icon icon="pencil"></app-icon></a>
+                      <button class="btn btn-soft-danger btn-sm btn-icon" (click)="onDelete(role)"><app-icon icon="trash"></app-icon></button>
                     </div>
                   </td>
                 </tr>

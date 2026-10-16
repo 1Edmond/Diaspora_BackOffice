@@ -3,13 +3,13 @@
 
   @if (successMessage) {
   <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <i class="ri-checkbox-circle-line me-1 fs-16 align-middle"></i> {{ successMessage }}
+    <app-icon icon="circle-check" class="me-1 fs-16 align-middle"></app-icon> {{ successMessage }}
     <button type="button" class="btn-close" (click)="successMessage = ''"></button>
   </div>
   }
   @if (errorMessage) {
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <i class="ri-error-warning-line me-1 fs-16 align-middle"></i> {{ errorMessage }}
+    <app-icon icon="alert-triangle" class="me-1 fs-16 align-middle"></app-icon> {{ errorMessage }}
     <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
   </div>
   }
@@ -22,7 +22,7 @@
           <div class="d-flex align-items-center">
             <div class="avatar-sm me-2">
               <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-18">
-                <i class="ri-broadcast-line"></i>
+                <app-icon icon="broadcast"></app-icon>
               </span>
             </div>
             <div>
@@ -36,7 +36,7 @@
             <div class="mb-3">
               <label class="form-label fw-semibold text-dark fs-13">Titre de la Notification <span class="text-danger">*</span></label>
               <div class="input-group">
-                <span class="input-group-text bg-light"><i class="ri-notification-3-line"></i></span>
+                <span class="input-group-text bg-light"><app-icon icon="bell"></app-icon></span>
                 <input
                   type="text"
                   class="form-control"
@@ -98,7 +98,7 @@
 
             <div class="d-flex justify-content-between align-items-center pt-3 border-top">
               <div class="text-muted fs-12">
-                <i class="ri-shield-check-line text-success me-1"></i>Envoi instantané sécurisé par RabbitMQ
+                <app-icon icon="shield-check" class="text-success me-1"></app-icon>Envoi instantané sécurisé par RabbitMQ
               </div>
               <button
                 type="submit"
@@ -108,7 +108,7 @@
                 @if (sending) {
                 <span class="spinner-border spinner-border-sm me-1"></span> Diffusion en cours...
                 } @else {
-                <i class="ri-send-plane-fill me-1"></i> Diffuser la campagne
+                <app-icon icon="send" class="me-1"></app-icon> Diffuser la campagne
                 }
               </button>
             </div>
@@ -122,7 +122,7 @@
       <div class="card mb-3">
         <div class="card-header bg-transparent border-bottom py-3">
           <h5 class="card-title mb-0">
-            <i class="ri-smartphone-line me-1 text-primary"></i> Aperçu Mobile en Direct
+            <app-icon icon="device-mobile" class="me-1 text-primary"></app-icon> Aperçu Mobile en Direct
           </h5>
         </div>
         <div class="card-body d-flex justify-content-center p-3">
@@ -135,9 +135,9 @@
             <div class="d-flex justify-content-between align-items-center text-muted fs-11 mb-3 px-1 border-bottom pb-1">
               <span>09:41</span>
               <div class="d-flex gap-1 align-items-center">
-                <i class="ri-wifi-line"></i>
-                <i class="ri-signal-tower-line"></i>
-                <i class="ri-battery-charge-line"></i>
+                <app-icon icon="wifi"></app-icon>
+                <app-icon icon="antenna-bars-5"></app-icon>
+                <app-icon icon="battery-4"></app-icon>
               </div>
             </div>
 
@@ -146,7 +146,7 @@
               <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="avatar-xs">
                   <span class="avatar-title bg-primary text-white rounded-circle fs-12">
-                    <i class="ri-notification-3-fill"></i>
+                    <app-icon icon="bell"></app-icon>
                   </span>
                 </div>
                 <div>
@@ -164,8 +164,8 @@
               </div>
 
               <div class="mt-2 pt-2 border-top fs-10 text-muted d-flex justify-content-between align-items-center">
-                <span><i class="ri-user-follow-line me-1"></i>{{ targetRole }}</span>
-                <span><i class="ri-checkbox-circle-line text-success me-1"></i>Prêt</span>
+                <span><app-icon icon="user-check" class="me-1"></app-icon>{{ targetRole }}</span>
+                <span><app-icon icon="circle-check" class="text-success me-1"></app-icon>Prêt</span>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@
         <div class="card-body p-0">
           @if (recentCampaigns.length === 0) {
           <div class="text-center p-4 text-muted fs-13">
-            <i class="ri-history-line fs-24 d-block mb-1"></i>
+            <app-icon icon="history" class="fs-24 d-block mb-1"></app-icon>
             Aucune campagne diffusée durant cette session de travail.
           </div>
           } @else {
@@ -194,8 +194,8 @@
               </div>
               <p class="text-muted fs-12 mb-1 text-truncate">{{ camp.message }}</p>
               <div class="d-flex justify-content-between text-muted fs-11">
-                <span><i class="ri-user-shared-line me-1"></i>{{ camp.targetRole }}</span>
-                <span><i class="ri-time-line me-1"></i>{{ camp.sentAt | date:'HH:mm:ss' }}</span>
+                <span><app-icon icon="users" class="me-1"></app-icon>{{ camp.targetRole }}</span>
+                <span><app-icon icon="clock" class="me-1"></app-icon>{{ camp.sentAt | date:'HH:mm:ss' }}</span>
               </div>
             </div>
             }

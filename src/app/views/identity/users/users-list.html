@@ -8,14 +8,14 @@
         <div class="col-lg-4">
           <label class="form-label fs-12 fw-semibold text-muted text-uppercase">Recherche par email / nom</label>
           <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-search-line"></i></span>
+            <span class="input-group-text bg-light text-muted border-end-0"><app-icon icon="search"></app-icon></span>
             <input type="text" class="form-control border-start-0" placeholder="Rechercher par mot-clé..." [(ngModel)]="searchTerm" name="searchTerm" (keyup.enter)="onSearch()" />
           </div>
         </div>
         <div class="col-lg-3">
           <label class="form-label fs-12 fw-semibold text-muted text-uppercase">Statut du compte</label>
           <div class="input-group input-group-sm">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="ri-shield-user-line"></i></span>
+            <span class="input-group-text bg-light text-muted border-end-0"><app-icon icon="user-check"></app-icon></span>
             <select class="form-select form-select-sm border-start-0" [(ngModel)]="selectedStatus" name="selectedStatus" (change)="onStatusChange()">
               <option value="">Tous les statuts</option>
               <option value="Active">Actif uniquement</option>
@@ -36,10 +36,10 @@
         <div class="col text-end">
           <div class="d-inline-flex gap-2">
             <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm" (click)="onSearch()">
-              <i class="ri-filter-3-line"></i> Filtrer
+              <app-icon icon="filter"></app-icon> Filtrer
             </button>
             <a routerLink="/identity/users/new" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 shadow-sm">
-              <i class="ri-user-add-line"></i> Nouvel Utilisateur
+              <app-icon icon="user-plus"></app-icon> Nouvel Utilisateur
             </a>
           </div>
         </div>
@@ -80,7 +80,7 @@
               <td colspan="7" class="text-center p-5 text-muted">
                 <div class="avatar-md mx-auto mb-3">
                   <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
-                    <i class="ri-user-unfollow-line"></i>
+                    <app-icon icon="user-x"></app-icon>
                   </span>
                 </div>
                 <h6 class="text-dark">Aucun utilisateur trouvé</h6>
@@ -115,47 +115,47 @@
                 </td>
                 <td class="text-center">
                   @if (user.status === 'Active') {
-                  <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                  <span class="badge bg-soft-success text-success"><app-icon icon="circle-check" class="me-1"></app-icon>Actif</span>
                   } @else if (user.status === 'Inactive') {
-                  <span class="badge bg-soft-warning text-warning"><i class="ri-time-line me-1"></i>Inactif</span>
+                  <span class="badge bg-soft-warning text-warning"><app-icon icon="clock" class="me-1"></app-icon>Inactif</span>
                   } @else if (user.status === 'Suspended') {
-                  <span class="badge bg-soft-danger text-danger"><i class="ri-spam-line me-1"></i>Suspendu</span>
+                  <span class="badge bg-soft-danger text-danger"><app-icon icon="ban" class="me-1"></app-icon>Suspendu</span>
                   } @else if (user.status === 'Deleted') {
-                  <span class="badge bg-soft-dark text-dark"><i class="ri-delete-bin-line me-1"></i>Archivé</span>
+                  <span class="badge bg-soft-dark text-dark"><app-icon icon="trash" class="me-1"></app-icon>Archivé</span>
                   } @else {
                   <span class="badge bg-soft-secondary text-secondary">{{user.status}}</span>
                   }
                 </td>
                 <td class="text-center">
                   <span class="badge" [class]="'bg-soft-' + (user.kycLevel === 'Advanced' ? 'success text-success' : user.kycLevel === 'Intermediate' ? 'info text-info' : user.kycLevel === 'Basic' ? 'warning text-warning' : 'secondary text-secondary')">
-                    <i class="ri-shield-check-line me-1"></i>{{user.kycLevel || 'Non vérifié'}}
+                    <app-icon icon="shield-check" class="me-1"></app-icon>{{user.kycLevel || 'Non vérifié'}}
                   </span>
                 </td>
                 <td class="text-muted fs-12">{{user.createdAt | date:'dd/MM/yyyy'}}</td>
                 <td class="text-end pe-3">
                   <div class="d-inline-flex gap-1">
-                    <a [routerLink]="['/identity/users', user.id]" class="btn btn-xs btn-soft-primary" title="Fiche détaillée & Sécurité">
-                      <i class="ri-eye-line"></i>
+                    <a [routerLink]="['/identity/users', user.id]" class="btn btn-sm btn-icon btn-soft-info" title="Fiche détaillée & Sécurité">
+                      <app-icon icon="eye"></app-icon>
                     </a>
-                    <a [routerLink]="['/identity/users', user.id, 'edit']" class="btn btn-xs btn-soft-info" title="Modifier le profil">
-                      <i class="ri-pencil-line"></i>
+                    <a [routerLink]="['/identity/users', user.id, 'edit']" class="btn btn-sm btn-icon btn-soft-primary" title="Modifier le profil">
+                      <app-icon icon="pencil"></app-icon>
                     </a>
                     @if (user.status === 'Active') {
-                    <button class="btn btn-xs btn-soft-danger" title="Suspendre l'utilisateur" (click)="openSuspendModal(user)">
-                      <i class="ri-forbid-line"></i>
+                    <button class="btn btn-sm btn-icon btn-soft-danger" title="Suspendre l'utilisateur" (click)="openSuspendModal(user)">
+                      <app-icon icon="ban"></app-icon>
                     </button>
                     } @else if (user.status === 'Suspended' || user.status === 'Inactive') {
-                    <button class="btn btn-xs btn-soft-success" [title]="user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte'" (click)="onActivate(user)">
-                      <i class="ri-check-line"></i>
+                    <button class="btn btn-sm btn-icon btn-soft-success" [title]="user.status === 'Inactive' ? 'Activer le compte' : 'Réactiver le compte'" (click)="onActivate(user)">
+                      <app-icon icon="check"></app-icon>
                     </button>
                     }
                     @if (user.status !== 'Deleted') {
-                    <button class="btn btn-xs btn-soft-secondary" title="Supprimer (soft-delete)" (click)="onDelete(user)">
-                      <i class="ri-delete-bin-line"></i>
+                    <button class="btn btn-sm btn-icon btn-soft-secondary" title="Supprimer (soft-delete)" (click)="onDelete(user)">
+                      <app-icon icon="trash"></app-icon>
                     </button>
                     } @else {
-                    <button class="btn btn-xs btn-soft-warning" title="Restaurer le compte" (click)="onRestore(user)">
-                      <i class="ri-restart-line"></i>
+                    <button class="btn btn-sm btn-icon btn-soft-warning" title="Restaurer le compte" (click)="onRestore(user)">
+                      <app-icon icon="refresh"></app-icon>
                     </button>
                     }
                   </div>
@@ -173,10 +173,10 @@
         <span class="text-muted fs-12">Total : {{ totalCount }} utilisateurs (Page {{ page }} sur {{ totalPages }})</span>
         <div class="d-flex gap-1">
           <button class="btn btn-sm btn-outline-secondary" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
-            <i class="ri-arrow-left-s-line me-1"></i>Précédent
+            <app-icon icon="chevron-left" class="me-1"></app-icon>Précédent
           </button>
           <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="onPageChange(page + 1)">
-            Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+            Suivant<app-icon icon="chevron-right" class="ms-1"></app-icon>
           </button>
         </div>
       </div>
@@ -191,7 +191,7 @@
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title text-white d-flex align-items-center gap-2">
-            <i class="ri-forbid-line"></i> Suspendre l'utilisateur
+            <app-icon icon="ban"></app-icon> Suspendre l'utilisateur
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="closeSuspendModal()"></button>
         </div>
@@ -216,7 +216,7 @@
             <span class="spinner-border spinner-border-sm" role="status"></span>
             Suspension...
             } @else {
-            <i class="ri-check-line"></i> Confirmer la suspension
+            <app-icon icon="check"></app-icon> Confirmer la suspension
             }
           </button>
         </div>

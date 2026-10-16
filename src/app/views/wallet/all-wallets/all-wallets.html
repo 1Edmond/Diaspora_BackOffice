@@ -3,7 +3,7 @@
 
   @if (success) {
   <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-    <i class="ri-check-line fs-18 me-2"></i>
+    <app-icon icon="check" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ success }}</div>
     <button type="button" class="btn-close" (click)="clearAlerts()"></button>
   </div>
@@ -11,7 +11,7 @@
 
   @if (error) {
   <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-    <i class="ri-error-warning-line fs-18 me-2"></i>
+    <app-icon icon="alert-triangle" class="fs-18 me-2"></app-icon>
     <div class="flex-grow-1">{{ error }}</div>
     <button type="button" class="btn-close" (click)="clearAlerts()"></button>
   </div>
@@ -23,7 +23,7 @@
       <div class="d-flex align-items-center justify-content-between">
         <div>
           <h5 class="fs-16 mb-1 fw-semibold text-dark">
-            <i class="ri-bank-card-line text-primary me-2"></i>Trésorerie & Séquestre Consolidés
+            <app-icon icon="credit-card" class="text-primary me-2"></app-icon>Trésorerie & Séquestre Consolidés
           </h5>
           <p class="text-muted fs-13 mb-0">Revenus de commissions de la plateforme et fonds retenus sous séquestre par devise</p>
         </div>
@@ -42,7 +42,7 @@
               <div class="d-flex align-items-center gap-2">
                 <div class="avatar-sm flex-shrink-0">
                   <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-18">
-                    <i class="ri-money-dollar-circle-line"></i>
+                    <app-icon icon="coin"></app-icon>
                   </span>
                 </div>
                 <div>
@@ -57,7 +57,7 @@
                 <div class="d-flex align-items-center gap-1.5 mb-1">
                   <span class="avatar-xs flex-shrink-0" style="width: 20px; height: 20px;">
                     <span class="avatar-title bg-soft-success text-success rounded-circle fs-11">
-                      <i class="ri-wallet-3-line"></i>
+                      <app-icon icon="wallet"></app-icon>
                     </span>
                   </span>
                   <span class="text-muted fs-12">Commissions</span>
@@ -69,7 +69,7 @@
                 <div class="d-flex align-items-center gap-1.5 mb-1">
                   <span class="avatar-xs flex-shrink-0" style="width: 20px; height: 20px;">
                     <span class="avatar-title bg-soft-info text-info rounded-circle fs-11">
-                      <i class="ri-lock-2-line"></i>
+                      <app-icon icon="lock"></app-icon>
                     </span>
                   </span>
                   <span class="text-muted fs-12">Séquestre</span>
@@ -85,7 +85,7 @@
     } @else if (!loadingRevenue) {
       <div class="col-12">
         <div class="alert alert-light border text-center mb-0 py-3">
-          <i class="ri-information-line text-info fs-18 me-1 align-middle"></i>
+          <app-icon icon="info-circle" class="text-info fs-18 me-1 align-middle"></app-icon>
           Aucune donnée de trésorerie consolidée disponible pour le moment.
         </div>
       </div>
@@ -120,7 +120,7 @@
             <div class="col-sm-4 col-md-4">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0 text-muted">
-                  <i class="ri-search-line"></i>
+                  <app-icon icon="search"></app-icon>
                 </span>
                 <input
                   type="text"
@@ -187,9 +187,9 @@
                 </td>
                 <td class="text-center">
                   @if (w.isActive) {
-                  <span class="badge bg-soft-success text-success"><i class="ri-checkbox-circle-line me-1"></i>Actif</span>
+                  <span class="badge bg-soft-success text-success"><app-icon icon="circle-check" class="me-1"></app-icon>Actif</span>
                   } @else {
-                  <span class="badge bg-soft-secondary text-secondary"><i class="ri-close-circle-line me-1"></i>Inactif</span>
+                  <span class="badge bg-soft-secondary text-secondary"><app-icon icon="circle-x" class="me-1"></app-icon>Inactif</span>
                   }
                 </td>
                 <td class="text-muted fs-12">
@@ -198,11 +198,11 @@
                 <td class="text-end pe-3">
                   <button
                     type="button"
-                    class="btn btn-xs btn-soft-primary"
+                    class="btn btn-sm btn-icon btn-soft-primary"
                     (click)="openDepositModal(w, depositModal)"
                     title="Dépôt Administratif"
                   >
-                    <i class="ri-add-circle-line"></i>
+                    <app-icon icon="circle-plus"></app-icon>
                   </button>
                 </td>
               </tr>
@@ -211,7 +211,7 @@
                 <td colspan="7" class="text-center text-muted p-5">
                   <div class="avatar-md mx-auto mb-3">
                     <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
-                      <i class="ri-wallet-line"></i>
+                      <app-icon icon="wallet"></app-icon>
                     </span>
                   </div>
                   <h6 class="text-dark">Aucun portefeuille trouvé</h6>
@@ -237,7 +237,7 @@
           [disabled]="page <= 1"
           (click)="onPageChange(page - 1)"
         >
-          <i class="ri-arrow-left-s-line me-1"></i>Précédent
+          <app-icon icon="chevron-left" class="me-1"></app-icon>Précédent
         </button>
         <button
           type="button"
@@ -245,7 +245,7 @@
           [disabled]="page >= totalPages"
           (click)="onPageChange(page + 1)"
         >
-          Suivant<i class="ri-arrow-right-s-line ms-1"></i>
+          Suivant<app-icon icon="chevron-right" class="ms-1"></app-icon>
         </button>
       </div>
     </div>
@@ -257,7 +257,7 @@
 <ng-template #depositModal let-modal>
   <div class="modal-header bg-primary text-white">
     <h5 class="modal-title text-white d-flex align-items-center gap-2">
-      <i class="ri-add-circle-line"></i> Dépôt Administratif de Fonds
+      <app-icon icon="circle-plus"></app-icon> Dépôt Administratif de Fonds
     </h5>
     <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
   </div>
@@ -323,7 +323,7 @@
       <span class="spinner-border spinner-border-sm" role="status"></span>
       Crédit en cours...
       } @else {
-      <i class="ri-check-line"></i> Confirmer le Dépôt
+      <app-icon icon="check"></app-icon> Confirmer le Dépôt
       }
     </button>
   </div>

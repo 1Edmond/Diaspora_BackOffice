@@ -236,20 +236,14 @@ export const menuItems: MenuItemType[] = [
   {
     'icon': 'wallet',
     'slug': 'wallet',
-    'label': 'Wallet',
+    'label': 'Portefeuille',
     'isTitle': true,
     'children': [
       {
         'url': '/wallet/all',
         'slug': 'pages:wallet-all',
-        'label': 'All Wallets',
+        'label': 'Tous les Portefeuilles',
         'icon': 'layout-grid',
-      },
-      {
-        'url': '/wallet',
-        'slug': 'pages:wallet',
-        'label': 'Wallet',
-        'icon': 'wallet',
       },
       {
         'url': '/wallet/transactions',
@@ -260,7 +254,7 @@ export const menuItems: MenuItemType[] = [
       {
         'url': '/wallet/parameters',
         'slug': 'pages:wallet-parameters',
-        'label': 'Parameters',
+        'label': 'Paramètres',
         'icon': 'settings',
       },
     ],

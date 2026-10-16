@@ -3,6 +3,7 @@ import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
+import { Icon } from '@app/components/icon/icon'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
 import { MarketplaceService } from '@core/services/marketplace.service'
 import {
@@ -19,7 +20,7 @@ type ArbitrationMode = 'buyer_100' | 'seller_100' | 'split' | 'dismiss'
 @Component({
   selector: 'app-disputes',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageBreadcrumb, DatePipe, CurrencyPipe],
+  imports: [CommonModule, FormsModule, RouterModule, PageBreadcrumb, DatePipe, CurrencyPipe, Icon],
   templateUrl: './disputes.html',
   styles: [`
     .evidence-preview-img {

@@ -1,33 +1,277 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="My Profile" subTitle="Identity" />
-  <div class="row">
-    <div class="col-lg-8">
+  <app-page-breadcrumb title="Mon Compte & Sécurité" subTitle="Identité & Accès" />
+
+  <div class="row g-3">
+    <!-- Colonne gauche : Résumé du compte & Sécurité -->
+    <div class="col-xl-4 col-lg-5">
+      <div class="card mb-3">
+        <div class="card-body text-center">
+          <div
+            class="rounded-circle bg-soft-primary text-primary fw-bold d-inline-flex align-items-center justify-content-center mb-3 border border-primary-subtle"
+            style="width: 80px; height: 80px; font-size: 1.75rem;"
+          >
+            {{ initials }}
+          </div>
+          <h5 class="fw-bold mb-1">{{ displayName }}</h5>
+          <p class="text-muted fs-sm mb-2">{{ user?.email || 'admin@diaspora.com' }}</p>
+
+          <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+            @for (role of roles; track role) {
+              <span class="badge bg-soft-primary text-primary">
+                <app-icon icon="shield" class="me-1 align-middle"></app-icon>{{ role }}
+              </span>
+            }
+            <span class="badge bg-soft-success text-success">
+              <app-icon icon="check-circle" class="me-1 align-middle"></app-icon>{{ user?.status || 'Actif' }}
+            </span>
+          </div>
+
+          <div class="d-flex justify-content-center gap-2 pt-2 border-top">
+            <button type="button" class="btn btn-sm btn-outline-warning" (click)="lockSession()">
+              <app-icon icon="lock" class="me-1 align-middle"></app-icon>
+              Verrouiller la session
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="logout()">
+              <app-icon icon="log-out" class="me-1 align-middle"></app-icon>
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- État de sécurité & Habilitations -->
       <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h6 class="card-title mb-0 fw-bold">
+            <app-icon icon="shield-check" class="me-2 text-primary align-middle"></app-icon>
+            État de Sécurité & Accès
+          </h6>
+        </div>
         <div class="card-body">
-          @if(success) {
-          <div class="alert alert-success">{{success}}</div>
+          <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item px-0 d-flex align-items-center justify-content-between">
+              <span class="text-muted fs-sm">
+                <app-icon icon="mail-check" class="me-2 text-info align-middle"></app-icon>Email vérifié
+              </span>
+              @if (user?.emailVerified !== false) {
+                <span class="badge bg-soft-success text-success">Vérifié</span>
+              } @else {
+                <span class="badge bg-soft-warning text-warning">En attente</span>
+              }
+            </li>
+            <li class="list-group-item px-0 d-flex align-items-center justify-content-between">
+              <span class="text-muted fs-sm">
+                <app-icon icon="smartphone" class="me-2 text-primary align-middle"></app-icon>Double facteur (2FA)
+              </span>
+              @if (twoFactorEnabled) {
+                <span class="badge bg-soft-success text-success">Activé</span>
+              } @else {
+                <span class="badge bg-soft-secondary text-secondary">Désactivé</span>
+              }
+            </li>
+            <li class="list-group-item px-0 d-flex align-items-center justify-content-between">
+              <span class="text-muted fs-sm">
+                <app-icon icon="clock" class="me-2 text-warning align-middle"></app-icon>Dernière connexion
+              </span>
+              <span class="fw-medium fs-xs">
+                {{ (user?.lastLoginAt | date: 'dd/MM/yyyy HH:mm') || 'Session en cours' }}
+              </span>
+            </li>
+            <li class="list-group-item px-0 d-flex align-items-center justify-content-between">
+              <span class="text-muted fs-sm">
+                <app-icon icon="calendar" class="me-2 text-secondary align-middle"></app-icon>Création du compte
+              </span>
+              <span class="fw-medium fs-xs">
+                {{ (user?.createdAt | date: 'dd/MM/yyyy') || '—' }}
+              </span>
+            </li>
+          </ul>
+
+          <div>
+            <h6 class="fs-xs text-uppercase text-muted fw-bold mb-2">
+              <app-icon icon="key" class="me-1 align-middle"></app-icon>
+              Permissions actives ({{ permissions.length }})
+            </h6>
+            @if (permissions.length === 0) {
+              <p class="text-muted fs-xs mb-0">Accès complet administrateur selon vos rôles.</p>
+            } @else {
+              <div class="d-flex flex-wrap gap-1">
+                @for (perm of permissions; track perm) {
+                  <span class="badge bg-soft-info text-info" style="font-size: 0.7rem;">{{ perm }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : Informations personnelles & Mot de passe -->
+    <div class="col-xl-8 col-lg-7">
+      <!-- Informations personnelles -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="card-title mb-0 fw-bold">
+            <app-icon icon="user-cog" class="me-2 text-primary align-middle"></app-icon>
+            Informations personnelles
+          </h6>
+        </div>
+        <div class="card-body">
+          @if (success) {
+            <div class="alert alert-success d-flex align-items-center gap-2 py-2">
+              <app-icon icon="check-circle" class="flex-shrink-0"></app-icon>
+              <span>{{ success }}</span>
+            </div>
           }
-          @if(error) {
-          <div class="alert alert-danger">{{error}}</div>
+          @if (error) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2">
+              <app-icon icon="alert-circle" class="flex-shrink-0"></app-icon>
+              <span>{{ error }}</span>
+            </div>
           }
+
           <form #profileForm="ngForm" (ngSubmit)="onSubmit(profileForm)">
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="firstName" name="firstName" [(ngModel)]="formData.firstName" />
+                <label for="firstName" class="form-label fw-medium">Prénom</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Votre prénom"
+                  [(ngModel)]="formData.firstName"
+                />
               </div>
               <div class="col-md-6">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="lastName" name="lastName" [(ngModel)]="formData.lastName" />
+                <label for="lastName" class="form-label fw-medium">Nom</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Votre nom"
+                  [(ngModel)]="formData.lastName"
+                />
               </div>
               <div class="col-md-6">
-                <label for="phoneNumber" class="form-label">Phone Number</label>
-                <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" [(ngModel)]="formData.phoneNumber" />
+                <label for="emailReadonly" class="form-label fw-medium">Adresse e-mail</label>
+                <input
+                  type="email"
+                  class="form-control bg-light-subtle"
+                  id="emailReadonly"
+                  [value]="user?.email || ''"
+                  readonly
+                  disabled
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="phoneNumber" class="form-label fw-medium">Numéro de téléphone</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  placeholder="+33 6 00 00 00 00"
+                  [(ngModel)]="formData.phoneNumber"
+                />
               </div>
             </div>
+
             <div class="d-flex gap-2 mt-4">
-              <button type="submit" class="btn btn-primary" [disabled]="loading">Update Profile</button>
-              <a routerLink="/identity/users/profile" class="btn btn-light">Cancel</a>
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                } @else {
+                  <app-icon icon="save" class="me-1 align-middle"></app-icon>
+                }
+                Enregistrer les modifications
+              </button>
+              <a routerLink="/identity/users" class="btn btn-light">
+                Retour aux utilisateurs
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Changement de mot de passe -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="card-title mb-0 fw-bold">
+            <app-icon icon="key-round" class="me-2 text-warning align-middle"></app-icon>
+            Changer le mot de passe
+          </h6>
+        </div>
+        <div class="card-body">
+          @if (pwdSuccess) {
+            <div class="alert alert-success d-flex align-items-center gap-2 py-2">
+              <app-icon icon="check-circle" class="flex-shrink-0"></app-icon>
+              <span>{{ pwdSuccess }}</span>
+            </div>
+          }
+          @if (pwdError) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2">
+              <app-icon icon="alert-circle" class="flex-shrink-0"></app-icon>
+              <span>{{ pwdError }}</span>
+            </div>
+          }
+
+          <form #pwdForm="ngForm" (ngSubmit)="onChangePassword(pwdForm)">
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label for="currentPassword" class="form-label fw-medium">
+                  Mot de passe actuel <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="currentPassword"
+                  name="currentPassword"
+                  placeholder="••••••••"
+                  required
+                  [(ngModel)]="passwordForm.currentPassword"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="newPassword" class="form-label fw-medium">
+                  Nouveau mot de passe <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="newPassword"
+                  name="newPassword"
+                  placeholder="Min. 8 caractères"
+                  required
+                  [(ngModel)]="passwordForm.newPassword"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="confirmPassword" class="form-label fw-medium">
+                  Confirmer le nouveau mot de passe <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirmez le mot de passe"
+                  required
+                  [(ngModel)]="passwordForm.confirmPassword"
+                />
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" class="btn btn-warning" [disabled]="pwdLoading">
+                @if (pwdLoading) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                } @else {
+                  <app-icon icon="shield-alert" class="me-1 align-middle"></app-icon>
+                }
+                Mettre à jour le mot de passe
+              </button>
             </div>
           </form>
         </div>
