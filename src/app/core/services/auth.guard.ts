@@ -13,6 +13,12 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: any): boolean | UrlTree {
     if (this.auth.isAuthenticated()) {
+      if (typeof window !== 'undefined' && sessionStorage.getItem('diaspora_is_locked') === 'true') {
+        const isLockScreen = route?.routeConfig?.path === 'lock-screen' || route?.url?.[0]?.path === 'lock-screen';
+        if (!isLockScreen) {
+          return this.router.createUrlTree(['/auth/lock-screen']);
+        }
+      }
       return true
     } else {
       return this.router.createUrlTree(['/auth/sign-in'], {
