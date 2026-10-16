@@ -83,7 +83,9 @@ export class Ecommerce implements OnInit {
         this.availableCurrencies = (rev.currencies || []).map((c) => c.currency);
         if (this.availableCurrencies.length > 0) {
           if (!this.availableCurrencies.includes(this.selectedCurrency)) {
-            this.selectedCurrency = this.availableCurrencies[0];
+            this.selectedCurrency = this.availableCurrencies.find((c) => c === 'EUR')
+              ?? this.availableCurrencies.find((c) => c === 'USD')
+              ?? this.availableCurrencies[0];
           }
           this.updateCurrencyMetrics();
         }

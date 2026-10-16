@@ -85,6 +85,16 @@ export const routes: Routes = [
         data: { title: 'Country KYC Requirements' },
       },
       {
+        path: 'kyc/requirement',
+        redirectTo: 'kyc/requirements',
+        pathMatch: 'full',
+      },
+      {
+        path: 'kyc-requirements',
+        redirectTo: 'kyc/requirements',
+        pathMatch: 'full',
+      },
+      {
         path: 'kyc/:id',
         loadComponent: () => import('./views/kyc/kyc-detail/kyc-detail').then((m) => m.KycDetail),
         data: { title: 'KYC Details' },
