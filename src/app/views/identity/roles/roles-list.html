@@ -1,14 +1,14 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Roles" subTitle="Identity" />
+  <app-page-breadcrumb title="Rôles & Permissions" subTitle="Identity" />
   <div class="row">
     <div class="col-12">
       <div class="d-flex align-items-sm-center flex-sm-row flex-column my-3">
         <div class="flex-grow-1">
-          <h4 class="fs-lg mb-1">Manage Roles</h4>
-          <p class="text-muted mb-0">Manage roles for smoother operations and secure access.</p>
+          <h4 class="fs-lg mb-1">Gestion des Rôles</h4>
+          <p class="text-muted mb-0">Configurez les rôles et leurs permissions d'accès au système.</p>
         </div>
         <div class="text-end">
-          <a routerLink="/identity/roles/new" class="btn btn-success"><app-icon icon="plus" class="me-1"></app-icon> Add New Role</a>
+          <a routerLink="/identity/roles/new" class="btn btn-success"><app-icon icon="plus" class="me-1"></app-icon> Nouveau Rôle</a>
         </div>
       </div>
     </div>
@@ -19,14 +19,13 @@
       <div class="card">
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead>
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
                 <tr>
-                  <th>Role</th>
+                  <th>Rôle</th>
                   <th>Description</th>
-                  <th>Users</th>
-                  <th>Permissions</th>
-                  <th>Actions</th>
+                  <th>Permissions Attribuées</th>
+                  <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -37,17 +36,33 @@
                       <div class="avatar flex-shrink-0">
                         <div class="avatar-title rounded-circle bg-soft-primary text-primary">{{role.name.charAt(0).toUpperCase()}}</div>
                       </div>
-                      <div class="fw-semibold">{{role.name}}</div>
+                      <div>
+                        <div class="fw-semibold">{{role.name}}</div>
+                        @if (isAdminRole(role.name)) {
+                          <span class="badge bg-soft-success text-success fs-xxs">Super-Privilèges Système</span>
+                        }
+                      </div>
                     </div>
                   </td>
                   <td>{{role.description || '—'}}</td>
-                  <td><span class="badge bg-soft-primary text-primary">{{role.permissionCount}}</span></td>
-                  <td>{{role.permissionCount}}</td>
                   <td>
-                    <div class="d-flex gap-1">
-                      <a [routerLink]="['/identity/roles', role.id]" class="btn btn-soft-info btn-sm btn-icon"><app-icon icon="eye"></app-icon></a>
-                      <a [routerLink]="['/identity/roles', role.id, 'edit']" class="btn btn-soft-primary btn-sm btn-icon"><app-icon icon="pencil"></app-icon></a>
-                      <button class="btn btn-soft-danger btn-sm btn-icon" (click)="onDelete(role)"><app-icon icon="trash"></app-icon></button>
+                    @if (isAdminRole(role.name)) {
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-soft-success text-success px-2.5 py-1">
+                          <app-icon icon="shield-check" class="me-1"></app-icon>Toutes les permissions système par défaut ({{ getAllPermissionKeys().length || role.permissionCount }})
+                        </span>
+                      </div>
+                    } @else {
+                      <span class="badge bg-soft-primary text-primary px-2.5 py-1">{{role.permissionCount}} permission(s)</span>
+                    }
+                  </td>
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-1">
+                      <button class="btn btn-soft-info btn-sm" (click)="openPermissionsModal(role, permissionsModal)" title="Gérer les permissions">
+                        <app-icon icon="key" class="me-1"></app-icon>Permissions
+                      </button>
+                      <a [routerLink]="['/identity/roles', role.id]" class="btn btn-soft-primary btn-sm btn-icon" title="Modifier le rôle"><app-icon icon="pencil"></app-icon></a>
+                      <button class="btn btn-soft-danger btn-sm btn-icon" (click)="onDelete(role)" [disabled]="isAdminRole(role.name)" title="Supprimer le rôle"><app-icon icon="trash-2"></app-icon></button>
                     </div>
                   </td>
                 </tr>
@@ -59,4 +74,77 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal de gestion des permissions d'un rôle -->
+  <ng-template #permissionsModal let-modal>
+    <div class="modal-header">
+      <div>
+        <h5 class="modal-title mb-0 d-flex align-items-center gap-2">
+          <app-icon icon="shield" class="text-primary"></app-icon>
+          Permissions du rôle : {{ selectedRole?.name }}
+        </h5>
+        @if (selectedRole && isAdminRole(selectedRole.name)) {
+          <small class="text-success fw-medium">Ce rôle Administrateur dispose de toutes les permissions système par défaut.</small>
+        }
+      </div>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      @if (loadingRolePermissions) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2 mb-0">Chargement des permissions...</p>
+        </div>
+      } @else if (selectedRole) {
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <span class="badge bg-soft-primary text-primary fs-12">
+            {{ selectedKeys.size }} / {{ getAllPermissionKeys().length }} permissions sélectionnées
+          </span>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-xs btn-outline-primary" (click)="selectAllInModal()">Tout cocher</button>
+            <button type="button" class="btn btn-xs btn-outline-secondary" (click)="deselectAllInModal()">Tout décocher</button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          @for (service of availableServices; track service.serviceName) {
+            <div class="col-md-6">
+              <div class="card border shadow-none mb-0 h-100">
+                <div class="card-header bg-light py-2">
+                  <h6 class="mb-0 fw-bold text-primary">{{ service.serviceName }}</h6>
+                </div>
+                <div class="card-body py-2 px-3">
+                  @for (resource of service.resources; track resource.resourceKey) {
+                    <div class="mb-2">
+                      <div class="text-muted text-uppercase fs-11 fw-semibold mb-1">{{ resource.resourceName }}</div>
+                      @for (perm of resource.permissions; track perm.permissionKey) {
+                        <label class="form-check d-flex align-items-center gap-2 mb-1">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            [checked]="selectedKeys.has(perm.permissionKey)"
+                            (change)="togglePermission(perm.permissionKey)"
+                          />
+                          <span class="form-check-label fs-13">{{ perm.permission }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="modal.dismiss()">Annuler</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingPermissions || loadingRolePermissions" (click)="savePermissions()">
+        @if (savingPermissions) {
+          <span class="spinner-border spinner-border-sm me-1"></span>
+        }
+        Enregistrer les permissions
+      </button>
+    </div>
+  </ng-template>
 </div>

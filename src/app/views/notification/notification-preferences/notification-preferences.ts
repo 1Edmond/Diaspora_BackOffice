@@ -1,23 +1,29 @@
-import { Component, OnInit, signal } from '@angular/core'
-import { FormsModule } from '@angular/forms'
-import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
-import { Icon } from '@app/components/icon/icon'
-import { NotificationService } from '@core/services/notification.service'
-import { NotificationRuleDto, NotificationChannel, NotificationChannelLabels, NotificationChannelIcons } from '@core/models/notification/notification.model'
-import { CommonModule } from '@angular/common'
+import { Component, OnInit, computed, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb';
+import { Icon } from '@app/components/icon/icon';
+import { NotificationService } from '@core/services/notification.service';
+import {
+  NotificationRuleDto,
+  NotificationChannel,
+  NotificationChannelLabels,
+  NotificationChannelIcons,
+} from '@core/models/notification/notification.model';
+import { CommonModule } from '@angular/common';
+import { ToastService } from '@core/services/toast.service';
 
 export interface EventMetadata {
-  eventType: string
-  label: string
-  category: string
-  defaultMessage: string
-  supportedPlaceholders: string[]
+  eventType: string;
+  label: string;
+  category: string;
+  defaultMessage: string;
+  supportedPlaceholders: string[];
 }
 
 export interface RuleWithChannels extends NotificationRuleDto {
-  channelFlags: Partial<Record<NotificationChannel, boolean>>
-  metadata?: EventMetadata
-  customTemplate?: string
+  channelFlags: Partial<Record<NotificationChannel, boolean>>;
+  metadata?: EventMetadata;
+  customTemplate?: string;
 }
 
 @Component({
@@ -25,26 +31,42 @@ export interface RuleWithChannels extends NotificationRuleDto {
   standalone: true,
   imports: [CommonModule, PageBreadcrumb, FormsModule, Icon],
   templateUrl: './notification-preferences.html',
-  styles: ``,
+  styles: [
+    `
+      .category-pill {
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .template-preview-box {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+      }
+    `,
+  ],
 })
 export class NotificationPreferences implements OnInit {
   readonly allChannels: NotificationChannel[] = [
+    NotificationChannel.InApp,
+    NotificationChannel.Push,
     NotificationChannel.Email,
     NotificationChannel.Sms,
     NotificationChannel.Whatsapp,
     NotificationChannel.Telegram,
-    NotificationChannel.Push,
-    NotificationChannel.InApp
-  ]
+  ];
 
-  rules = signal<RuleWithChannels[]>([])
-  loading = signal(false)
-  saving = signal<string | null>(null)
-  error = signal<string | null>(null)
-  successMessage = signal<string | null>(null)
+  rules = signal<RuleWithChannels[]>([]);
+  loading = signal(false);
+  saving = signal<string | null>(null);
+  error = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
 
-  readonly channelLabels = NotificationChannelLabels
-  readonly channelIcons = NotificationChannelIcons
+  // Filters & Search
+  searchTerm = signal('');
+  selectedCategory = signal<string>('all');
+  statusFilter = signal<'all' | 'active' | 'inactive'>('all');
+
+  readonly channelLabels = NotificationChannelLabels;
+  readonly channelIcons = NotificationChannelIcons;
 
   // Catalogue des événements métier système enrichi
   readonly systemCatalog: EventMetadata[] = [
@@ -85,16 +107,16 @@ export class NotificationPreferences implements OnInit {
     },
     {
       eventType: 'DisputeOpenedIntegrationEvent',
-      label: 'Ouverture d\'un Litige Marketplace',
-      category: 'Marketplace Litiges',
-      defaultMessage: 'Un litige a été ouvert pour la commande {{serviceTitle}}. Statut : En cours d\'arbitrage.',
+      label: "Ouverture d'un Litige Marketplace",
+      category: 'Marketplace & Colis',
+      defaultMessage: "Un litige a été ouvert pour la commande {{serviceTitle}}. Statut : En cours d'arbitrage.",
       supportedPlaceholders: ['{{serviceTitle}}', '{{reason}}', '{{disputeId}}'],
     },
     {
       eventType: 'JobApplicationAcceptedIntegrationEvent',
       label: 'Candidature Freelance Acceptée',
       category: 'Freelance',
-      defaultMessage: 'Votre candidature pour la mission {{jobTitle}} a été acceptée par l\'employeur !',
+      defaultMessage: "Votre candidature pour la mission {{jobTitle}} a été acceptée par l'employeur !",
       supportedPlaceholders: ['{{jobTitle}}', '{{employerName}}'],
     },
     {
@@ -104,37 +126,79 @@ export class NotificationPreferences implements OnInit {
       defaultMessage: 'Une nouvelle demande de service ou transport a été initiée pour {{serviceTitle}}.',
       supportedPlaceholders: ['{{serviceTitle}}', '{{requesterName}}'],
     },
-  ]
+  ];
+
+  // Categories list
+  categories = computed(() => {
+    const set = new Set<string>();
+    this.rules().forEach((r) => {
+      set.add(r.metadata?.category || 'Système');
+    });
+    return Array.from(set).sort();
+  });
+
+  // Filtered rules computed
+  filteredRules = computed(() => {
+    let list = this.rules();
+    const cat = this.selectedCategory();
+    const st = this.statusFilter();
+    const term = this.searchTerm().trim().toLowerCase();
+
+    if (cat !== 'all') {
+      list = list.filter((r) => (r.metadata?.category || 'Système') === cat);
+    }
+
+    if (st === 'active') {
+      list = list.filter((r) => r.isActive);
+    } else if (st === 'inactive') {
+      list = list.filter((r) => !r.isActive);
+    }
+
+    if (term) {
+      list = list.filter(
+        (r) =>
+          r.eventType.toLowerCase().includes(term) ||
+          this.getEventTypeLabel(r).toLowerCase().includes(term) ||
+          (r.customTemplate && r.customTemplate.toLowerCase().includes(term)) ||
+          (r.metadata?.category && r.metadata.category.toLowerCase().includes(term))
+      );
+    }
+
+    return list;
+  });
+
+  // Stats
+  activeRulesCount = computed(() => this.rules().filter((r) => r.isActive).length);
 
   // Édition de template via modal
-  selectedRuleForEdit: RuleWithChannels | null = null
-  editCustomText = ''
-  showEditModal = false
+  selectedRuleForEdit: RuleWithChannels | null = null;
+  editCustomText = '';
+  showEditModal = false;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
-    this.loadRules()
+    this.loadRules();
   }
 
   loadRules() {
-    this.loading.set(true)
-    this.error.set(null)
+    this.loading.set(true);
+    this.error.set(null);
     this.notificationService.getRules(1, 100).subscribe({
       next: (res) => {
-        const rawItems = res.items || []
-        
-        // Assurer que tous les événements du catalogue système existent dans la liste
-        const mappedList: RuleWithChannels[] = []
-        const seenEvents = new Set<string>()
+        const rawItems = res.items || [];
+        const mappedList: RuleWithChannels[] = [];
+        const seenEvents = new Set<string>();
 
         for (const raw of rawItems) {
-          const rule = this.mapRule(raw)
-          seenEvents.add(rule.eventType)
-          mappedList.push(rule)
+          const rule = this.mapRule(raw);
+          seenEvents.add(rule.eventType);
+          mappedList.push(rule);
         }
 
-        // Compléter avec les templates du catalogue non encore enregistrés
         for (const meta of this.systemCatalog) {
           if (!seenEvents.has(meta.eventType)) {
             const channelFlags: Record<NotificationChannel, boolean> = {
@@ -144,7 +208,7 @@ export class NotificationPreferences implements OnInit {
               [NotificationChannel.Telegram]: false,
               [NotificationChannel.Push]: true,
               [NotificationChannel.InApp]: true,
-            }
+            };
             const rule: RuleWithChannels = {
               eventType: meta.eventType,
               channels: NotificationChannel.InApp | NotificationChannel.Push,
@@ -152,126 +216,166 @@ export class NotificationPreferences implements OnInit {
               channelNames: ['InApp', 'Push'],
               channelFlags,
               metadata: meta,
-              customTemplate: meta.defaultMessage
-            }
-            mappedList.push(rule)
+              customTemplate: meta.defaultMessage,
+            };
+            mappedList.push(rule);
           }
         }
 
-        this.rules.set(mappedList)
-        this.loading.set(false)
+        this.rules.set(mappedList);
+        this.loading.set(false);
       },
       error: (err) => {
-        this.loading.set(false)
-        this.error.set(err.message || 'Erreur lors du chargement des règles de notification')
-      }
-    })
+        this.loading.set(false);
+        this.error.set(err.message || 'Erreur lors du chargement des règles de notification');
+      },
+    });
   }
 
   private mapRule(rule: any): RuleWithChannels {
-    const eventType = rule.eventType ?? rule.EventType
-    const channels = rule.channels ?? rule.Channels ?? 0
-    const isActive = rule.isActive ?? rule.IsActive ?? true
-    const channelNames = rule.channelNames ?? rule.ChannelNames ?? []
+    const eventType = rule.eventType ?? rule.EventType;
+    const channels = rule.channels ?? rule.Channels ?? 0;
+    const isActive = rule.isActive ?? rule.IsActive ?? true;
+    const channelNames = rule.channelNames ?? rule.ChannelNames ?? [];
 
     const channelFlags: Record<NotificationChannel, boolean> = {
       [NotificationChannel.Email]: (channels & NotificationChannel.Email) === NotificationChannel.Email,
       [NotificationChannel.Sms]: (channels & NotificationChannel.Sms) === NotificationChannel.Sms,
-      [NotificationChannel.Whatsapp]: (channels & NotificationChannel.Whatsapp) === NotificationChannel.Whatsapp,
-      [NotificationChannel.Telegram]: (channels & NotificationChannel.Telegram) === NotificationChannel.Telegram,
+      [NotificationChannel.Whatsapp]:
+        (channels & NotificationChannel.Whatsapp) === NotificationChannel.Whatsapp,
+      [NotificationChannel.Telegram]:
+        (channels & NotificationChannel.Telegram) === NotificationChannel.Telegram,
       [NotificationChannel.Push]: (channels & NotificationChannel.Push) === NotificationChannel.Push,
       [NotificationChannel.InApp]: (channels & NotificationChannel.InApp) === NotificationChannel.InApp,
-    }
+    };
 
-    const metadata = this.systemCatalog.find(m => m.eventType === eventType)
+    const metadata = this.systemCatalog.find((m) => m.eventType === eventType);
 
-    return { 
-      eventType, 
-      channels, 
-      isActive, 
-      channelNames, 
+    return {
+      eventType,
+      channels,
+      isActive,
+      channelNames,
       channelFlags,
       metadata,
-      customTemplate: metadata?.defaultMessage || ''
-    }
+      customTemplate: metadata?.defaultMessage || '',
+    };
   }
 
   getChannelKeys(rule: RuleWithChannels): NotificationChannel[] {
-    return this.allChannels
-  }
-
-  toggleChannel(rule: RuleWithChannels, channel: NotificationChannel) {
-    rule.channelFlags[channel] = !rule.channelFlags[channel]
-    rule.channels = this.computeChannels(rule.channelFlags)
-  }
-
-  private computeChannels(flags: Partial<Record<NotificationChannel, boolean>>): number {
-    let value = 0
-    for (const [ch, enabled] of Object.entries(flags)) {
-      if (enabled) value |= Number(ch)
-    }
-    return value
-  }
-
-  async saveRule(rule: RuleWithChannels) {
-    this.saving.set(rule.eventType)
-    try {
-      await this.notificationService.upsertRule(rule.eventType, rule.channels, rule.isActive).toPromise()
-      this.showSuccess('Règle sauvegardée avec succès.')
-    } catch (e: any) {
-      console.error('Failed to save rule', e)
-      this.error.set(e?.error?.error || 'Erreur lors de la sauvegarde de la règle')
-    } finally {
-      this.saving.set(null)
-    }
-  }
-
-  onIsActiveChange(rule: RuleWithChannels) {
-    this.saveRule(rule)
-  }
-
-  // --- Gestion du Template & Modal ---
-  openTemplateEdit(rule: RuleWithChannels) {
-    this.selectedRuleForEdit = rule
-    this.editCustomText = rule.customTemplate || rule.metadata?.defaultMessage || ''
-    this.showEditModal = true
-  }
-
-  closeTemplateEdit() {
-    this.showEditModal = false
-    this.selectedRuleForEdit = null
-  }
-
-  insertPlaceholder(ph: string) {
-    this.editCustomText = (this.editCustomText ? this.editCustomText + ' ' : '') + ph
-  }
-
-  async saveTemplateModal() {
-    if (!this.selectedRuleForEdit) return
-    const rule = this.selectedRuleForEdit
-    rule.customTemplate = this.editCustomText
-    this.saving.set(rule.eventType)
-    try {
-      await this.notificationService.upsertRule(rule.eventType, rule.channels, rule.isActive).toPromise()
-      this.showSuccess('Modèle et canaux mis à jour avec succès.')
-      this.closeTemplateEdit()
-    } catch (e: any) {
-      this.error.set(e?.error?.error || 'Erreur lors de la sauvegarde du modèle.')
-    } finally {
-      this.saving.set(null)
-    }
+    return this.allChannels;
   }
 
   getEventTypeLabel(rule: RuleWithChannels): string {
-    if (rule.metadata?.label) return rule.metadata.label
-    return rule.eventType
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/Event$|Integration$|Created$/i, '')
-      .trim()
+    return rule.metadata?.label || rule.eventType;
   }
 
-  private showSuccess(msg: string) {
-    this.successMessage.set(msg)
-    setTimeout(() => this.successMessage.set(null), 4000)
+  toggleChannel(rule: RuleWithChannels, channel: NotificationChannel) {
+    rule.channelFlags[channel] = !rule.channelFlags[channel];
+    let mask = 0;
+    for (const ch of this.allChannels) {
+      if (rule.channelFlags[ch]) {
+        mask |= ch;
+      }
+    }
+    rule.channels = mask;
+  }
+
+  onIsActiveChange(rule: RuleWithChannels) {
+    this.saveRule(rule);
+  }
+
+  saveRule(rule: RuleWithChannels) {
+    this.saving.set(rule.eventType);
+    this.notificationService
+      .upsertRule(rule.eventType, rule.channels, rule.isActive)
+      .subscribe({
+        next: () => {
+          this.saving.set(null);
+          this.toastService.show(
+            `Préférences mises à jour pour ${this.getEventTypeLabel(rule)}`,
+            'success'
+          );
+        },
+        error: (err) => {
+          this.saving.set(null);
+          this.toastService.show(
+            err.error?.error || err.error?.message || "Erreur lors de l'enregistrement",
+            'danger'
+          );
+        },
+      });
+  }
+
+  openTemplateEdit(rule: RuleWithChannels) {
+    this.selectedRuleForEdit = {
+      ...rule,
+      channelFlags: { ...rule.channelFlags },
+    };
+    this.editCustomText = rule.customTemplate || rule.metadata?.defaultMessage || '';
+    this.showEditModal = true;
+  }
+
+  closeTemplateEdit() {
+    this.showEditModal = false;
+    this.selectedRuleForEdit = null;
+    this.editCustomText = '';
+  }
+
+  insertPlaceholder(placeholder: string) {
+    this.editCustomText += ` ${placeholder}`;
+  }
+
+  getLivePreview(): string {
+    if (!this.editCustomText) return '';
+    return this.editCustomText
+      .replace(/{{userName}}/g, 'Mamadou Diallo')
+      .replace(/{{countryName}}/g, 'Sénégal')
+      .replace(/{{email}}/g, 'mamadou.diallo@example.com')
+      .replace(/{{documentTypeName}}/g, 'Passeport biométrique')
+      .replace(/{{rejectionReason}}/g, 'Document expiré')
+      .replace(/{{serviceTitle}}/g, 'Transport Colis Paris -> Dakar')
+      .replace(/{{amount}}/g, '25 000')
+      .replace(/{{currency}}/g, 'XOF')
+      .replace(/{{buyerName}}/g, 'Fatou Ndiaye')
+      .replace(/{{requesterName}}/g, 'Amadou Koné')
+      .replace(/{{jobTitle}}/g, 'Développeur Angular')
+      .replace(/{{employerName}}/g, 'Diaspora Digital');
+  }
+
+  saveTemplateModal() {
+    if (!this.selectedRuleForEdit) return;
+
+    const rule = this.selectedRuleForEdit;
+    this.saving.set(rule.eventType);
+
+    this.notificationService
+      .upsertRule(rule.eventType, rule.channels, rule.isActive)
+      .subscribe({
+        next: () => {
+          this.saving.set(null);
+          const currentList = this.rules();
+          const targetIndex = currentList.findIndex((r) => r.eventType === rule.eventType);
+          if (targetIndex >= 0) {
+            currentList[targetIndex].channels = rule.channels;
+            currentList[targetIndex].channelFlags = { ...rule.channelFlags };
+            currentList[targetIndex].isActive = rule.isActive;
+            currentList[targetIndex].customTemplate = this.editCustomText;
+            this.rules.set([...currentList]);
+          }
+          this.toastService.show(
+            `Modèle & canaux enregistrés pour "${this.getEventTypeLabel(rule)}"`,
+            'success'
+          );
+          this.closeTemplateEdit();
+        },
+        error: (err) => {
+          this.saving.set(null);
+          this.toastService.show(
+            err.error?.error || err.error?.message || "Erreur lors de l'enregistrement",
+            'danger'
+          );
+        },
+      });
   }
 }

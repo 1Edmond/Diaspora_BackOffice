@@ -83,10 +83,12 @@ export class JobContractsComponent implements OnInit {
         return 'bg-soft-success text-success';
       case JobApplicationStatus.Rejected:
         return 'bg-soft-danger text-danger';
-      case JobApplicationStatus.Cancelled:
+      case JobApplicationStatus.Withdrawn:
         return 'bg-soft-secondary text-secondary';
       case JobApplicationStatus.Completed:
         return 'bg-soft-info text-info';
+      case JobApplicationStatus.NoShow:
+        return 'bg-soft-danger text-danger';
       default:
         return 'bg-soft-secondary text-secondary';
     }
@@ -100,10 +102,12 @@ export class JobContractsComponent implements OnInit {
         return 'Acceptée';
       case JobApplicationStatus.Rejected:
         return 'Rejetée';
-      case JobApplicationStatus.Cancelled:
-        return 'Annulée';
+      case JobApplicationStatus.Withdrawn:
+        return 'Retirée';
       case JobApplicationStatus.Completed:
         return 'Terminée';
+      case JobApplicationStatus.NoShow:
+        return 'Absent / No-Show';
       default:
         return 'Inconnu';
     }
@@ -117,9 +121,7 @@ export class JobContractsComponent implements OnInit {
         return 'bg-soft-primary text-primary';
       case CheckInStatus.CheckedOut:
         return 'bg-soft-info text-info';
-      case CheckInStatus.Verified:
-        return 'bg-soft-success text-success';
-      case CheckInStatus.Disputed:
+      case CheckInStatus.NoShow:
         return 'bg-soft-danger text-danger';
       default:
         return 'bg-soft-secondary text-secondary';
@@ -134,10 +136,8 @@ export class JobContractsComponent implements OnInit {
         return 'Pointage Arrivée';
       case CheckInStatus.CheckedOut:
         return 'Pointage Départ';
-      case CheckInStatus.Verified:
-        return 'Vérifié';
-      case CheckInStatus.Disputed:
-        return 'Contesté';
+      case CheckInStatus.NoShow:
+        return 'Absent / No-Show';
       default:
         return 'Inconnu';
     }

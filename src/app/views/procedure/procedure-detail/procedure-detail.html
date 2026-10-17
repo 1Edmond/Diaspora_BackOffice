@@ -81,7 +81,12 @@
 
       <div class="col-lg-4">
         <div class="card mb-3">
-          <div class="card-header"><h5 class="mb-0">Localisations ({{ procedure.locations.length || 0 }})</h5></div>
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0">Localisations ({{ procedure.locations.length || 0 }})</h5>
+            <a routerLink="/procedures/locations" class="btn btn-xs btn-soft-primary">
+              <app-icon icon="map-pin" class="me-1"></app-icon>Gérer
+            </a>
+          </div>
           <div class="card-body p-0">
             @if (procedure.locations.length) {
               <div class="list-group list-group-flush">

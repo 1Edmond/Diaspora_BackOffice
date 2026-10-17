@@ -1,91 +1,211 @@
 <div class="container-fluid">
-  <app-page-breadcrumb title="Catégories Freelance" subTitle="Freelance" />
+  <app-page-breadcrumb title="Catégories de Missions Freelance" subTitle="Freelance" />
 
-  <div class="row mb-3">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body p-3">
-          <div class="row g-2 align-items-center">
-            <div class="col-md-5">
-              <div class="position-relative">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Rechercher une catégorie de mission..."
-                  [(ngModel)]="searchTerm"
-                  (ngModelChange)="applyFilter()"
-                />
+  @if(successMessage) {
+  <div class="alert alert-success alert-dismissible d-flex align-items-center justify-content-between" role="alert">
+    <span>{{successMessage}}</span>
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+  }
+
+  <div class="row">
+    <!-- Left column: Add/Edit Category -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent border-bottom py-3">
+          <h5 class="mb-0">{{editId ? 'Modifier' : 'Ajouter'}} une Catégorie de Mission</h5>
+        </div>
+        <div class="card-body">
+          @if(error) {
+          <div class="alert alert-danger">{{error}}</div>
+          }
+          <!-- Multilingual Tabs for Name & Description -->
+          <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <label class="form-label fw-semibold mb-0">Langues & Traductions :</label>
+              <div class="dropdown" ngbDropdown placement="bottom-end">
+                <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" ngbDropdownToggle>
+                  <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu style="max-height: 280px; overflow-y: auto;">
+                  <h6 class="dropdown-header">Langues disponibles</h6>
+                  @for (lang of commonLanguages; track lang.code) {
+                  <button class="dropdown-item d-flex align-items-center justify-content-between"
+                          [class.disabled]="formLanguages.includes(lang.code)"
+                          (click)="addFormLanguage(lang.code)">
+                    <span>{{lang.flag}} {{lang.label}}</span>
+                    @if (formLanguages.includes(lang.code)) {
+                    <span class="badge bg-soft-success text-success fs-xs">Ajoutée</span>
+                    }
+                  </button>
+                  }
+                  <div class="dropdown-divider"></div>
+                  <div class="p-2">
+                    <div class="input-group input-group-sm">
+                      <input type="text" class="form-control" [(ngModel)]="customLangInput" placeholder="Code (ex: de, pt)" maxlength="5" />
+                      <button class="btn btn-primary" (click)="addFormLanguage(customLangInput)">OK</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-md-7 text-end text-muted fs-13">
-              <app-icon icon="folder" class="me-1"></app-icon>Total : <strong class="text-dark">{{ filteredCategories.length }}</strong> catégorie(s)
+
+            <!-- Language Pills Tabs -->
+            <ul class="nav nav-pills nav-justified bg-light p-1 rounded mb-3">
+              @for (lang of formLanguages; track lang) {
+              <li class="nav-item">
+                <a class="nav-link py-1 px-2 d-flex align-items-center justify-content-center gap-1 cursor-pointer"
+                   [class.active]="formLanguage === lang"
+                   (click)="formLanguage = lang">
+                  <span>{{getLangInfo(lang).flag}}</span>
+                  <span class="fw-medium">{{getLangInfo(lang).code.toUpperCase()}}</span>
+                  @if (formLanguages.length > 1) {
+                  <button type="button" class="btn-close btn-close-xs ms-1" style="font-size: 0.55rem;"
+                          (click)="removeFormLanguage(lang, $event)"></button>
+                  }
+                </a>
+              </li>
+              }
+            </ul>
+
+            <!-- Inputs for Selected Language -->
+            @if (formTranslations[formLanguage]) {
+            <div class="border rounded p-3 bg-light-subtle">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge bg-primary-subtle text-primary fw-semibold">
+                  {{getLangInfo(formLanguage).flag}} {{getLangInfo(formLanguage).label}}
+                </span>
+                <span class="text-muted fs-xs">Champs pour cette langue</span>
+              </div>
+              <div class="mb-3">
+                <label class="form-label required">Nom de la catégorie ({{formLanguage.toUpperCase()}})</label>
+                <input type="text" class="form-control" [(ngModel)]="formTranslations[formLanguage].Name"
+                       placeholder="Ex: Traduction & Rédaction, Informatique..." />
+              </div>
+              <div>
+                <label class="form-label">Description ({{formLanguage.toUpperCase()}})</label>
+                <textarea class="form-control" rows="2" [(ngModel)]="formTranslations[formLanguage].Description"
+                          placeholder="Description du domaine d'activité..."></textarea>
+              </div>
             </div>
+            }
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Identifiant URL (Slug)</label>
+              <input type="text" class="form-control" [(ngModel)]="model.slug" placeholder="ex: dev-web" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Ordre d'affichage</label>
+              <input type="number" class="form-control" [(ngModel)]="model.displayOrder" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Icône (Nom ou URL)</label>
+            <div class="input-group">
+              <span class="input-group-text"><app-icon [icon]="model.iconUrl || 'briefcase'"></app-icon></span>
+              <input type="text" class="form-control" [(ngModel)]="model.iconUrl" placeholder="code, brief, briefcase, pen-tool..." />
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" [disabled]="saving" (click)="save()">
+              @if(saving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              {{editId ? 'Mettre à jour' : 'Enregistrer'}}
+            </button>
+            @if(editId) {
+            <button class="btn btn-outline-secondary" (click)="resetForm()">Annuler</button>
+            }
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">Nomenclature des Secteurs d'Activité Freelance</h5>
-          <span class="badge bg-soft-primary text-primary fs-12 px-2 py-1">
-            {{ filteredCategories.length }} référencées
-          </span>
+    <!-- Right column: Categories Table -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h5 class="mb-0">Secteurs & Catégories de Mission ({{filteredCategories.length}})</h5>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="width: 220px;">
+              <span class="input-group-text"><app-icon icon="search"></app-icon></span>
+              <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" />
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadCategories()">
+              <app-icon icon="refresh-cw"></app-icon>
+            </button>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-custom table-nowrap table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th style="width: 80px;">Ordre</th>
-                  <th>Nom de la Catégorie</th>
-                  <th>Description & Périmètre</th>
+                  <th style="width: 45px;">Icône</th>
+                  <th>Nom & Traductions</th>
+                  <th>Slug</th>
+                  <th>Ordre</th>
                   <th>Statut</th>
+                  <th style="width: 140px;" class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                @if (loading) {
+                @if(loading) {
                 <tr>
-                  <td colspan="4" class="text-center p-4">
-                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-                    Chargement des catégories freelance...
+                  <td colspan="6" class="text-center py-4">
+                    <span class="spinner-border spinner-border-sm text-primary me-2"></span> Chargement...
                   </td>
                 </tr>
-                } @else if (filteredCategories.length === 0) {
+                } @else if(filteredCategories.length === 0) {
                 <tr>
-                  <td colspan="4" class="text-center p-4 text-muted">
+                  <td colspan="6" class="text-center py-4 text-muted">
                     <app-icon icon="inbox" class="fs-24 d-block mb-1"></app-icon>
-                    Aucune catégorie freelance trouvée selon ces critères.
+                    Aucune catégorie freelance trouvée.
                   </td>
                 </tr>
                 } @else {
-                  @for (cat of filteredCategories; track cat.id) {
-                  <tr>
-                    <td>
-                      <span class="badge bg-light text-dark border">{{ cat.displayOrder }}</span>
-                    </td>
-                    <td>
-                      <strong class="text-primary fs-14">{{ cat.name }}</strong>
-                    </td>
-                    <td>
-                      <span class="text-muted fs-13">{{ cat.description || 'Aucune description fournie.' }}</span>
-                    </td>
-                    <td>
-                      @if (cat.isActive) {
-                      <span class="badge bg-soft-success text-success">
-                        <app-icon icon="circle-check" class="me-1"></app-icon>Actif
-                      </span>
-                      } @else {
-                      <span class="badge bg-soft-secondary text-secondary">
-                        <app-icon icon="circle-minus" class="me-1"></app-icon>Inactif
-                      </span>
-                      }
-                    </td>
-                  </tr>
-                  }
+                @for (cat of filteredCategories; track cat.id) {
+                <tr [class.table-active]="editId === cat.id">
+                  <td>
+                    <div class="avatar-xs d-flex align-items-center justify-content-center bg-light rounded text-primary">
+                      <app-icon [icon]="cat.iconUrl || 'briefcase'" class="fs-5"></app-icon>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{cat.name}}</div>
+                    @if(cat.description) {
+                    <div class="text-muted fs-xs text-truncate" style="max-width: 220px;">{{cat.description}}</div>
+                    }
+                  </td>
+                  <td>
+                    <code class="text-muted fs-xs">{{cat.slug || '-'}}</code>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">{{cat.displayOrder}}</span>
+                  </td>
+                  <td>
+                    <div class="form-check form-switch mb-0">
+                      <input class="form-check-input" type="checkbox" [checked]="cat.isActive" (change)="toggleStatus(cat)" />
+                      <label class="form-check-label fs-xs text-muted ms-1">{{cat.isActive ? 'Actif' : 'Inactif'}}</label>
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-secondary btn-icon" title="Modifier" (click)="edit(cat)">
+                        <app-icon icon="pencil"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-primary btn-icon" title="Traductions multilingues" (click)="openTranslations(cat, translationModal)">
+                        <app-icon icon="languages"></app-icon>
+                      </button>
+                      <button class="btn btn-outline-danger btn-icon" title="Supprimer" (click)="deleteCategory(cat)">
+                        <app-icon icon="trash-2"></app-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                }
                 }
               </tbody>
             </table>
@@ -95,3 +215,85 @@
     </div>
   </div>
 </div>
+
+<!-- Translation Management Modal -->
+<ng-template #translationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Traductions : {{translatingCat?.name}}</h5>
+    <button type="button" class="btn-close" (click)="closeTranslationModal()"></button>
+  </div>
+  <div class="modal-body">
+    @if(translationSuccess) {
+    <div class="alert alert-success">{{translationSuccess}}</div>
+    }
+    @if(translationError) {
+    <div class="alert alert-danger">{{translationError}}</div>
+    }
+
+    <!-- Add Language inside Modal -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <span class="text-muted fs-sm">Gérez les libellés traduits dans chaque langue :</span>
+      <div class="dropdown" ngbDropdown placement="bottom-end">
+        <button class="btn btn-xs btn-outline-primary dropdown-toggle py-1 px-2 fs-xs" type="button" ngbDropdownToggle>
+          <app-icon icon="plus" class="me-1"></app-icon> Ajouter une langue
+        </button>
+        <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu style="max-height: 250px; overflow-y: auto;">
+          <h6 class="dropdown-header">Choisir une langue</h6>
+          @for (lang of commonLanguages; track lang.code) {
+          <button class="dropdown-item d-flex align-items-center justify-content-between"
+                  [class.disabled]="translatingLanguages.includes(lang.code)"
+                  (click)="addModalLanguage(lang.code)">
+            <span>{{lang.flag}} {{lang.label}}</span>
+            @if (translatingLanguages.includes(lang.code)) {
+            <span class="badge bg-soft-success text-success fs-xs">Présente</span>
+            }
+          </button>
+          }
+          <div class="dropdown-divider"></div>
+          <div class="p-2">
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control" [(ngModel)]="customModalLangInput" placeholder="Code (ex: es)" maxlength="5" />
+              <button class="btn btn-primary" (click)="addModalLanguage(customModalLangInput)">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Language Selector Tabs in Modal -->
+    <ul class="nav nav-pills nav-justified bg-light p-1 rounded mb-3">
+      @for (culture of translatingLanguages; track culture) {
+      <li class="nav-item">
+        <a class="nav-link py-1 px-2 d-flex align-items-center justify-content-center gap-1 cursor-pointer"
+           [class.active]="selectedCulture === culture"
+           (click)="selectedCulture = culture">
+          <span>{{getLangInfo(culture).flag}}</span>
+          <span class="fw-medium">{{getLangInfo(culture).code.toUpperCase()}}</span>
+        </a>
+      </li>
+      }
+    </ul>
+
+    @if(translationLoading) {
+    <div class="text-center py-4">
+      <span class="spinner-border spinner-border-sm text-primary me-2"></span> Chargement des traductions existantes...
+    </div>
+    } @else {
+    <div class="mb-3">
+      <label class="form-label">Nom ({{selectedCulture.toUpperCase()}})</label>
+      <input type="text" class="form-control" [(ngModel)]="translationData[selectedCulture].Name" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Description ({{selectedCulture.toUpperCase()}})</label>
+      <textarea class="form-control" rows="3" [(ngModel)]="translationData[selectedCulture].Description"></textarea>
+    </div>
+    }
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" [disabled]="translationSaving || translationLoading" (click)="saveTranslation(selectedCulture)">
+      @if(translationSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+      Enregistrer pour {{selectedCulture.toUpperCase()}}
+    </button>
+    <button class="btn btn-outline-secondary" (click)="closeTranslationModal()">Fermer</button>
+  </div>
+</ng-template>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse, PagedList } from '../models/shared/base-response.model';
 import { ProcedureProfileType, UserProcedureStatus } from '../models/shared/enums.model';
@@ -15,6 +15,7 @@ import {
   SkipUserProcedureRequest,
   StartUserProcedureRequest,
   StartUserProcedureResponse,
+  UpdateLocationRequest,
   UpdateProcedureRequest,
   UserProcedureDto,
 } from '../models/procedure/procedure.model';
@@ -25,7 +26,8 @@ import {
 export class ProcedureService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/procedure`;
   private readonly userProcApiUrl = `${environment.apiBaseUrl}/api/user-procedures`;
-  private readonly locationApiUrl = `${environment.apiBaseUrl}/api/location`;
+  private readonly locationApiUrl = `${environment.apiBaseUrl}/api/locations`;
+  private readonly legacyLocationApiUrl = `${environment.apiBaseUrl}/api/location`;
 
   constructor(private http: HttpClient) {}
 
@@ -85,12 +87,38 @@ export class ProcedureService {
     return this.http.post<BaseResponse>(`${this.userProcApiUrl}/${userProcedureId}/skip`, data);
   }
 
-  getLocations(): Observable<LocationDto[]> {
-    return this.http.get<LocationDto[]>(this.locationApiUrl);
+  getLocations(params?: { countryCode?: string; city?: string; search?: string }): Observable<LocationDto[]> {
+    const queryParams: any = {};
+    if (params?.countryCode) queryParams.countryCode = params.countryCode;
+    if (params?.city) queryParams.city = params.city;
+    if (params?.search) queryParams.search = params.search;
+    return this.http.get<LocationDto[]>(this.locationApiUrl, { params: queryParams }).pipe(
+      catchError(() => this.http.get<LocationDto[]>(this.legacyLocationApiUrl, { params: queryParams }))
+    );
   }
 
-  createLocation(data: CreateLocationRequest): Observable<LocationDto> {
-    return this.http.post<LocationDto>(this.locationApiUrl, data);
+  getLocation(id: string): Observable<LocationDto> {
+    return this.http.get<LocationDto>(`${this.locationApiUrl}/${id}`).pipe(
+      catchError(() => this.http.get<LocationDto>(`${this.legacyLocationApiUrl}/${id}`))
+    );
+  }
+
+  createLocation(request: CreateLocationRequest): Observable<any> {
+    return this.http.post<any>(this.locationApiUrl, request).pipe(
+      catchError(() => this.http.post<any>(this.legacyLocationApiUrl, request))
+    );
+  }
+
+  updateLocation(id: string, request: UpdateLocationRequest): Observable<void> {
+    return this.http.put<void>(`${this.locationApiUrl}/${id}`, request).pipe(
+      catchError(() => this.http.put<void>(`${this.legacyLocationApiUrl}/${id}`, request))
+    );
+  }
+
+  deleteLocation(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.locationApiUrl}/${id}`).pipe(
+      catchError(() => this.http.delete<void>(`${this.legacyLocationApiUrl}/${id}`))
+    );
   }
 
   getProcedureTranslations(id: string): Observable<{ cultureCode: string; fields: { Title?: string; Description?: string }; createdAt?: string }[]> {

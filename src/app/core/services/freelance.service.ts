@@ -1,14 +1,16 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  CreateJobCategoryRequest,
   JobCategoryDto,
   JobCheckInDto,
   JobPostingDto,
   JobPostingSummaryDto,
   JobApplicationDto,
-  PagedResult
+  PagedResult,
+  UpdateJobCategoryRequest,
 } from '../models/freelance/freelance.model';
 
 @Injectable({
@@ -24,6 +26,57 @@ export class FreelanceService {
     return this.http.get<JobCategoryDto[]>(`${this.baseUrl}/job-categories`, {
       params: new HttpParams().set('activeOnly', activeOnly.toString()),
     });
+  }
+
+  getCategory(id: string): Observable<JobCategoryDto> {
+    return this.http.get<JobCategoryDto>(`${this.baseUrl}/job-categories/${id}`);
+  }
+
+  createCategory(data: CreateJobCategoryRequest): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/job-categories`, data);
+  }
+
+  updateCategory(id: string, data: UpdateJobCategoryRequest): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/job-categories/${id}`, data);
+  }
+
+  deleteCategory(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/job-categories/${id}`);
+  }
+
+  toggleCategoryStatus(id: string, isActive: boolean): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/job-categories/${id}/status`, isActive).pipe(
+      catchError(() =>
+        this.http.post<any>(
+          `${this.baseUrl}/job-categories/${id}/${isActive ? 'activate' : 'deactivate'}`,
+          {}
+        )
+      )
+    );
+  }
+
+  getCategoryTranslations(id: string): Observable<{ [culture: string]: { [field: string]: string } }> {
+    return this.http.get<{ [culture: string]: { [field: string]: string } }>(
+      `${this.baseUrl}/job-categories/${id}/translations`
+    );
+  }
+
+  updateCategoryTranslation(id: string, culture: string, fields: { [field: string]: string }): Observable<any> {
+    return this.http
+      .put<any>(`${this.baseUrl}/job-categories/${id}/translations/${culture}`, fields)
+      .pipe(
+        catchError(() =>
+          this.http.post<any>(`${this.baseUrl}/job-categories/${id}/translations`, {
+            entityId: id,
+            cultureCode: culture,
+            fields,
+          })
+        )
+      );
+  }
+
+  deleteCategoryTranslation(id: string, culture: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/job-categories/${id}/translations/${culture}`);
   }
 
   // --- Offres de mission (Job Postings) ---

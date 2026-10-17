@@ -122,25 +122,25 @@ export const menuItems: MenuItemType[] = [
   {
     'icon': 'list-checks',
     'slug': 'procedures',
-    'label': 'Procedures',
+    'label': 'Démarches',
     'isTitle': true,
     'children': [
       {
         'url': '/procedures',
         'slug': 'pages:procedures',
-        'label': 'Definitions',
+        'label': 'Définitions',
         'icon': 'list-checks',
       },
       {
         'url': '/procedures/user-procedures',
         'slug': 'pages:user-procedures',
-        'label': 'User Progress',
+        'label': 'Suivi des Démarches',
         'icon': 'trending-up',
       },
       {
         'url': '/procedures/locations',
         'slug': 'pages:locations',
-        'label': 'Locations',
+        'label': 'Lieux & Consulats',
         'icon': 'map-pin',
       },
     ],

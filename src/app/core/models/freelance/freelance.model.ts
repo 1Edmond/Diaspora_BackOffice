@@ -14,40 +14,66 @@ export enum PaymentType {
 }
 
 export enum PaymentTiming {
-  OnCompletion = 0,
-  Milestones = 1,
-  Advance = 2,
+  HoldFundsUpfront = 0,
+  PayOnCompletion = 1,
 }
 
 export enum CheckInMethod {
-  Manual = 0,
-  Geofence = 1,
-  QrCode = 2,
-  Otp = 3,
+  None = 0,
+  QRCode = 1,
+  GeoLocation = 2,
+  Manual = 3,
 }
 
 export enum JobApplicationStatus {
   Pending = 0,
   Accepted = 1,
   Rejected = 2,
-  Cancelled = 3,
+  Withdrawn = 3,
   Completed = 4,
+  NoShow = 5,
 }
 
 export enum CheckInStatus {
   Pending = 0,
   CheckedIn = 1,
   CheckedOut = 2,
-  Verified = 3,
-  Disputed = 4,
+  NoShow = 3,
 }
 
 export interface JobCategoryDto {
   id: string;
   name: string;
+  slug?: string;
   description?: string;
+  iconUrl?: string;
+  parentCategoryId?: string;
+  parentCategoryName?: string;
   isActive: boolean;
   displayOrder: number;
+  jobCount?: number;
+  translations?: { [culture: string]: { [field: string]: string } };
+}
+
+export interface CreateJobCategoryRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  iconUrl?: string;
+  parentCategoryId?: string;
+  displayOrder: number;
+  translations?: { [culture: string]: { [field: string]: string } };
+}
+
+export interface UpdateJobCategoryRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  iconUrl?: string;
+  parentCategoryId?: string;
+  displayOrder: number;
+  isActive?: boolean;
+  translations?: { [culture: string]: { [field: string]: string } };
 }
 
 export interface JobPostingSummaryDto {

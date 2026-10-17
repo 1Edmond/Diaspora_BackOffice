@@ -30,6 +30,7 @@ export interface LocationDto {
   latitude: number
   longitude: number
   phoneNumber?: string
+  email?: string
   website?: string
   schedule: DayScheduleDto[]
 }
@@ -133,6 +134,22 @@ export interface CreateLocationRequest {
   latitude: number
   longitude: number
   phoneNumber?: string
+  email?: string
+  website?: string
+  schedule: DayScheduleRequest[]
+}
+
+export interface UpdateLocationRequest {
+  name: string
+  street: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  latitude: number
+  longitude: number
+  phoneNumber?: string
+  email?: string
   website?: string
   schedule: DayScheduleRequest[]
 }

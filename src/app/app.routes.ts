@@ -411,11 +411,6 @@ export const routes: Routes = [
         data: { title: 'Sign In' },
       },
       {
-        path: 'auth/sign-up',
-        loadComponent: () => import('./views/auth/sign-up/sign-up').then((m) => m.SignUp),
-        data: { title: 'Sign Up' },
-      },
-      {
         path: 'auth/reset-pass',
         loadComponent: () => import('./views/auth/reset-pass/reset-pass').then((m) => m.ResetPass),
         data: { title: 'Reset Password' },
@@ -454,11 +449,6 @@ export const routes: Routes = [
         path: 'auth/split/sign-in',
         loadComponent: () => import('./views/auth/split/sign-in/sign-in').then((m) => m.SignIn),
         data: { title: 'Sign In' },
-      },
-      {
-        path: 'auth/split/sign-up',
-        loadComponent: () => import('./views/auth/split/sign-up/sign-up').then((m) => m.SignUp),
-        data: { title: 'Sign Up' },
       },
       {
         path: 'auth/split/reset-pass',
