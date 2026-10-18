@@ -65,6 +65,7 @@ export class Disputes implements OnInit {
   resolutionNotes: string = ''
   resolving: boolean = false
   arbitrationError: string = ''
+  arbitratingDisputeSettlementType: number = 0
 
   DisputeStatus = DisputeStatus
   DisputeStatusLabels = DisputeStatusLabels
@@ -147,6 +148,17 @@ export class Disputes implements OnInit {
 
   openArbitrationModal(content: any, dispute: DisputeDto) {
     this.arbitratingDispute = dispute
+    this.arbitratingDisputeSettlementType = dispute.settlementType ?? dispute.serviceRequestSettlementType ?? 0
+    if (dispute.serviceRequestId && this.arbitratingDisputeSettlementType === 0) {
+      this.marketplaceService.getServiceRequest(dispute.serviceRequestId).subscribe({
+        next: (req) => {
+          if (req && req.settlementType != null) {
+            this.arbitratingDisputeSettlementType = req.settlementType
+          }
+        },
+        error: () => {},
+      })
+    }
     this.arbitrationMode = 'buyer_100'
     this.buyerRefundPercentage = 100
     this.sellerPayoutPercentage = 0
@@ -160,6 +172,7 @@ export class Disputes implements OnInit {
     this.resolveModalRef?.close()
     this.resolveModalRef = null
     this.arbitratingDispute = null
+    this.arbitratingDisputeSettlementType = 0
     this.arbitrationError = ''
   }
 

@@ -75,10 +75,21 @@
           <strong class="fs-15 text-dark">{{selectedRequest.agreedPrice != null ? (selectedRequest.agreedPrice | currency: (selectedRequest.agreedCurrency || 'XOF')) : '—'}}</strong>
         </div>
         <div class="col-md-3">
-          <span class="text-muted fs-11 text-uppercase d-block mb-1">Statut Séquestre</span>
-          <span class="badge" [class]="'bg-soft-' + PaymentStatusBadgeVariants[selectedRequest.paymentStatus] + ' text-' + PaymentStatusBadgeVariants[selectedRequest.paymentStatus]">
-            <app-icon icon="shield-check" class="me-1"></app-icon>{{PaymentStatusLabels[selectedRequest.paymentStatus]}}
-          </span>
+          <span class="text-muted fs-11 text-uppercase d-block mb-1">Règlement & Séquestre</span>
+          @if(selectedRequest.settlementType === 1) {
+            <span class="badge bg-soft-warning text-warning fs-12 mb-1">
+              <app-icon icon="handshake" class="me-1"></app-icon>Règlement Espèces
+            </span>
+            <small class="d-block text-muted fs-11">Timing : {{ getCashTimingLabel(selectedRequest.cashTiming) }}</small>
+            @if(selectedRequest.platformDirectFeeAmount) {
+              <small class="d-block text-success fs-11">Frais plateforme : {{ selectedRequest.platformDirectFeeAmount | currency:(selectedRequest.agreedCurrency || 'XOF') }}</small>
+            }
+          } @else {
+            <span class="badge" [class]="'bg-soft-' + PaymentStatusBadgeVariants[selectedRequest.paymentStatus] + ' text-' + PaymentStatusBadgeVariants[selectedRequest.paymentStatus]">
+              <app-icon icon="shield-check" class="me-1"></app-icon>{{PaymentStatusLabels[selectedRequest.paymentStatus]}}
+            </span>
+            <small class="d-block text-success fs-11 mt-1">Séquestre Wallet garanti</small>
+          }
         </div>
 
         @if(selectedRequest.weightKg) {
@@ -145,6 +156,7 @@
                   <th scope="col">Demandeur</th>
                   <th scope="col">Prestataire / Voyageur</th>
                   <th scope="col" class="text-end">Prix Convenu</th>
+                  <th scope="col" class="text-center">Mode Règlement</th>
                   <th scope="col" class="text-center">Séquestre</th>
                   <th scope="col" class="text-center">Statut Cycle</th>
                   <th scope="col">Date</th>
@@ -186,6 +198,20 @@
                     {{req.agreedPrice != null ? (req.agreedPrice | currency: (req.agreedCurrency || 'XOF')) : '—'}}
                   </td>
                   <td class="text-center">
+                    @if (req.settlementType === 1) {
+                    <span class="badge bg-soft-warning text-warning" [title]="'Remise espèces : ' + getCashTimingLabel(req.cashTiming)">
+                      <app-icon icon="handshake" class="me-1"></app-icon>Espèces
+                    </span>
+                    @if (req.cashTiming != null) {
+                    <small class="d-block text-muted fs-10 mt-0.5">{{ req.cashTiming === 0 ? 'À la remise' : (req.cashTiming === 1 ? 'À la livraison' : 'Libre choix') }}</small>
+                    }
+                    } @else {
+                    <span class="badge bg-soft-success text-success">
+                      <app-icon icon="shield-check" class="me-1"></app-icon>Séquestre Wallet
+                    </span>
+                    }
+                  </td>
+                  <td class="text-center">
                     <span class="badge" [class]="'bg-soft-' + PaymentStatusBadgeVariants[req.paymentStatus] + ' text-' + PaymentStatusBadgeVariants[req.paymentStatus]">
                       {{PaymentStatusLabels[req.paymentStatus]}}
                     </span>
@@ -206,7 +232,7 @@
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="8" class="text-center text-muted p-5">
+                  <td colspan="9" class="text-center text-muted p-5">
                     @if(loading) {
                     <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des réservations...
                     } @else {

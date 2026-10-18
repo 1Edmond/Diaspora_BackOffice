@@ -15,6 +15,11 @@ import {
   PaymentStatusLabels,
   PaymentStatusBadgeVariants,
 } from '@core/models/shared/enums.model'
+import {
+  PaymentSettlementType,
+  DirectCashTiming,
+  DirectCashTimingLabels,
+} from '@core/models/marketplace/payment-policy.model'
 
 @Component({
   selector: 'app-service-requests',
@@ -40,6 +45,16 @@ export class ServiceRequests implements OnInit {
   ServiceRequestStatusBadgeVariants = ServiceRequestStatusBadgeVariants
   PaymentStatusLabels = PaymentStatusLabels
   PaymentStatusBadgeVariants = PaymentStatusBadgeVariants
+  PaymentSettlementType = PaymentSettlementType
+  DirectCashTiming = DirectCashTiming
+  DirectCashTimingLabels = DirectCashTimingLabels
+
+  getCashTimingLabel(timing?: number): string {
+    if (timing === DirectCashTiming.AtPickup) return 'À la remise'
+    if (timing === DirectCashTiming.AtDelivery) return 'À la livraison'
+    if (timing === DirectCashTiming.FreeChoice) return 'Libre choix'
+    return 'Non précisé'
+  }
 
   constructor(
     private marketplaceService: MarketplaceService,

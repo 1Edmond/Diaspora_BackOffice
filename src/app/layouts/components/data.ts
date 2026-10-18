@@ -205,6 +205,13 @@ export const menuItems: MenuItemType[] = [
         'label': 'Disputes',
         'icon': 'alert-triangle',
       },
+      {
+        'url': '/marketplace/payment-policies',
+        'link': '/marketplace/payment-policies',
+        'slug': 'pages:marketplace-payment-policies',
+        'label': 'Politiques de Règlement',
+        'icon': 'credit-card',
+      },
     ],
   },
   {

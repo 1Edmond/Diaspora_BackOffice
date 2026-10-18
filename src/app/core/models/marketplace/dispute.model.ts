@@ -44,6 +44,8 @@ export interface DisputeDto {
   serviceRequestAgreedPrice: number
   serviceRequestCurrency: string
   serviceRequestPaymentStatus: number
+  settlementType?: number
+  serviceRequestSettlementType?: number
   createdAt: string
 }
 

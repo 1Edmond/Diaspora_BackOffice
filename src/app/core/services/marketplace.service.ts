@@ -29,6 +29,10 @@ import {
   DisputeStatus,
   ResolveDisputeRequest,
 } from '../models/marketplace/dispute.model';
+import {
+  ProfileTypePaymentPolicy,
+  UpdatePaymentPolicyRequest,
+} from '../models/marketplace/payment-policy.model';
 
 @Injectable({
   providedIn: 'root',
@@ -235,6 +239,20 @@ export class MarketplaceService {
 
   getDispute(id: string): Observable<DisputeDto> {
     return this.http.get<DisputeDto>(`${environment.apiBaseUrl}/api/disputes/${id}`);
+  }
+
+  private readonly paymentPoliciesApiUrl = `${environment.apiBaseUrl}/api/marketplace/payment-policies`;
+
+  getPaymentPolicies(): Observable<ProfileTypePaymentPolicy[]> {
+    return this.http.get<ProfileTypePaymentPolicy[]>(this.paymentPoliciesApiUrl);
+  }
+
+  getPaymentPolicyByProfileType(profileTypeId: string): Observable<ProfileTypePaymentPolicy> {
+    return this.http.get<ProfileTypePaymentPolicy>(`${this.paymentPoliciesApiUrl}/by-profile-type/${profileTypeId}`);
+  }
+
+  updatePaymentPolicy(profileTypeId: string, data: UpdatePaymentPolicyRequest): Observable<void> {
+    return this.http.put<void>(`${this.paymentPoliciesApiUrl}/${profileTypeId}`, data);
   }
 
   resolveDispute(id: string, request: ResolveDisputeRequest): Observable<any> {

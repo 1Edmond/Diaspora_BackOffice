@@ -1,0 +1,530 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Politiques de Règlement par Pays" subTitle="Marketplace" />
+
+  <!-- Metric Statistics Cards -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6 col-xl">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-20">
+                <app-icon icon="globe"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Pays / Profils</p>
+              <h4 class="mb-0 fw-bold">{{ stats.total }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-info text-info rounded-circle fs-20">
+                <app-icon icon="shield-check"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Séquestre Seul</p>
+              <h4 class="mb-0 fw-bold text-info">{{ stats.escrowOnly }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-warning text-warning rounded-circle fs-20">
+                <app-icon icon="handshake"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Espèces Seul</p>
+              <h4 class="mb-0 fw-bold text-warning">{{ stats.directOnly }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-success text-success rounded-circle fs-20">
+                <app-icon icon="layers"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Mode Mixte</p>
+              <h4 class="mb-0 fw-bold text-success">{{ stats.both }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-danger text-danger rounded-circle fs-20">
+                <app-icon icon="dollar-sign"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Monétisés</p>
+              <h4 class="mb-0 fw-bold text-danger">{{ stats.feeEnabled }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
+      <div>
+        <h5 class="card-title mb-0 fs-15">Configuration des Politiques de Règlement & Frais Directs</h5>
+        <small class="text-muted">Définissez les options de paiement (Séquestre Wallet vs Espèces en main propre) par juridiction et corridor</small>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="input-group input-group-sm" style="width: 250px;">
+          <span class="input-group-text bg-light text-muted border-end-0">
+            <app-icon icon="search"></app-icon>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="Rechercher un pays, code..."
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadData()" [disabled]="loading">
+          <app-icon icon="refresh-cw" [class]="loading ? 'spin' : ''"></app-icon>
+          Actualiser
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-3">Pays & Profil</th>
+              <th scope="col">Mode de Règlement Autorisé</th>
+              <th scope="col">Timing Espèces par Défaut</th>
+              <th scope="col">Monétisation Mode Direct</th>
+              <th scope="col" class="text-center">Statut</th>
+              <th scope="col" class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (policy of filteredPolicies; track policy.profileTypeId) {
+              <tr>
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="country-flag">{{ policy.flag || '🏳️' }}</span>
+                    <div>
+                      <strong class="text-dark d-block fs-13">{{ policy.countryName }}</strong>
+                      <span class="badge bg-light text-muted border fs-11 font-monospace">{{ policy.countryCode }}</span>
+                      <span class="text-muted fs-11 ms-1">({{ policy.currency }})</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (policy.allowedPolicy === AllowedSettlementPolicy.WalletEscrowOnly) {
+                    <span class="badge bg-soft-info text-info fs-12 px-2 py-1">
+                      <app-icon icon="shield-check" class="me-1"></app-icon>Séquestre Wallet seul
+                    </span>
+                  } @else if (policy.allowedPolicy === AllowedSettlementPolicy.DirectHandoverOnly) {
+                    <span class="badge bg-soft-warning text-warning fs-12 px-2 py-1">
+                      <app-icon icon="handshake" class="me-1"></app-icon>Règlement direct (espèces) seul
+                    </span>
+                  } @else {
+                    <span class="badge bg-soft-primary text-primary fs-12 px-2 py-1">
+                      <app-icon icon="layers" class="me-1"></app-icon>Les deux au choix
+                    </span>
+                  }
+                </td>
+                <td>
+                  @if (policy.allowedPolicy === AllowedSettlementPolicy.WalletEscrowOnly) {
+                    <span class="text-muted fs-12 fst-italic">— Non applicable (Séquestre) —</span>
+                  } @else {
+                    @if (policy.defaultCashTiming === DirectCashTiming.AtPickup) {
+                      <span class="badge bg-soft-secondary text-dark fs-12">
+                        <app-icon icon="arrow-up-right" class="me-1 text-primary"></app-icon>À la prise en charge (remise)
+                      </span>
+                    } @else if (policy.defaultCashTiming === DirectCashTiming.AtDelivery) {
+                      <span class="badge bg-soft-secondary text-dark fs-12">
+                        <app-icon icon="arrow-down-left" class="me-1 text-success"></app-icon>À la livraison finale
+                      </span>
+                    } @else {
+                      <span class="badge bg-soft-light text-muted border fs-12">
+                        <app-icon icon="shuffle" class="me-1"></app-icon>Libre choix des parties
+                      </span>
+                    }
+                  }
+                </td>
+                <td>
+                  @if (policy.directBookingFeeEnabled) {
+                    <div class="d-flex align-items-center gap-1">
+                      <span class="badge bg-soft-success text-success fs-12 fw-semibold">
+                        <app-icon icon="dollar-sign" class="me-1"></app-icon>
+                        {{ policy.directBookingFeeFixedAmount | number:'1.0-0' }} {{ policy.currency }} + {{ policy.directBookingFeeRate }}%
+                      </span>
+                    </div>
+                  } @else {
+                    <span class="badge bg-soft-light text-muted border fs-12">
+                      Frais directs désactivés
+                    </span>
+                  }
+                </td>
+                <td class="text-center">
+                  @if (policy.isActive) {
+                    <span class="badge bg-soft-success text-success fs-11">Actif</span>
+                  } @else {
+                    <span class="badge bg-soft-danger text-danger fs-11">Inactif</span>
+                  }
+                </td>
+                <td class="text-end pe-3">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-soft-primary d-inline-flex align-items-center gap-1"
+                    (click)="openEditModal(policy)"
+                  >
+                    <app-icon icon="sliders"></app-icon>
+                    <span>Configurer</span>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted p-5">
+                  @if (loading) {
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div> Chargement des politiques...
+                  } @else {
+                    <div class="avatar-md mx-auto mb-3">
+                      <span class="avatar-title bg-soft-secondary text-secondary rounded-circle fs-24">
+                        <app-icon icon="credit-card"></app-icon>
+                      </span>
+                    </div>
+                    <h6 class="text-dark">Aucune politique trouvée</h6>
+                    <p class="text-muted fs-13 mb-0">Aucun profil pays ne correspond à votre recherche.</p>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Policy Configuration Modal -->
+  <ng-template #editModal let-modal>
+    <div class="modal-header bg-primary text-white">
+      <h5 class="modal-title text-white d-flex align-items-center gap-2">
+        <app-icon icon="credit-card"></app-icon>
+        Politique de Règlement — {{ editingPolicy?.flag }} {{ editingPolicy?.countryName }} ({{ editingPolicy?.countryCode }})
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+    </div>
+
+    <div class="modal-body p-4">
+      <!-- 1. Settlement Mode Selector -->
+      <div class="mb-4">
+        <label class="form-label fs-13 fw-semibold text-dark mb-2">
+          1. Mode de Règlement Autorisé <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex flex-column gap-2">
+          <!-- Option 0: WalletEscrowOnly -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="editForm.allowedPolicy === AllowedSettlementPolicy.WalletEscrowOnly"
+            (click)="editForm.allowedPolicy = AllowedSettlementPolicy.WalletEscrowOnly"
+          >
+            <div class="form-check d-flex align-items-start gap-2">
+              <input
+                class="form-check-input mt-1"
+                type="radio"
+                name="allowedPolicy"
+                id="policyEscrowOnly"
+                [value]="AllowedSettlementPolicy.WalletEscrowOnly"
+                [(ngModel)]="editForm.allowedPolicy"
+              />
+              <label class="form-check-label w-100 cursor-pointer" for="policyEscrowOnly">
+                <div class="d-flex align-items-center justify-content-between">
+                  <strong class="text-info fs-13 d-flex align-items-center gap-1">
+                    <app-icon icon="shield-check"></app-icon>
+                    Séquestre Wallet uniquement
+                  </strong>
+                  <span class="badge bg-soft-info text-info fs-10">Recommandé régulation bancaire</span>
+                </div>
+                <small class="text-muted d-block mt-1 fs-12">
+                  Tous les paiements transitent obligatoirement par le compte séquestre Wallet Diaspora. Les fonds sont garantis et bloqués jusqu'à validation de la remise/livraison.
+                </small>
+              </label>
+            </div>
+          </div>
+
+          <!-- Option 1: DirectHandoverOnly -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="editForm.allowedPolicy === AllowedSettlementPolicy.DirectHandoverOnly"
+            (click)="editForm.allowedPolicy = AllowedSettlementPolicy.DirectHandoverOnly"
+          >
+            <div class="form-check d-flex align-items-start gap-2">
+              <input
+                class="form-check-input mt-1"
+                type="radio"
+                name="allowedPolicy"
+                id="policyDirectOnly"
+                [value]="AllowedSettlementPolicy.DirectHandoverOnly"
+                [(ngModel)]="editForm.allowedPolicy"
+              />
+              <label class="form-check-label w-100 cursor-pointer" for="policyDirectOnly">
+                <div class="d-flex align-items-center justify-content-between">
+                  <strong class="text-warning fs-13 d-flex align-items-center gap-1">
+                    <app-icon icon="handshake"></app-icon>
+                    Règlement direct (espèces) uniquement
+                  </strong>
+                  <span class="badge bg-soft-warning text-warning fs-10">Paiement main à main</span>
+                </div>
+                <small class="text-muted d-block mt-1 fs-12">
+                  Paiement physique de la prestation en espèces directement entre les parties. La plateforme ne séquestre pas les fonds du service.
+                </small>
+              </label>
+            </div>
+          </div>
+
+          <!-- Option 2: Both -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="editForm.allowedPolicy === AllowedSettlementPolicy.Both"
+            (click)="editForm.allowedPolicy = AllowedSettlementPolicy.Both"
+          >
+            <div class="form-check d-flex align-items-start gap-2">
+              <input
+                class="form-check-input mt-1"
+                type="radio"
+                name="allowedPolicy"
+                id="policyBoth"
+                [value]="AllowedSettlementPolicy.Both"
+                [(ngModel)]="editForm.allowedPolicy"
+              />
+              <label class="form-check-label w-100 cursor-pointer" for="policyBoth">
+                <div class="d-flex align-items-center justify-content-between">
+                  <strong class="text-primary fs-13 d-flex align-items-center gap-1">
+                    <app-icon icon="layers"></app-icon>
+                    Les deux au choix des utilisateurs
+                  </strong>
+                  <span class="badge bg-soft-primary text-primary fs-10">Flexibilité maximale</span>
+                </div>
+                <small class="text-muted d-block mt-1 fs-12">
+                  L'expéditeur et le prestataire conviennent librement du mode souhaité (Séquestre Wallet sécurisé ou Espèces) lors de la demande.
+                </small>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Cash Handover Timing Selector -->
+      @if (editForm.allowedPolicy !== AllowedSettlementPolicy.WalletEscrowOnly) {
+        <div class="mb-4 p-3 bg-light rounded border">
+          <label class="form-label fs-13 fw-semibold text-dark mb-2 d-flex align-items-center gap-1">
+            <app-icon icon="clock" class="text-primary"></app-icon>
+            2. Timing de Remise des Espèces (Mode Direct)
+          </label>
+          <div class="row g-2">
+            <!-- AtPickup -->
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card bg-white h-100"
+                [class.selected]="editForm.defaultCashTiming === DirectCashTiming.AtPickup"
+                (click)="editForm.defaultCashTiming = DirectCashTiming.AtPickup"
+              >
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="defaultCashTiming"
+                    id="timingPickup"
+                    [value]="DirectCashTiming.AtPickup"
+                    [(ngModel)]="editForm.defaultCashTiming"
+                  />
+                  <label class="form-check-label cursor-pointer" for="timingPickup">
+                    <strong class="d-block fs-12 text-dark">À la prise en charge</strong>
+                    <small class="text-muted fs-11">Expéditeur &rarr; Voyageur lors du dépôt initial</small>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- AtDelivery -->
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card bg-white h-100"
+                [class.selected]="editForm.defaultCashTiming === DirectCashTiming.AtDelivery"
+                (click)="editForm.defaultCashTiming = DirectCashTiming.AtDelivery"
+              >
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="defaultCashTiming"
+                    id="timingDelivery"
+                    [value]="DirectCashTiming.AtDelivery"
+                    [(ngModel)]="editForm.defaultCashTiming"
+                  />
+                  <label class="form-check-label cursor-pointer" for="timingDelivery">
+                    <strong class="d-block fs-12 text-dark">À la livraison finale</strong>
+                    <small class="text-muted fs-11">Destinataire &rarr; Voyageur à l'arrivée</small>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- FreeChoice -->
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card bg-white h-100"
+                [class.selected]="editForm.defaultCashTiming === DirectCashTiming.FreeChoice"
+                (click)="editForm.defaultCashTiming = DirectCashTiming.FreeChoice"
+              >
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="defaultCashTiming"
+                    id="timingFree"
+                    [value]="DirectCashTiming.FreeChoice"
+                    [(ngModel)]="editForm.defaultCashTiming"
+                  />
+                  <label class="form-check-label cursor-pointer" for="timingFree">
+                    <strong class="d-block fs-12 text-dark">Au libre choix</strong>
+                    <small class="text-muted fs-11">Décidé d'un commun accord entre les parties</small>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 3. Direct Monetization Section -->
+      <div class="mb-4 p-3 bg-light rounded border">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <label class="form-check-label fs-13 fw-semibold text-dark d-flex align-items-center gap-1 cursor-pointer" for="directFeeSwitch">
+            <app-icon icon="dollar-sign" class="text-success"></app-icon>
+            3. Frais de Réservation Plateforme (Monétisation Mode Direct)
+          </label>
+          <div class="form-check form-switch m-0">
+            <input
+              class="form-check-input fs-16"
+              type="checkbox"
+              id="directFeeSwitch"
+              [(ngModel)]="editForm.directBookingFeeEnabled"
+            />
+          </div>
+        </div>
+        <p class="text-muted fs-12 mb-3">
+          Prélève une commission administrative en amont lors de la réservation directe par espèces pour garantir le service plateforme.
+        </p>
+
+        @if (editForm.directBookingFeeEnabled) {
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Frais Fixes par Réservation</label>
+              <div class="input-group input-group-sm">
+                <input
+                  type="number"
+                  class="form-control"
+                  min="0"
+                  step="50"
+                  placeholder="Ex: 1500"
+                  [(ngModel)]="editForm.directBookingFeeFixedAmount"
+                />
+                <span class="input-group-text bg-light text-muted">{{ editForm.currency }}</span>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Taux Commission Directe (%)</label>
+              <div class="input-group input-group-sm">
+                <input
+                  type="number"
+                  class="form-control"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  placeholder="Ex: 5"
+                  [(ngModel)]="editForm.directBookingFeeRate"
+                />
+                <span class="input-group-text bg-light text-muted">%</span>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Devise des Frais</label>
+              <input
+                type="text"
+                class="form-control form-control-sm text-uppercase"
+                placeholder="Ex: XOF, EUR"
+                [(ngModel)]="editForm.currency"
+                maxlength="5"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- 4. Active Status Toggle -->
+      <div class="d-flex align-items-center justify-content-between p-2 border rounded">
+        <div>
+          <strong class="d-block fs-13 text-dark">Politique active pour ce pays</strong>
+          <small class="text-muted fs-12">Si désactivée, les règles par défaut du système s'appliqueront.</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input
+            class="form-check-input fs-16"
+            type="checkbox"
+            id="policyActiveSwitch"
+            [(ngModel)]="editForm.isActive"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer border-top bg-light">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()" [disabled]="saving">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" (click)="savePolicy()" [disabled]="saving">
+        @if (saving) {
+          <div class="spinner-border spinner-border-sm me-1"></div>
+          Enregistrement...
+        } @else {
+          <app-icon icon="check"></app-icon>
+          Enregistrer la Politique
+        }
+      </button>
+    </div>
+  </ng-template>
+</div>

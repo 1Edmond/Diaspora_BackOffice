@@ -235,6 +235,12 @@ export const routes: Routes = [
         data: { title: 'Disputes' },
       },
       {
+        path: 'marketplace/payment-policies',
+        loadComponent: () =>
+          import('./views/marketplace/payment-policies/payment-policies').then((m) => m.PaymentPolicies),
+        data: { title: 'Politiques de Règlement' },
+      },
+      {
         path: 'freelance/job-postings',
         loadComponent: () => import('./views/freelance/job-postings/job-postings').then((m) => m.JobPostingsComponent),
         data: { title: 'Offres Freelance' },

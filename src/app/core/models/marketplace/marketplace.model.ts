@@ -162,7 +162,13 @@ export interface ServiceRequestDto {
   deliveryConfirmedAt?: string
   handoverProofUrl?: string
   deliveryProofUrl?: string
+  settlementType?: number
+  cashTiming?: number
+  platformDirectFeeAmount?: number
+  isDirectCashSettled?: boolean
 }
+
+export type ServiceRequest = ServiceRequestDto
 
 // Admin DTOs
 export interface AdminListingListQuery {
