@@ -110,7 +110,10 @@ export interface CategoryDto {
   displayOrder: number
   listingCount: number
   policy?: CategoryPolicyDto
+  allowedProfileTypeIds?: string[]
 }
+
+export type Category = CategoryDto
 
 export interface ReviewDto {
   id: string
@@ -196,6 +199,7 @@ export interface AdminServiceRequestQuery {
   requesterId?: string
   dateFrom?: string
   dateTo?: string
+  search?: string
 }
 
 export interface ProviderStatsDto {
@@ -238,6 +242,7 @@ export interface CreateCategoryRequest {
   iconUrl?: string
   displayOrder: number
   translations?: { [culture: string]: { [field: string]: string } }
+  allowedProfileTypeIds?: string[]
 }
 
 export interface UpdateCategoryRequest {
@@ -246,6 +251,7 @@ export interface UpdateCategoryRequest {
   iconUrl?: string
   displayOrder: number
   translations?: { [culture: string]: { [field: string]: string } }
+  allowedProfileTypeIds?: string[]
 }
 
 export interface UpdateCategoryPolicyRequest {

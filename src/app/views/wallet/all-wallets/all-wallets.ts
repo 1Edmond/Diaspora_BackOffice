@@ -6,7 +6,13 @@ import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { WalletService } from '@core/services/wallet.service'
-import { WalletDto, PlatformRevenueDto } from '@core/models/wallet/wallet.model'
+import { ProfileService } from '@core/services/profile.service'
+import {
+  WalletDto,
+  PlatformRevenueDto,
+  PlatformRevenueCurrencySummary,
+} from '@core/models/wallet/wallet.model'
+import { ProfileTypeDto } from '@core/models/profile/profile.model'
 
 @Component({
   selector: 'app-all-wallets',
@@ -17,13 +23,19 @@ import { WalletDto, PlatformRevenueDto } from '@core/models/wallet/wallet.model'
 })
 export class AllWallets implements OnInit {
   private walletService = inject(WalletService)
+  private profileService = inject(ProfileService)
   private modalService = inject(NgbModal)
 
   revenue: PlatformRevenueDto | null = null
   wallets: WalletDto[] = []
+  profileTypes: ProfileTypeDto[] = []
+
+  selectedProfileTypeId = ''
+  selectedProfileType: ProfileTypeDto | null = null
 
   loadingRevenue = false
   loadingWallets = false
+  loadingProfileTypes = false
   error = ''
   success = ''
 
@@ -46,8 +58,77 @@ export class AllWallets implements OnInit {
   readonly availableCurrencies = ['XOF', 'EUR', 'USD']
 
   ngOnInit() {
+    this.loadProfileTypes()
     this.loadRevenue()
     this.loadWallets()
+  }
+
+  loadProfileTypes() {
+    this.loadingProfileTypes = true
+    this.profileService.getProfileTypes().subscribe({
+      next: (pts) => {
+        this.profileTypes = pts || []
+        this.loadingProfileTypes = false
+        if (this.profileTypes.length > 0 && !this.selectedProfileTypeId) {
+          this.selectedProfileTypeId = this.profileTypes[0].id
+          this.selectedProfileType = this.profileTypes[0]
+          this.currencyFilter = this.selectedProfileType.currency
+          this.loadWallets()
+        }
+      },
+      error: () => {
+        this.loadingProfileTypes = false
+      },
+    })
+  }
+
+  onProfileTypeFilterChange() {
+    this.selectedProfileType = this.profileTypes.find((pt) => pt.id === this.selectedProfileTypeId) || null
+    if (this.selectedProfileType) {
+      this.currencyFilter = this.selectedProfileType.currency
+    } else {
+      this.currencyFilter = ''
+    }
+    this.page = 1
+    this.loadWallets()
+  }
+
+  get selectedCurrency(): string {
+    return this.selectedProfileType?.currency || this.currencyFilter || 'XOF'
+  }
+
+  get profileTypeRevenue(): PlatformRevenueCurrencySummary | null {
+    if (!this.revenue?.currencies) return null
+    return (
+      this.revenue.currencies.find(
+        (c) => c.currency.toUpperCase() === this.selectedCurrency.toUpperCase()
+      ) || null
+    )
+  }
+
+  get totalWalletsBalance(): number {
+    const targetCurr = this.selectedCurrency.toUpperCase()
+    return this.wallets
+      .filter((w) => w.currency.toUpperCase() === targetCurr)
+      .reduce((sum, w) => sum + (w.balance || 0), 0)
+  }
+
+  get totalWalletsHeld(): number {
+    const targetCurr = this.selectedCurrency.toUpperCase()
+    const fromWallets = this.wallets
+      .filter((w) => w.currency.toUpperCase() === targetCurr)
+      .reduce((sum, w) => sum + (w.heldBalance || 0), 0)
+    const fromRev = this.profileTypeRevenue?.totalEscrowHeld || 0
+    return Math.max(fromWallets, fromRev)
+  }
+
+  get totalCommissions(): number {
+    return this.profileTypeRevenue?.platformBalance || 0
+  }
+
+  get activeWalletsCount(): number {
+    const targetCurr = this.selectedCurrency.toUpperCase()
+    return this.wallets.filter((w) => w.currency.toUpperCase() === targetCurr && w.isActive).length
   }
 
   loadRevenue() {

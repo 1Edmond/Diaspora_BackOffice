@@ -1,0 +1,534 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Politiques de Règlement & Séquestre" subTitle="Wallet" />
+
+  <!-- Statistiques KPI -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-primary text-primary rounded-circle fs-20">
+                <app-icon icon="globe"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Corridors & Profils</p>
+              <h4 class="mb-0 fw-bold">{{ stats.total }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-info text-info rounded-circle fs-20">
+                <app-icon icon="clock"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Délai Moyen Séquestre</p>
+              <h4 class="mb-0 fw-bold text-info">{{ stats.avgDays }} jours</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-success text-success rounded-circle fs-20">
+                <app-icon icon="wallet"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Portefeuille Interne</p>
+              <h4 class="mb-0 fw-bold text-success">{{ stats.internalAllowed }} corridors</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm flex-shrink-0 me-3">
+              <span class="avatar-title bg-soft-warning text-warning rounded-circle fs-20">
+                <app-icon icon="shield-check"></app-icon>
+              </span>
+            </div>
+            <div>
+              <p class="text-muted mb-0 fs-12 fw-medium text-uppercase">Politiques Actives</p>
+              <h4 class="mb-0 fw-bold text-warning">{{ stats.active }} / {{ stats.total }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu Principal -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
+      <div>
+        <h5 class="card-title mb-0 fs-15">Règles de Décaissement & Rétention des Fonds par Juridiction</h5>
+        <small class="text-muted">Configurez les délais d'escrow, les seuils de transaction et les canaux de retrait autorisés</small>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="input-group input-group-sm" style="width: 240px;">
+          <span class="input-group-text bg-light text-muted border-end-0">
+            <app-icon icon="search"></app-icon>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="Rechercher corridor, devise..."
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+
+        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" (click)="loadData()" [disabled]="loading">
+          <app-icon icon="refresh-cw" [class]="loading ? 'spin' : ''"></app-icon>
+          Actualiser
+        </button>
+
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm" (click)="openCreateModal()">
+          <app-icon icon="plus"></app-icon>
+          Nouvelle politique de règlement
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-3">Type de Profil & Juridiction</th>
+              <th scope="col">Rétention Séquestre</th>
+              <th scope="col">Fréquence de Décaissement</th>
+              <th scope="col">Méthodes de Décaissement Autorisées</th>
+              <th scope="col">Seuils Min / Max</th>
+              <th scope="col" class="text-center">Statut</th>
+              <th scope="col" class="text-end pe-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (policy of filteredPolicies; track policy.profileTypeId) {
+              <tr>
+                <td class="ps-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="fs-22 lh-1">{{ policy.flag || '🌍' }}</span>
+                    <div>
+                      <div class="fw-semibold text-dark">{{ policy.countryName || 'Inconnu' }}</div>
+                      <small class="text-muted">
+                        Code : <span class="badge bg-light text-dark">{{ policy.countryCode }}</span>
+                        &bull; Devise : <span class="badge bg-soft-primary text-primary">{{ policy.currency }}</span>
+                      </small>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="badge bg-soft-info text-info fs-12 fw-medium mb-1">
+                    <app-icon icon="clock" class="me-1"></app-icon>{{ policy.escrowHoldDays }} jour(s)
+                  </span>
+                  <div class="fs-11 text-muted">Retenue : <strong>{{ policy.escrowHoldPercentage }}%</strong></div>
+                </td>
+
+                <td>
+                  <span class="badge bg-soft-purple text-dark fs-12 fw-medium">
+                    <app-icon icon="calendar" class="me-1"></app-icon>{{ getFrequencyLabel(policy.disbursementFrequency) }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    @for (m of policy.allowedDisbursementMethods; track m) {
+                      <span class="badge bg-light text-dark border method-badge d-inline-flex align-items-center gap-1">
+                        @if (m === 'BANK_TRANSFER') { <app-icon icon="credit-card" class="text-primary"></app-icon> }
+                        @else if (m === 'MOBILE_MONEY') { <app-icon icon="smartphone" class="text-success"></app-icon> }
+                        @else { <app-icon icon="wallet" class="text-info"></app-icon> }
+                        {{ getMethodLabel(m) }}
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <td>
+                  <div class="fs-12">
+                    <span class="text-muted">Min :</span>
+                    <strong class="text-dark ms-1">
+                      {{ policy.minimumTransactionAmount != null ? (policy.minimumTransactionAmount | number:'1.0-2') + ' ' + policy.currency : 'Non défini' }}
+                    </strong>
+                  </div>
+                  <div class="fs-12">
+                    <span class="text-muted">Max :</span>
+                    <strong class="text-dark ms-1">
+                      {{ policy.maximumTransactionAmount != null ? (policy.maximumTransactionAmount | number:'1.0-2') + ' ' + policy.currency : 'Non défini' }}
+                    </strong>
+                  </div>
+                </td>
+
+                <td class="text-center">
+                  @if (policy.isActive !== false) {
+                    <span class="badge bg-soft-success text-success px-2 py-1">
+                      <app-icon icon="check-circle" class="me-1"></app-icon>Active
+                    </span>
+                  } @else {
+                    <span class="badge bg-soft-secondary text-muted px-2 py-1">
+                      <app-icon icon="x-circle" class="me-1"></app-icon>Inactive
+                    </span>
+                  }
+                </td>
+
+                <td class="text-end pe-3">
+                  <button
+                    class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+                    (click)="openEditModal(policy)"
+                  >
+                    <app-icon icon="edit"></app-icon>
+                    Modifier
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <app-icon icon="inbox" class="fs-24 d-block mb-1"></app-icon>
+                  Aucune politique de règlement trouvée pour les critères saisis.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale de Création d'une Politique de Règlement -->
+<ng-template #createModal let-modal>
+  <div class="modal-header bg-light">
+    <h5 class="modal-title fs-15 fw-bold d-flex align-items-center gap-2">
+      <app-icon icon="shield" class="text-primary"></app-icon>
+      Nouvelle Politique de Règlement & Séquestre
+    </h5>
+    <button type="button" class="btn-close" (click)="closeModal()" [disabled]="submitting"></button>
+  </div>
+
+  <div class="modal-body p-4">
+    <form #createNgForm="ngForm">
+      <!-- Choix du Type de Profil -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-13">
+          Type de Profil / Corridor Éligible <span class="text-danger">*</span>
+        </label>
+        <select
+          class="form-select"
+          [(ngModel)]="createForm.profileTypeId"
+          name="profileTypeId"
+          (change)="onProfileTypeSelectChange()"
+          required
+        >
+          <option value="" disabled>-- Sélectionnez un type de profil --</option>
+          @for (pt of profileTypes; track pt.id) {
+            <option [value]="pt.id">
+              {{ pt.flag || '🌍' }} {{ pt.countryName }} ({{ pt.countryCode }} - {{ pt.currency }})
+              {{ hasPolicy(pt.id) ? '— [Déjà configuré]' : '' }}
+            </option>
+          }
+        </select>
+        <small class="text-muted fs-11">
+          Chaque type de profil correspond à une réglementation bancaire et une devise locale propre.
+        </small>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <!-- Délai de rétention -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">
+            Délai de rétention en séquestre (jours) <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="createForm.escrowHoldDays"
+              name="escrowHoldDays"
+              min="0"
+              max="90"
+              required
+            />
+            <span class="input-group-text">jours</span>
+          </div>
+          <small class="text-muted fs-11">Délai avant libération automatique au prestataire après livraison.</small>
+        </div>
+
+        <!-- Pourcentage de retenue -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">
+            Pourcentage de retenue sous séquestre (%) <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="createForm.escrowHoldPercentage"
+              name="escrowHoldPercentage"
+              min="0"
+              max="100"
+              required
+            />
+            <span class="input-group-text">%</span>
+          </div>
+          <small class="text-muted fs-11">Généralement 100% pour un séquestre intégral sécurisé.</small>
+        </div>
+      </div>
+
+      <!-- Fréquence de décaissement -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-13">
+          Fréquence de décaissement (Virements & Retraits) <span class="text-danger">*</span>
+        </label>
+        <select
+          class="form-select"
+          [(ngModel)]="createForm.disbursementFrequency"
+          name="disbursementFrequency"
+          required
+        >
+          @for (freq of frequencyOptions; track freq.value) {
+            <option [value]="freq.value">{{ freq.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Méthodes de décaissement autorisées -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-13 mb-2 d-block">
+          Canaux de décaissement autorisés pour ce profil <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex flex-wrap gap-2">
+          @for (m of disbursementMethods; track m.id) {
+            <div class="form-check form-check-inline border rounded p-2 px-3 d-flex align-items-center gap-2 m-0 bg-light">
+              <input
+                class="form-check-input mt-0"
+                type="checkbox"
+                [id]="'create-method-' + m.id"
+                [checked]="isMethodSelected(m.id, createForm)"
+                (change)="toggleMethod(m.id, createForm)"
+              />
+              <label class="form-check-label fs-13 fw-medium cursor-pointer" [for]="'create-method-' + m.id">
+                <app-icon [icon]="m.icon" class="me-1 text-primary"></app-icon>
+                {{ m.label }}
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Montant Minimum -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">Montant transactionnel minimum</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="createForm.minimumTransactionAmount"
+            name="minimumTransactionAmount"
+            min="0"
+            placeholder="Ex: 500"
+          />
+        </div>
+
+        <!-- Montant Maximum -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">Montant transactionnel maximum</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="createForm.maximumTransactionAmount"
+            name="maximumTransactionAmount"
+            min="0"
+            placeholder="Ex: 2000000"
+          />
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer bg-light">
+    <button type="button" class="btn btn-light" (click)="closeModal()" [disabled]="submitting">
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary d-inline-flex align-items-center gap-1.5"
+      (click)="saveCreatePolicy()"
+      [disabled]="submitting || !isCreateFormValid()"
+    >
+      @if (submitting) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Enregistrement en cours...
+      } @else {
+        <app-icon icon="check"></app-icon>
+        Enregistrer la politique
+      }
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modale d'Édition d'une Politique de Règlement -->
+<ng-template #editModal let-modal>
+  <div class="modal-header bg-light">
+    <h5 class="modal-title fs-15 fw-bold d-flex align-items-center gap-2">
+      <app-icon icon="edit" class="text-primary"></app-icon>
+      Modifier la Politique : {{ editingPolicy?.flag }} {{ editingPolicy?.countryName }} ({{ editingPolicy?.currency }})
+    </h5>
+    <button type="button" class="btn-close" (click)="closeModal()" [disabled]="submitting"></button>
+  </div>
+
+  <div class="modal-body p-4">
+    <form #editNgForm="ngForm">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">
+            Délai de rétention en séquestre (jours) <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="editForm.escrowHoldDays"
+              name="editEscrowHoldDays"
+              min="0"
+              max="90"
+              required
+            />
+            <span class="input-group-text">jours</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">
+            Pourcentage de retenue (%) <span class="text-danger">*</span>
+          </label>
+          <div class="input-group">
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="editForm.escrowHoldPercentage"
+              name="editEscrowHoldPercentage"
+              min="0"
+              max="100"
+              required
+            />
+            <span class="input-group-text">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-13">Fréquence de décaissement <span class="text-danger">*</span></label>
+        <select
+          class="form-select"
+          [(ngModel)]="editForm.disbursementFrequency"
+          name="editDisbursementFrequency"
+          required
+        >
+          @for (freq of frequencyOptions; track freq.value) {
+            <option [value]="freq.value">{{ freq.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-13 mb-2 d-block">Canaux de décaissement autorisés</label>
+        <div class="d-flex flex-wrap gap-2">
+          @for (m of disbursementMethods; track m.id) {
+            <div class="form-check form-check-inline border rounded p-2 px-3 d-flex align-items-center gap-2 m-0 bg-light">
+              <input
+                class="form-check-input mt-0"
+                type="checkbox"
+                [id]="'edit-method-' + m.id"
+                [checked]="isMethodSelected(m.id, editForm)"
+                (change)="toggleMethod(m.id, editForm)"
+              />
+              <label class="form-check-label fs-13 fw-medium cursor-pointer" [for]="'edit-method-' + m.id">
+                <app-icon [icon]="m.icon" class="me-1 text-primary"></app-icon>
+                {{ m.label }}
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">Montant transactionnel minimum</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="editForm.minimumTransactionAmount"
+            name="editMinAmount"
+            min="0"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold fs-13">Montant transactionnel maximum</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="editForm.maximumTransactionAmount"
+            name="editMaxAmount"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <div class="form-check form-switch mt-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="policyActiveSwitch"
+          [(ngModel)]="editForm.isActive"
+          name="editIsActive"
+        />
+        <label class="form-check-label fw-semibold fs-13" for="policyActiveSwitch">
+          Politique active et applicable pour ce corridor
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer bg-light">
+    <button type="button" class="btn btn-light" (click)="closeModal()" [disabled]="submitting">
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary d-inline-flex align-items-center gap-1.5"
+      (click)="saveEditPolicy()"
+      [disabled]="submitting"
+    >
+      @if (submitting) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Enregistrement...
+      } @else {
+        <app-icon icon="check"></app-icon>
+        Mettre à jour
+      }
+    </button>
+  </div>
+</ng-template>

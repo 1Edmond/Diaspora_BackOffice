@@ -65,11 +65,11 @@ export class Listings implements OnInit, OnDestroy {
   PaymentModeLabels = PaymentModeLabels
 
   statusOptions = [
-    { value: null, label: 'All' },
-    { value: 0, label: 'Pending' },
-    { value: 1, label: 'Approved' },
-    { value: 2, label: 'Rejected' },
-    { value: 3, label: 'Suspended' },
+    { value: null, label: 'Tous les statuts' },
+    { value: 0, label: 'En attente' },
+    { value: 1, label: 'Validée' },
+    { value: 2, label: 'Rejetée' },
+    { value: 3, label: 'Suspendue' },
   ]
 
   categories: { id: string; name: string }[] = []
@@ -130,14 +130,23 @@ export class Listings implements OnInit, OnDestroy {
 
     this.marketplaceService.getAllListingsAdmin(query).subscribe({
       next: (res) => {
-        this.listings.set(res.items.map(l => ({ ...l, selected: false })))
+        let items = res.items || []
+        if (this.providerFilter?.trim()) {
+          const pf = this.providerFilter.trim().toLowerCase()
+          items = items.filter(
+            (l) =>
+              (l.providerName && l.providerName.toLowerCase().includes(pf)) ||
+              (l.providerId && l.providerId.toLowerCase().includes(pf))
+          )
+        }
+        this.listings.set(items.map((l) => ({ ...l, selected: false })))
         this.totalCount = res.totalCount
         this.totalPages = res.totalPages
         this.loading = false
       },
       error: (err) => {
         this.loading = false
-        this.error = err.error?.error || err.error?.message || 'Failed to load listings'
+        this.error = err.error?.error || err.error?.message || 'Échec du chargement des annonces'
       }
     })
   }

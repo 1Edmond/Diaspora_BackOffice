@@ -6,6 +6,9 @@ import { Icon } from '@app/components/icon/icon'
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import { Observable } from 'rxjs'
 import { MarketplaceService } from '@core/services/marketplace.service'
+import { ProfileService } from '@core/services/profile.service'
+import { ToastService } from '@core/services/toast.service'
+import { ProfileTypeDto } from '@core/models/profile/profile.model'
 import {
   CategoryDto,
   CategoryPolicyDto,
@@ -34,6 +37,10 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap'
 export class Categories implements OnInit {
   categories: CategoryDto[] = []
   loading = false
+
+  profileTypes: ProfileTypeDto[] = []
+  isUniversal = true
+  selectedProfileTypeIds: string[] = []
 
   model: CreateCategoryRequest = { name: '', description: '', iconUrl: '', displayOrder: 0 }
   saving = false
@@ -91,11 +98,45 @@ export class Categories implements OnInit {
 
   constructor(
     private marketplaceService: MarketplaceService,
-    private modalService: NgbModal
+    private profileService: ProfileService,
+    private modalService: NgbModal,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
     this.loadCategories()
+    this.loadProfileTypes()
+  }
+
+  loadProfileTypes() {
+    this.profileService.getProfileTypes().subscribe({
+      next: (pts) => {
+        this.profileTypes = pts || []
+      },
+      error: () => {},
+    })
+  }
+
+  toggleProfileType(id: string) {
+    const idx = this.selectedProfileTypeIds.indexOf(id)
+    if (idx >= 0) {
+      this.selectedProfileTypeIds.splice(idx, 1)
+    } else {
+      this.selectedProfileTypeIds.push(id)
+    }
+  }
+
+  isProfileTypeSelected(id: string): boolean {
+    return this.selectedProfileTypeIds.includes(id)
+  }
+
+  getProfileType(id: string): ProfileTypeDto | undefined {
+    return this.profileTypes.find((pt) => pt.id === id)
+  }
+
+  getEligibleProfileTypes(cat: CategoryDto): ProfileTypeDto[] {
+    if (!cat.allowedProfileTypeIds || cat.allowedProfileTypeIds.length === 0) return []
+    return this.profileTypes.filter((pt) => cat.allowedProfileTypeIds?.includes(pt.id))
   }
 
   getLangInfo(code: string): LanguageOption {
@@ -171,6 +212,7 @@ export class Categories implements OnInit {
     this.model.displayOrder = Number(this.model.displayOrder) || 0
     this.model.iconUrl = this.model.iconUrl?.trim() || undefined
     this.model.translations = dynamicTranslations
+    this.model.allowedProfileTypeIds = this.isUniversal ? [] : [...this.selectedProfileTypeIds]
 
     this.saving = true
     this.error = ''
@@ -181,9 +223,11 @@ export class Categories implements OnInit {
 
     obs.subscribe({
       next: () => {
-        this.successMessage = this.editId
-          ? 'Catégorie mise à jour avec ses traductions multilingues.'
+        const msg = this.editId
+          ? 'Catégorie mise à jour avec ses restrictions de profils et traductions.'
           : 'Catégorie créée avec succès.'
+        this.successMessage = msg
+        this.toast.success(msg)
         this.resetForm()
         this.loadCategories()
       },
@@ -199,6 +243,7 @@ export class Categories implements OnInit {
           (typeof err.error === 'string' ? err.error : '') ||
           (err.status ? `Erreur HTTP ${err.status} (${err.statusText || 'Échec'})` : '')
         this.error = serverError || "Erreur lors de l'enregistrement de la catégorie."
+        this.toast.error(this.error)
       },
     })
   }
@@ -210,6 +255,14 @@ export class Categories implements OnInit {
       description: cat.description || '',
       iconUrl: cat.iconUrl || '',
       displayOrder: cat.displayOrder,
+      allowedProfileTypeIds: cat.allowedProfileTypeIds ? [...cat.allowedProfileTypeIds] : [],
+    }
+    if (cat.allowedProfileTypeIds && cat.allowedProfileTypeIds.length > 0) {
+      this.isUniversal = false
+      this.selectedProfileTypeIds = [...cat.allowedProfileTypeIds]
+    } else {
+      this.isUniversal = true
+      this.selectedProfileTypeIds = []
     }
     this.formLanguages = ['fr']
     this.formTranslations = {
@@ -312,6 +365,8 @@ export class Categories implements OnInit {
       fr: { Name: '', Description: '' },
     }
     this.formLanguage = 'fr'
+    this.isUniversal = true
+    this.selectedProfileTypeIds = []
     this.saving = false
     this.customLangInput = ''
   }

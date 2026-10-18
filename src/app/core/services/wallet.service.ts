@@ -4,9 +4,11 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse, PagedList } from '../models/shared/base-response.model';
 import {
+  CreatePaymentPolicyRequest,
   DepositRequest,
   DepositResponse,
   MarketplacePaymentRequest,
+  PaymentPolicyDto,
   PlatformRevenueDto,
   ProcedurePaymentRequest,
   TransactionDto,
@@ -14,6 +16,7 @@ import {
   TransferRequest,
   TransferResponse,
   UpdateWalletParameterRequest,
+  UpdateWalletPaymentPolicyRequest,
   WalletDto,
   WalletParameterDto,
 } from '../models/wallet/wallet.model';
@@ -56,6 +59,7 @@ export class WalletService {
     if (query.pageSize != null) params.pageSize = query.pageSize;
     if (query.type != null) params.type = query.type;
     if (query.status != null) params.status = query.status;
+    if (query.search) params.search = query.search;
     return this.http.get<PagedList<TransactionDto>>(`${this.apiUrl}/transactions/profile/${profileId}`, { params });
   }
 
@@ -69,6 +73,7 @@ export class WalletService {
     if (query.walletId) params.walletId = query.walletId;
     if (query.fromDate) params.fromDate = query.fromDate;
     if (query.toDate) params.toDate = query.toDate;
+    if (query.search) params.search = query.search;
     return this.http.get<PagedList<TransactionDto>>(`${this.apiUrl}/transactions`, { params });
   }
 
@@ -90,5 +95,26 @@ export class WalletService {
 
   updateParameter(key: string, data: UpdateWalletParameterRequest): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/parameters/${key}`, data);
+  }
+
+  // Payment Policies (CRUD)
+  getPaymentPolicies(): Observable<PaymentPolicyDto[]> {
+    return this.http.get<PaymentPolicyDto[]>(`${this.apiUrl}/payment-policies`);
+  }
+
+  getPaymentPolicyByProfileType(profileTypeId: string): Observable<PaymentPolicyDto> {
+    return this.http.get<PaymentPolicyDto>(`${this.apiUrl}/payment-policies/by-profile-type/${profileTypeId}`);
+  }
+
+  createPaymentPolicy(request: CreatePaymentPolicyRequest): Observable<PaymentPolicyDto> {
+    return this.http.post<PaymentPolicyDto>(`${this.apiUrl}/payment-policies`, request);
+  }
+
+  updatePaymentPolicy(id: string, request: UpdateWalletPaymentPolicyRequest): Observable<PaymentPolicyDto> {
+    return this.http.put<PaymentPolicyDto>(`${this.apiUrl}/payment-policies/${id}`, request);
+  }
+
+  deletePaymentPolicy(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/payment-policies/${id}`);
   }
 }

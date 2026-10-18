@@ -215,6 +215,7 @@ export class MarketplaceService {
     if (query.requesterId) params.requesterId = query.requesterId;
     if (query.dateFrom) params.dateFrom = query.dateFrom;
     if (query.dateTo) params.dateTo = query.dateTo;
+    if (query.search) params.search = query.search;
     return this.http.get<PagedList<ServiceRequestDto>>(`${this.requestsApiUrl}/admin`, { params });
   }
 

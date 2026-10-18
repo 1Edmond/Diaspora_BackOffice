@@ -1,14 +1,16 @@
 import { currentYear, META_DATA } from '@/app/constants'
-import { Component, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { Component, OnInit, inject } from '@angular/core'
 import { FormsModule, NgForm } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
 import { Icon } from '@app/components/icon/icon'
 import { UserDto } from '@core/models/auth.models'
 import { AuthService } from '@core/services/auth.service'
+import { ToastService } from '@core/services/toast.service'
 
 @Component({
   selector: 'app-lock-screen',
-  imports: [RouterLink, FormsModule, Icon],
+  imports: [RouterLink, FormsModule, CommonModule, Icon],
   templateUrl: './lock-screen.html',
   styles: ``,
 })
@@ -22,10 +24,9 @@ export class LockScreen implements OnInit {
   error = ''
   loading = false
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private authService = inject(AuthService)
+  private router = inject(Router)
+  private toastService = inject(ToastService)
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser()
@@ -53,6 +54,7 @@ export class LockScreen implements OnInit {
   onSubmit(form: NgForm): void {
     if (form.invalid || !this.password.trim()) {
       this.error = 'Veuillez saisir votre mot de passe.'
+      this.toastService.error(this.error)
       return
     }
 
@@ -72,14 +74,17 @@ export class LockScreen implements OnInit {
       .subscribe({
         next: () => {
           this.loading = false
+          this.toastService.success('Session déverrouillée avec succès.')
           sessionStorage.removeItem('diaspora_is_locked')
           const returnUrl = sessionStorage.getItem('diaspora_lock_return_url') || '/dashboard'
           sessionStorage.removeItem('diaspora_lock_return_url')
           this.router.navigateByUrl(returnUrl)
         },
-        error: () => {
+        error: (err) => {
           this.loading = false
-          this.error = 'Mot de passe incorrect.'
+          const errMsg = err?.error?.message || err?.error?.error || 'Mot de passe incorrect ou session expirée.'
+          this.error = errMsg
+          this.toastService.error(errMsg)
         },
       })
   }

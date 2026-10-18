@@ -2,66 +2,113 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-xxl-4 col-md-6 col-sm-8">
-        <div class="card p-4">
+        <div class="card p-4 shadow-sm border-0">
           <div class="position-absolute top-0 end-0" style="width: 180px">
             <img src="assets/images/auth-card-bg.svg" class="auth-card-bg-img" alt="auth-card-bg" />
           </div>
-          <div class="auth-brand text-center mb-4">
+          <div class="auth-brand text-center mb-4 position-relative">
             <a routerLink="/" class="logo-dark">
               <img src="assets/images/logo-black.png" alt="dark logo" />
             </a>
             <a routerLink="/" class="logo-light">
               <img src="assets/images/logo.png" alt="logo" />
             </a>
-            <p class="text-muted w-lg-75 mt-3 mx-auto">Let’s get you signed in. Enter your email and password to continue.</p>
+            <h4 class="fw-bold mt-3 mb-1 text-dark">Connexion BackOffice</h4>
+            <p class="text-muted w-lg-75 mx-auto fs-sm">
+              Connectez-vous pour continuer. Saisissez votre adresse email et votre mot de passe administrateur.
+            </p>
           </div>
-          <form (ngSubmit)="onSubmit()">
+
+          <form #signInForm="ngForm" (ngSubmit)="onSubmit(signInForm)" novalidate>
             <div class="mb-3">
-              <label for="userEmail" class="form-label">
-                Email address
+              <label for="userEmail" class="form-label fw-medium">
+                Adresse email
                 <span class="text-danger">*</span>
               </label>
               <div class="input-group">
-                <input type="email" name="email" [(ngModel)]="email" class="form-control" id="userEmail" placeholder="you@example.com" required />
+                <span class="input-group-text bg-light-subtle">
+                  <app-icon icon="mail" class="text-muted"></app-icon>
+                </span>
+                <input
+                  type="email"
+                  name="email"
+                  [(ngModel)]="email"
+                  class="form-control"
+                  id="userEmail"
+                  placeholder="nom@exemple.com"
+                  required
+                  email
+                  #emailModel="ngModel"
+                />
               </div>
             </div>
 
             <div class="mb-3">
-              <label for="userPassword" class="form-label">
-                Password
-                <span class="text-danger">*</span>
-              </label>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="userPassword" class="form-label fw-medium m-0">
+                  Mot de passe
+                  <span class="text-danger">*</span>
+                </label>
+                <a routerLink="/auth/reset-pass" class="text-decoration-underline link-offset-3 text-muted fs-xs">
+                  Mot de passe oublié ?
+                </a>
+              </div>
               <div class="input-group">
-                <input type="password" name="password" [(ngModel)]="password" class="form-control" id="userPassword" placeholder="••••••••" required />
+                <span class="input-group-text bg-light-subtle">
+                  <app-icon icon="lock" class="text-muted"></app-icon>
+                </span>
+                <input
+                  type="password"
+                  name="password"
+                  [(ngModel)]="password"
+                  class="form-control"
+                  id="userPassword"
+                  placeholder="••••••••"
+                  required
+                  #passwordModel="ngModel"
+                />
               </div>
             </div>
-
-            @if(error){
-            <p class="text-danger">{{ error }}</p>
-            }
 
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div class="form-check">
-                <input class="form-check-input form-check-input-light fs-14" type="checkbox" checked id="rememberMe" />
-                <label class="form-check-label" for="rememberMe">Keep me signed in</label>
+                <input
+                  class="form-check-input form-check-input-light fs-14"
+                  type="checkbox"
+                  [(ngModel)]="rememberMe"
+                  name="rememberMe"
+                  id="rememberMe"
+                />
+                <label class="form-check-label fs-sm" for="rememberMe">Se souvenir de moi</label>
               </div>
-              <a routerLink="/auth/reset-pass" class="text-decoration-underline link-offset-3 text-muted">Forgot Password?</a>
             </div>
 
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary fw-semibold py-2">Sign In</button>
+            <div class="d-grid mb-3">
+              <button
+                type="submit"
+                class="btn btn-primary fw-semibold py-2 d-flex align-items-center justify-content-center"
+                [disabled]="loading || signInForm.invalid"
+              >
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" *ngIf="loading"></span>
+                <span>{{ loading ? 'Connexion en cours...' : 'Se connecter' }}</span>
+              </button>
+            </div>
+
+            <!-- Alerte contextuelle rouge Bootstrap claire sous le formulaire -->
+            <div class="alert alert-danger py-2 px-3 fs-sm d-flex align-items-center gap-2 mb-0" *ngIf="error" role="alert">
+              <app-icon icon="alert-circle" class="flex-shrink-0 fs-5"></app-icon>
+              <div>{{ error }}</div>
             </div>
           </form>
 
-          <p class="text-muted text-center mt-4 mb-0">
-            New here?
-            <a routerLink="/auth/sign-up" class="text-decoration-underline link-offset-3 fw-semibold">Create an account</a>
+          <p class="text-muted text-center mt-4 mb-0 fs-sm">
+            Nouveau sur Diaspora ?
+            <a routerLink="/auth/sign-up" class="text-decoration-underline link-offset-3 fw-semibold">Créer un compte</a>
           </p>
         </div>
 
-        <p class="text-center text-muted mt-4 mb-0">
-          © {{currentYear}} {{name}} — by
-          <span class="fw-semibold">{{author}}</span>
+        <p class="text-center text-muted mt-4 mb-0 fs-sm">
+          © {{ currentYear }} Diaspora. Tous droits réservés.
         </p>
       </div>
     </div>

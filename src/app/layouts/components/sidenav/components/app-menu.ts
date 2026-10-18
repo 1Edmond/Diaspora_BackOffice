@@ -1,10 +1,11 @@
 import { MenuItemType } from '@/app/types'
 import { scrollToElement } from '@/app/utils/layout'
 import { CommonModule } from '@angular/common'
-import { Component, inject, OnInit, TemplateRef, ViewChild } from '@angular/core'
+import { Component, computed, effect, inject, OnInit, TemplateRef, ViewChild } from '@angular/core'
 import { NavigationEnd, Router, RouterLink } from '@angular/router'
 import { Icon } from '@app/components/icon/icon'
 import { LayoutService } from '@core/services/layout.service'
+import { NavigationFocusService } from '@core/services/navigation-focus.service'
 import { menuItems } from '@layouts/components/data'
 import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap'
 import { filter } from 'rxjs'
@@ -13,8 +14,19 @@ import { filter } from 'rxjs'
   selector: 'app-menu',
   imports: [NgbCollapse, RouterLink, CommonModule, Icon],
   template: `
+    @if (navigationFocusService.isFocused()) {
+      <div class="px-3 pt-2">
+        <button
+          class="btn btn-sm btn-outline-primary w-100 mb-3 d-flex align-items-center justify-content-center shadow-sm"
+          (click)="navigationFocusService.clearFocus()"
+        >
+          <app-icon icon="arrow-left" class="me-1"></app-icon> Tous les modules
+        </button>
+      </div>
+    }
+
     <ul class="side-nav">
-      @for (item of menuItems; track item.slug) {
+      @for (item of displayedMenuItems(); track item.slug) {
         @if (item.isTitle) {
           <li class="side-nav-title mt-2">{{ item.label }}</li>
         }
@@ -77,6 +89,7 @@ import { filter } from 'rxjs'
 export class AppMenu implements OnInit {
   router = inject(Router)
   layout = inject(LayoutService)
+  navigationFocusService = inject(NavigationFocusService)
 
   @ViewChild('MenuItemWithChildren', { static: true })
   menuItemWithChildren!: TemplateRef<{ item: MenuItemType }>
@@ -86,15 +99,32 @@ export class AppMenu implements OnInit {
 
   menuItems = menuItems
 
+  displayedMenuItems = computed(() => {
+    const active = this.navigationFocusService.activeModule()
+    if (!active) {
+      return this.menuItems
+    }
+    const matched = this.menuItems.filter((item) => item.slug === active)
+    return matched.length > 0 ? matched : this.menuItems
+  })
+
   openSubmenus: { [key: string]: boolean } = {}
+
+  constructor() {
+    effect(() => {
+      const items = this.displayedMenuItems()
+      this.initializeOpenStates(items)
+      setTimeout(() => this.scrollToActiveLink(), 50)
+    })
+  }
 
   ngOnInit(): void {
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
-      this.initializeOpenStates(this.menuItems)
+      this.initializeOpenStates(this.displayedMenuItems())
       setTimeout(() => this.scrollToActiveLink(), 50)
     })
 
-    this.initializeOpenStates(this.menuItems)
+    this.initializeOpenStates(this.displayedMenuItems())
     setTimeout(() => this.scrollToActiveLink(), 100)
   }
 

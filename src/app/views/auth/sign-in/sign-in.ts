@@ -1,13 +1,16 @@
 import { currentYear, META_DATA } from '@/app/constants'
-import { Component } from '@angular/core'
-import { FormsModule } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { Component, inject } from '@angular/core'
+import { FormsModule, NgForm } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
-import { AuthService } from '@core/services/auth.service'
+import { Icon } from '@app/components/icon/icon'
 import { LoginRequest } from '@core/models/auth.models'
+import { AuthService } from '@core/services/auth.service'
+import { ToastService } from '@core/services/toast.service'
 
 @Component({
   selector: 'app-sign-in',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule, Icon],
   templateUrl: './sign-in.html',
   styles: ``,
 })
@@ -18,15 +21,20 @@ export class SignIn {
 
   email = 'admin@example.com'
   password = 'password'
+  rememberMe = true
   error = ''
   loading = false
 
-  constructor(
-    private auth: AuthService,
-    private router: Router
-  ) {}
+  private auth = inject(AuthService)
+  private router = inject(Router)
+  private toastService = inject(ToastService)
 
-  onSubmit() {
+  onSubmit(signInForm?: NgForm) {
+    if (signInForm && signInForm.invalid) {
+      this.error = 'Veuillez remplir correctement tous les champs obligatoires.'
+      return
+    }
+
     this.error = ''
     this.loading = true
 
@@ -38,12 +46,15 @@ export class SignIn {
     this.auth.login(request).subscribe({
       next: () => {
         this.loading = false
+        this.toastService.success('Connexion réussie. Bienvenue sur Diaspora !')
         this.router.navigate([''])
       },
       error: (err) => {
         this.loading = false
-        this.error = err.error?.error || err.error?.message || 'Invalid email or password'
-      }
+        const errorMessage = err.error?.error || err.error?.message || 'Identifiants incorrects ou compte inactif.'
+        this.error = errorMessage
+        this.toastService.error('Identifiants incorrects ou compte inactif.')
+      },
     })
   }
 }

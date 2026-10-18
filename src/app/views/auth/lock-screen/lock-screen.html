@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-xxl-4 col-md-6 col-sm-8">
-        <div class="card p-4 shadow-sm">
+        <div class="card p-4 shadow-sm border-0">
           <div class="position-absolute top-0 end-0" style="width: 180px">
             <img src="assets/images/auth-card-bg.svg" class="auth-card-bg-img" alt="auth-card-bg" />
           </div>
@@ -33,7 +33,7 @@
             </span>
           </div>
 
-          <form (ngSubmit)="onSubmit(f)" #f="ngForm">
+          <form (ngSubmit)="onSubmit(f)" #f="ngForm" novalidate>
             <div class="mb-3">
               <label for="userPassword" class="form-label fw-medium">
                 Mot de passe
@@ -56,20 +56,24 @@
             </div>
 
             @if (error) {
-              <div class="alert alert-danger py-2 fs-sm d-flex align-items-center gap-2">
-                <app-icon icon="alert-circle" class="flex-shrink-0"></app-icon>
+              <div class="alert alert-danger py-2 px-3 fs-sm d-flex align-items-center gap-2 mb-3">
+                <app-icon icon="alert-circle" class="flex-shrink-0 fs-5"></app-icon>
                 <span>{{ error }}</span>
               </div>
             }
 
             <div class="d-grid">
-              <button type="submit" class="btn btn-primary fw-semibold py-2" [disabled]="loading">
+              <button
+                type="submit"
+                class="btn btn-primary fw-semibold py-2 d-flex align-items-center justify-content-center"
+                [disabled]="loading || f.invalid"
+              >
                 @if (loading) {
                   <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Déverrouillage en cours...
+                  <span>Déverrouillage en cours...</span>
                 } @else {
                   <app-icon icon="unlock" class="me-1 align-middle"></app-icon>
-                  Déverrouiller la session
+                  <span>Déverrouiller la session</span>
                 }
               </button>
             </div>
@@ -86,12 +90,10 @@
           </div>
         </div>
 
-        <p class="text-center text-muted mt-4 mb-0">
-          © {{ currentYear }} {{ name }} — par
-          <span class="fw-semibold">{{ author }}</span>
+        <p class="text-center text-muted mt-4 mb-0 fs-sm">
+          © {{ currentYear }} Diaspora. Tous droits réservés.
         </p>
       </div>
     </div>
   </div>
 </div>
-

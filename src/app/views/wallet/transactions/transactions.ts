@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, OnDestroy } from '@angular/core'
 import { DatePipe, DecimalPipe } from '@angular/common'
 import { ActivatedRoute } from '@angular/router'
 import { FormsModule } from '@angular/forms'
@@ -7,6 +7,7 @@ import { Icon } from '@app/components/icon/icon'
 import { WalletService } from '@core/services/wallet.service'
 import { TransactionDto } from '@core/models/wallet/wallet.model'
 import { ProfileSearchDropdown } from '@shared/components/profile-search-dropdown/profile-search-dropdown'
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs'
 import {
   TransactionType,
   TransactionStatus,
@@ -25,7 +26,10 @@ import {
   templateUrl: './transactions.html',
   styles: ``,
 })
-export class Transactions implements OnInit {
+export class Transactions implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>()
+  private searchSubject = new Subject<string>()
+
   transactions: TransactionDto[] = []
   page = 1
   pageSize = 10
@@ -33,6 +37,7 @@ export class Transactions implements OnInit {
   totalPages = 1
   typeFilter = ''
   statusFilter = ''
+  searchTerm = ''
   loading = false
 
   selectedProfileId = ''
@@ -76,6 +81,13 @@ export class Transactions implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.page = 1
+        this.loadTransactions()
+      })
+
     this.route.queryParamMap.subscribe((params) => {
       const profileId = params.get('profileId')
       const walletId = params.get('walletId')
@@ -88,6 +100,15 @@ export class Transactions implements OnInit {
       }
       this.loadTransactions()
     })
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next()
+    this.destroy$.complete()
+  }
+
+  onSearchChange() {
+    this.searchSubject.next(this.searchTerm)
   }
 
   setTab(tab: 'all' | 'by-profile') {
@@ -115,6 +136,7 @@ export class Transactions implements OnInit {
     this.loading = true
     const type = this.typeFilter ? (Number(this.typeFilter) as TransactionType) : undefined
     const status = this.statusFilter ? (Number(this.statusFilter) as TransactionStatus) : undefined
+    const search = this.searchTerm.trim() || undefined
 
     if (this.activeTab === 'by-profile') {
       if (!this.selectedProfileId) {
@@ -131,10 +153,21 @@ export class Transactions implements OnInit {
           pageSize: this.pageSize,
           type,
           status,
+          search,
         })
         .subscribe({
           next: (res) => {
-            this.transactions = res.items
+            let items = res.items || []
+            if (search) {
+              const term = search.toLowerCase()
+              items = items.filter(
+                (t) =>
+                  (t.description && t.description.toLowerCase().includes(term)) ||
+                  (t.referenceId && t.referenceId.toLowerCase().includes(term)) ||
+                  (t.currency && t.currency.toLowerCase().includes(term))
+              )
+            }
+            this.transactions = items
             this.totalCount = res.totalCount
             this.totalPages = res.totalPages
             this.loading = false
@@ -150,12 +183,22 @@ export class Transactions implements OnInit {
           pageSize: this.pageSize,
           type,
           status,
+          search,
         })
         .subscribe({
           next: (res) => {
             let items = res.items || []
             if (this.selectedWalletId) {
               items = items.filter((t) => t.walletId === this.selectedWalletId)
+            }
+            if (search) {
+              const term = search.toLowerCase()
+              items = items.filter(
+                (t) =>
+                  (t.description && t.description.toLowerCase().includes(term)) ||
+                  (t.referenceId && t.referenceId.toLowerCase().includes(term)) ||
+                  (t.currency && t.currency.toLowerCase().includes(term))
+              )
             }
             this.transactions = items
             this.totalCount = res.totalCount

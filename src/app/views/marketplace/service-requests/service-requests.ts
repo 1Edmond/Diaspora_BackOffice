@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, OnDestroy } from '@angular/core'
 import { DatePipe, CurrencyPipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
@@ -7,6 +7,7 @@ import { MarketplaceService } from '@core/services/marketplace.service'
 import { ConfirmModalService } from '@core/services/confirm-modal.service'
 import { ToastService } from '@core/services/toast.service'
 import { ServiceRequestDto, AdminServiceRequestQuery } from '@core/models/marketplace/marketplace.model'
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs'
 import {
   ServiceRequestStatus,
   ServiceRequestStatusLabels,
@@ -28,13 +29,17 @@ import {
   templateUrl: './service-requests.html',
   styles: ``,
 })
-export class ServiceRequests implements OnInit {
+export class ServiceRequests implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>()
+  private searchSubject = new Subject<string>()
+
   requests: ServiceRequestDto[] = []
   page = 1
   pageSize = 10
   totalCount = 0
   totalPages = 1
   loading = false
+  searchTerm = ''
   selectedStatus: number | null = null
   selectedPaymentStatus: number | null = null
 
@@ -63,7 +68,22 @@ export class ServiceRequests implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.page = 1
+        this.loadRequests()
+      })
     this.loadRequests()
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next()
+    this.destroy$.complete()
+  }
+
+  onSearchChange() {
+    this.searchSubject.next(this.searchTerm)
   }
 
   loadRequests() {
@@ -73,6 +93,7 @@ export class ServiceRequests implements OnInit {
       pageSize: this.pageSize,
       status: this.selectedStatus != null ? (this.selectedStatus as ServiceRequestStatus) : undefined,
       paymentStatus: this.selectedPaymentStatus != null ? (this.selectedPaymentStatus as PaymentStatus) : undefined,
+      search: this.searchTerm.trim() || undefined,
     }
     this.marketplaceService.getAllServiceRequestsAdmin(query).subscribe({
       next: (res) => {

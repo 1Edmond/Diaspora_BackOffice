@@ -85,6 +85,7 @@ export interface TransactionListQuery {
   currency?: string
   fromDate?: string
   toDate?: string
+  search?: string
 }
 
 export interface UpdateWalletParameterRequest {
@@ -100,5 +101,44 @@ export interface PlatformRevenueCurrencySummary {
 export interface PlatformRevenueDto {
   currencies: PlatformRevenueCurrencySummary[]
   platformWallets: WalletDto[]
+}
+
+export interface CreatePaymentPolicyRequest {
+  profileTypeId: string
+  escrowHoldDays: number
+  escrowHoldPercentage: number
+  disbursementFrequency: string
+  allowedDisbursementMethods: string[]
+  minimumTransactionAmount?: number
+  maximumTransactionAmount?: number
+}
+
+export interface PaymentPolicyDto {
+  id: string
+  profileTypeId: string
+  profileTypeName?: string
+  countryName?: string
+  countryCode?: string
+  flag?: string
+  currency?: string
+  escrowHoldDays: number
+  escrowHoldPercentage: number
+  disbursementFrequency: string
+  allowedDisbursementMethods: string[]
+  minimumTransactionAmount?: number
+  maximumTransactionAmount?: number
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface UpdateWalletPaymentPolicyRequest {
+  escrowHoldDays: number
+  escrowHoldPercentage: number
+  disbursementFrequency: string
+  allowedDisbursementMethods: string[]
+  minimumTransactionAmount?: number
+  maximumTransactionAmount?: number
+  isActive?: boolean
 }
 

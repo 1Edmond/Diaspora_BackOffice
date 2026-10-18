@@ -17,7 +17,8 @@
           </div>
 
           <div class="mt-auto">
-            <p class="text-muted text-center auth-sub-text mx-auto">Let’s get you signed in. Enter your password to continue.</p>
+            <h4 class="fw-bold mt-3 mb-1 text-center text-dark">Session verrouillée</h4>
+            <p class="text-muted text-center auth-sub-text mx-auto fs-sm">Veuillez saisir votre mot de passe pour reprendre votre session.</p>
 
             <div class="text-center mb-4">
               <img src="assets/images/users/user-1.jpg" class="rounded-circle img-thumbnail avatar-xxl mb-2" alt="thumbnail" />
@@ -27,7 +28,7 @@
             <form class="mt-4">
               <div class="mb-3">
                 <label for="userPassword" class="form-label">
-                  Password
+                  Mot de passe
                   <span class="text-danger">*</span>
                 </label>
                 <div class="app-search">
@@ -39,26 +40,25 @@
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="form-check">
                   <input class="form-check-input form-check-input-light fs-14" type="checkbox" checked id="rememberMe" />
-                  <label class="form-check-label" for="rememberMe">Keep me signed in</label>
+                  <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
                 </div>
 
-                <a routerLink="/auth/split/reset-pass" class="text-decoration-underline link-offset-3 text-muted">Forgot Password?</a>
+                <a routerLink="/auth/split/reset-pass" class="text-decoration-underline link-offset-3 text-muted fs-xs">Mot de passe oublié ?</a>
               </div>
 
               <div class="d-grid">
-                <button type="submit" class="btn btn-primary fw-bold py-2">Sign In</button>
+                <button type="submit" class="btn btn-primary fw-bold py-2">Déverrouiller</button>
               </div>
             </form>
           </div>
 
-          <p class="text-muted text-center mt-4 mb-0">
-            Not you? Return to
-            <a routerLink="/auth/split/sign-in" class="text-decoration-underline link-offset-3 fw-semibold">Sign in</a>
+          <p class="text-muted text-center mt-4 mb-0 fs-sm">
+            Ce n'est pas vous ?
+            <a routerLink="/auth/split/sign-in" class="text-decoration-underline link-offset-3 fw-semibold">Se connecter</a>
           </p>
 
-          <p class="text-center text-muted mt-auto mb-0">
-            © {{ currentYear }} {{ name }} — by
-            <span class="fw-bold">{{author}}</span>
+          <p class="text-center text-muted mt-auto mb-0 fs-sm">
+            © {{ currentYear }} Diaspora. Tous droits réservés.
           </p>
         </div>
       </div>

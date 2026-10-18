@@ -155,6 +155,11 @@ export const routes: Routes = [
         data: { title: 'Procedures' },
       },
       {
+        path: 'procedures/list',
+        redirectTo: 'procedures',
+        pathMatch: 'full',
+      },
+      {
         path: 'procedures/new',
         loadComponent: () => import('./views/procedure/procedure-form/procedure-form').then((m) => m.ProcedureForm),
         data: { title: 'New Procedure' },
@@ -299,7 +304,13 @@ export const routes: Routes = [
       {
         path: 'wallet/parameters',
         loadComponent: () => import('./views/wallet/parameters/parameters').then((m) => m.WalletParameters),
-        data: { title: 'Wallet Parameters' },
+        data: { title: 'Paramètres Portefeuille' },
+      },
+      {
+        path: 'wallet/payment-policies',
+        loadComponent: () =>
+          import('./views/wallet/payment-policies/payment-policies').then((m) => m.PaymentPoliciesComponent),
+        data: { title: 'Politiques de Règlement & Séquestre' },
       },
       {
         path: 'notifications',

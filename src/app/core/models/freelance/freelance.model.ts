@@ -53,7 +53,10 @@ export interface JobCategoryDto {
   displayOrder: number;
   jobCount?: number;
   translations?: { [culture: string]: { [field: string]: string } };
+  allowedProfileTypeIds?: string[];
 }
+
+export type JobCategory = JobCategoryDto;
 
 export interface CreateJobCategoryRequest {
   name: string;
@@ -63,6 +66,7 @@ export interface CreateJobCategoryRequest {
   parentCategoryId?: string;
   displayOrder: number;
   translations?: { [culture: string]: { [field: string]: string } };
+  allowedProfileTypeIds?: string[];
 }
 
 export interface UpdateJobCategoryRequest {
@@ -74,6 +78,7 @@ export interface UpdateJobCategoryRequest {
   displayOrder: number;
   isActive?: boolean;
   translations?: { [culture: string]: { [field: string]: string } };
+  allowedProfileTypeIds?: string[];
 }
 
 export interface JobPostingSummaryDto {

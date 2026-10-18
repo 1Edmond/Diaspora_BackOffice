@@ -18,6 +18,8 @@ import {
 } from '@core/constants/languages.constant';
 import { ConfirmModalService } from '@core/services/confirm-modal.service';
 import { ToastService } from '@core/services/toast.service';
+import { ProfileService } from '@core/services/profile.service';
+import { ProfileTypeDto } from '@core/models/profile/profile.model';
 
 @Component({
   selector: 'app-job-categories',
@@ -31,6 +33,10 @@ export class JobCategoriesComponent implements OnInit {
   filteredCategories: JobCategoryDto[] = [];
   loading = false;
   searchTerm = '';
+
+  profileTypes: ProfileTypeDto[] = [];
+  isUniversal = true;
+  selectedProfileTypeIds: string[] = [];
 
   model: CreateJobCategoryRequest = {
     name: '',
@@ -69,6 +75,7 @@ export class JobCategoriesComponent implements OnInit {
 
   constructor(
     private freelanceService: FreelanceService,
+    private profileService: ProfileService,
     private modalService: NgbModal,
     private confirmModal: ConfirmModalService,
     private toastService: ToastService
@@ -76,6 +83,38 @@ export class JobCategoriesComponent implements OnInit {
 
   ngOnInit() {
     this.loadCategories();
+    this.loadProfileTypes();
+  }
+
+  loadProfileTypes() {
+    this.profileService.getProfileTypes().subscribe({
+      next: (pts) => {
+        this.profileTypes = pts || [];
+      },
+      error: () => {},
+    });
+  }
+
+  toggleProfileType(id: string) {
+    const idx = this.selectedProfileTypeIds.indexOf(id);
+    if (idx >= 0) {
+      this.selectedProfileTypeIds.splice(idx, 1);
+    } else {
+      this.selectedProfileTypeIds.push(id);
+    }
+  }
+
+  isProfileTypeSelected(id: string): boolean {
+    return this.selectedProfileTypeIds.includes(id);
+  }
+
+  getProfileType(id: string): ProfileTypeDto | undefined {
+    return this.profileTypes.find((pt) => pt.id === id);
+  }
+
+  getEligibleProfileTypes(cat: JobCategoryDto): ProfileTypeDto[] {
+    if (!cat.allowedProfileTypeIds || cat.allowedProfileTypeIds.length === 0) return [];
+    return this.profileTypes.filter((pt) => cat.allowedProfileTypeIds?.includes(pt.id));
   }
 
   getLangInfo(code: string): LanguageOption {
@@ -170,6 +209,7 @@ export class JobCategoriesComponent implements OnInit {
     this.model.iconUrl = this.model.iconUrl?.trim() || undefined;
     this.model.slug = this.model.slug?.trim() || undefined;
     this.model.translations = dynamicTranslations;
+    this.model.allowedProfileTypeIds = this.isUniversal ? [] : [...this.selectedProfileTypeIds];
 
     this.saving = true;
     this.error = '';
@@ -182,7 +222,7 @@ export class JobCategoriesComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.successMessage = this.editId
-          ? 'Catégorie de mission mise à jour avec ses traductions multilingues.'
+          ? 'Catégorie de mission mise à jour avec ses restrictions de profils et traductions.'
           : 'Catégorie de mission créée avec succès.';
         this.toastService.show(this.successMessage, 'success');
         this.resetForm();
@@ -200,6 +240,7 @@ export class JobCategoriesComponent implements OnInit {
           (typeof err.error === 'string' ? err.error : '') ||
           (err.status ? `Erreur HTTP ${err.status} (${err.statusText || 'Échec'})` : '');
         this.error = serverError || "Erreur lors de l'enregistrement de la catégorie freelance.";
+        this.toastService.show(this.error, 'danger');
       },
     });
   }
@@ -213,7 +254,15 @@ export class JobCategoriesComponent implements OnInit {
       iconUrl: cat.iconUrl || '',
       displayOrder: cat.displayOrder,
       parentCategoryId: cat.parentCategoryId,
+      allowedProfileTypeIds: cat.allowedProfileTypeIds ? [...cat.allowedProfileTypeIds] : [],
     };
+    if (cat.allowedProfileTypeIds && cat.allowedProfileTypeIds.length > 0) {
+      this.isUniversal = false;
+      this.selectedProfileTypeIds = [...cat.allowedProfileTypeIds];
+    } else {
+      this.isUniversal = true;
+      this.selectedProfileTypeIds = [];
+    }
     this.formLanguages = ['fr'];
     this.formTranslations = {
       fr: { Name: cat.name, Description: cat.description || '' },
@@ -291,6 +340,8 @@ export class JobCategoriesComponent implements OnInit {
       fr: { Name: '', Description: '' },
     };
     this.formLanguage = 'fr';
+    this.isUniversal = true;
+    this.selectedProfileTypeIds = [];
     this.saving = false;
     this.customLangInput = '';
     this.error = '';

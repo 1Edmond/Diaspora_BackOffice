@@ -66,6 +66,25 @@
             <span class="input-group-text bg-light text-muted border-end-0">
               <app-icon icon="search"></app-icon>
             </span>
+            <input
+              type="text"
+              class="form-control border-start-0"
+              placeholder="Rechercher par référence, libellé..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            @if (searchTerm) {
+              <button class="btn btn-outline-secondary border-start-0 py-0" type="button" (click)="searchTerm = ''; onSearchChange()">
+                <app-icon icon="x" class="fs-12"></app-icon>
+              </button>
+            }
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-muted border-end-0">
+              <app-icon icon="filter"></app-icon>
+            </span>
             <select class="form-select form-select-sm border-start-0" [(ngModel)]="typeFilter" name="typeFilter" (change)="onFilterChange()">
               <option value="">Tous les types d'opérations</option>
               @for (opt of typeOptions; track opt.value) {
@@ -74,7 +93,7 @@
             </select>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="input-group input-group-sm">
             <span class="input-group-text bg-light text-muted border-end-0">
               <app-icon icon="shield-check"></app-icon>
@@ -87,9 +106,9 @@
             </select>
           </div>
         </div>
-        <div class="col-md-4 text-md-end">
+        <div class="col-md-2 text-md-end">
           <span class="text-muted fs-12">
-            <strong>{{ totalCount }}</strong> transaction(s) enregistrée(s)
+            <strong>{{ totalCount }}</strong> transaction(s)
           </span>
         </div>
       </div>

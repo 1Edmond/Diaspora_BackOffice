@@ -1,0 +1,33 @@
+<div class="sidebar-wrapper">
+  @if (navigationFocusService.isFocused()) {
+    <div class="sidebar-focus-banner p-3 pb-0">
+      <button
+        class="btn btn-sm btn-outline-primary w-100 mb-3 d-flex align-items-center justify-content-center shadow-sm"
+        (click)="navigationFocusService.clearFocus()"
+      >
+        <app-icon icon="arrow-left" class="me-1"></app-icon>
+        Tous les modules
+      </button>
+    </div>
+  }
+
+  <ul class="side-nav">
+    @for (item of displayedMenuItems(); track item.slug) {
+      @if (item.isTitle) {
+        <li class="side-nav-title mt-2">{{ item.label }}</li>
+      }
+      @for (child of item.children || [item]; track child.slug) {
+        <li class="side-nav-item" [class.active]="isActive(child)">
+          <a [routerLink]="child.url" class="side-nav-link" [attr.data-active-link]="isActive(child)">
+            @if (child.icon) {
+              <span class="menu-icon">
+                <app-icon [icon]="child.icon"></app-icon>
+              </span>
+            }
+            <span class="menu-text">{{ child.label }}</span>
+          </a>
+        </li>
+      }
+    }
+  </ul>
+</div>
