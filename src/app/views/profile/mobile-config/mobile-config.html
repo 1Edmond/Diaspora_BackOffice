@@ -1,0 +1,250 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Configuration Mobile & Feature Flags" subTitle="Profils" />
+
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="text-center my-5 py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="text-muted mt-2">Chargement des configurations...</p>
+  </div>
+  } @else {
+
+  <!-- Country & Scope Selector Tabs -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="card-title mb-1">Périmètre de Configuration</h5>
+          <p class="text-muted fs-sm mb-0">
+            Sélectionnez la configuration globale ou surchargez les modules et versions pour un pays spécifique.
+          </p>
+        </div>
+        @if (selectedProfileTypeId && isCustomOverride) {
+        <span class="badge bg-soft-success text-success fs-xs px-2 py-1">
+          <app-icon icon="check-circle" class="me-1"></app-icon> Surcharge active pour ce pays
+        </span>
+        } @else if (selectedProfileTypeId && !isCustomOverride) {
+        <span class="badge bg-soft-secondary text-muted fs-xs px-2 py-1">
+          <app-icon icon="info" class="me-1"></app-icon> Hérite de la configuration globale
+        </span>
+        } @else {
+        <span class="badge bg-soft-primary text-primary fs-xs px-2 py-1">
+          <app-icon icon="globe" class="me-1"></app-icon> Configuration par défaut (Fallback global)
+        </span>
+        }
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="country-tab"
+          [class.active]="selectedProfileTypeId === null"
+          (click)="selectTarget(null)"
+        >
+          <app-icon icon="globe" class="me-1"></app-icon>
+          <strong>Configuration Globale</strong>
+        </button>
+
+        @for (pt of profileTypes; track pt.id) {
+        <button
+          type="button"
+          class="country-tab"
+          [class.active]="selectedProfileTypeId === pt.id"
+          [class.has-override]="hasOverride(pt.id)"
+          (click)="selectTarget(pt.id)"
+        >
+          <span class="country-flag me-1">{{ pt.countryCode }}</span>
+          <span>{{ pt.countryName || pt.countryCode }}</span>
+          @if (hasOverride(pt.id)) {
+          <span class="badge bg-success ms-1" style="font-size: 0.65rem;">Spécifique</span>
+          }
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Left: Active Modules Flags -->
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="card-title mb-1">Modules & Fonctionnalités Mobiles</h5>
+            <p class="text-muted fs-sm mb-0">Activez ou désactivez les fonctionnalités affichées sur l'application mobile Flutter.</p>
+          </div>
+          <span class="badge bg-soft-info text-info">
+            {{ knownModules.length }} modules configurables
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-3">
+            @for (mod of knownModules; track mod.key) {
+            <div class="col-md-6">
+              <div class="module-card d-flex align-items-start gap-3" [class.active]="form.activeModules?.[mod.key]">
+                <div class="p-2 rounded bg-light text-primary">
+                  <app-icon [icon]="mod.icon" class="fs-lg"></app-icon>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="mb-0 fw-semibold">{{ mod.label }}</h6>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        [id]="'switch-' + mod.key"
+                        [checked]="form.activeModules?.[mod.key]"
+                        (change)="toggleModule(mod.key)"
+                      />
+                    </div>
+                  </div>
+                  <p class="text-muted fs-xs mb-0">{{ mod.description }}</p>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: App Version, Maintenance & Locales -->
+    <div class="col-lg-4">
+      <!-- Version & Maintenance Card -->
+      <div class="card mb-4">
+        <div class="card-header bg-transparent border-bottom">
+          <h5 class="card-title mb-1">Version & Mode Maintenance</h5>
+          <p class="text-muted fs-sm mb-0">Gestion des mises à jour forcées et de l'accès mobile.</p>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Version Minimale Requise (MinAppVersion)</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Ex: 1.2.0"
+              [(ngModel)]="form.minAppVersion"
+            />
+            <span class="text-muted fs-xs">Les versions antérieures seront invitées à se mettre à jour.</span>
+          </div>
+
+          <div class="form-check form-switch mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="switch-force-update"
+              [(ngModel)]="form.forceUpdate"
+            />
+            <label class="form-check-label fw-medium" for="switch-force-update">
+              Forcer la mise à jour (Blocage de l'app)
+            </label>
+            <p class="text-muted fs-xs mb-0">Empêche l'accès à l'application tant que la mise à jour n'est pas installée.</p>
+          </div>
+
+          <hr class="my-3" />
+
+          <div class="form-check form-switch mb-3">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="switch-maintenance"
+              [(ngModel)]="form.isMaintenanceMode"
+            />
+            <label class="form-check-label fw-medium text-danger" for="switch-maintenance">
+              Activer le Mode Maintenance
+            </label>
+            <p class="text-muted fs-xs mb-0">Affiche un écran de maintenance bloquant aux utilisateurs mobiles.</p>
+          </div>
+
+          @if (form.isMaintenanceMode) {
+          <div class="mb-3">
+            <label class="form-label fw-medium">Message de Maintenance</label>
+            <textarea
+              class="form-control"
+              rows="3"
+              placeholder="L'application est en maintenance pour quelques instants. Merci de votre patience."
+              [(ngModel)]="form.maintenanceMessage"
+            ></textarea>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Locales Card -->
+      <div class="card mb-4">
+        <div class="card-header bg-transparent border-bottom">
+          <h5 class="card-title mb-1">Langues & Localisation</h5>
+          <p class="text-muted fs-sm mb-0">Langue par défaut et langues autorisées.</p>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Langue par Défaut</label>
+            <select class="form-select" [(ngModel)]="form.defaultLocale">
+              @for (loc of availableLocales; track loc.code) {
+              <option [value]="loc.code">{{ loc.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label fw-medium mb-2">Langues Supportées</label>
+            <div class="d-flex flex-column gap-2">
+              @for (loc of availableLocales; track loc.code) {
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'loc-' + loc.code"
+                  [checked]="isLocaleSupported(loc.code)"
+                  (change)="toggleLocale(loc.code)"
+                />
+                <label class="form-check-label" [for]="'loc-' + loc.code">
+                  {{ loc.label }}
+                </label>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Panel -->
+      <div class="card border-0 shadow-sm bg-light">
+        <div class="card-body d-flex flex-column gap-2">
+          <button
+            type="button"
+            class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+            [disabled]="saving"
+            (click)="save()"
+          >
+            @if (saving) {
+            <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+            <app-icon icon="save"></app-icon>
+            }
+            <span>Enregistrer la configuration</span>
+          </button>
+
+          @if (selectedProfileTypeId && isCustomOverride) {
+          <button
+            type="button"
+            class="btn btn-soft-warning w-100 d-flex align-items-center justify-content-center gap-2"
+            [disabled]="saving"
+            (click)="resetToGlobal()"
+          >
+            <app-icon icon="refresh-cw"></app-icon>
+            <span>Rétablir le défaut global</span>
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>

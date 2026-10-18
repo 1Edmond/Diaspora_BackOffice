@@ -15,6 +15,7 @@ import { BaseResponse } from '../models/shared/base-response.model';
 import { DocumentDto } from '../models/document/document.model';
 import { KycVerification } from '../models/kyc/kyc.model';
 import { ServiceListingSummaryDto } from '../models/marketplace/marketplace.model';
+import { ProfileTypeMobileConfigDto, UpsertMobileConfigRequest } from '../models/profile/mobile-config.model';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +26,7 @@ export class ProfileService {
   private readonly documentApiUrl = `${environment.apiBaseUrl}/api/documents`;
   private readonly kycApiUrl = `${environment.apiBaseUrl}/api/kyc`;
   private readonly marketplaceApiUrl = `${environment.apiBaseUrl}/api/servicelisting`;
+  private readonly mobileConfigApiUrl = `${environment.apiBaseUrl}/api/config/mobile`;
 
   constructor(private http: HttpClient) {}
 
@@ -180,5 +182,33 @@ export class ProfileService {
     return this.http.get<PagedList<ServiceListingSummaryDto>>(`${this.marketplaceApiUrl}`, {
       params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString(), providerId },
     });
+  }
+
+  // Mobile Bootstrap Config
+  getMobileBootstrapConfig(profileTypeId?: string, countryCode?: string): Observable<ProfileTypeMobileConfigDto> {
+    const params: any = {};
+    if (profileTypeId) params.profileTypeId = profileTypeId;
+    if (countryCode) params.countryCode = countryCode;
+    return this.http.get<ProfileTypeMobileConfigDto>(this.mobileConfigApiUrl, { params });
+  }
+
+  getAllMobileConfigs(): Observable<ProfileTypeMobileConfigDto[]> {
+    return this.http.get<ProfileTypeMobileConfigDto[]>(`${this.mobileConfigApiUrl}/admin/all`);
+  }
+
+  getMobileConfigByProfileType(profileTypeId: string): Observable<ProfileTypeMobileConfigDto> {
+    return this.http.get<ProfileTypeMobileConfigDto>(`${this.mobileConfigApiUrl}/by-profile-type/${profileTypeId}`);
+  }
+
+  upsertGlobalMobileConfig(request: UpsertMobileConfigRequest): Observable<ProfileTypeMobileConfigDto> {
+    return this.http.put<ProfileTypeMobileConfigDto>(`${this.mobileConfigApiUrl}/global`, request);
+  }
+
+  upsertProfileTypeMobileConfig(profileTypeId: string, request: UpsertMobileConfigRequest): Observable<ProfileTypeMobileConfigDto> {
+    return this.http.put<ProfileTypeMobileConfigDto>(`${this.mobileConfigApiUrl}/by-profile-type/${profileTypeId}`, request);
+  }
+
+  deleteProfileTypeMobileConfig(profileTypeId: string): Observable<void> {
+    return this.http.delete<void>(`${this.mobileConfigApiUrl}/by-profile-type/${profileTypeId}`);
   }
 }

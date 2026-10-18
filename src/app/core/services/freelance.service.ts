@@ -9,6 +9,8 @@ import {
   JobPostingDto,
   JobPostingSummaryDto,
   JobApplicationDto,
+  JobReviewDto,
+  JobTemplateDto,
   PagedResult,
   UpdateJobCategoryRequest,
 } from '../models/freelance/freelance.model';
@@ -142,5 +144,31 @@ export class FreelanceService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     return this.http.get<PagedResult<JobCheckInDto>>(`${this.baseUrl}/job-check-ins`, { params });
+  }
+
+  // --- Avis Missions (Freelance Reviews Moderation) ---
+  getJobReviewsAdmin(params: { page?: number; pageSize?: number; rating?: number; search?: string } = {}): Observable<PagedResult<JobReviewDto>> {
+    let httpParams = new HttpParams();
+    if (params.page != null) httpParams = httpParams.set('page', params.page.toString());
+    if (params.pageSize != null) httpParams = httpParams.set('pageSize', params.pageSize.toString());
+    if (params.rating != null) httpParams = httpParams.set('rating', params.rating.toString());
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PagedResult<JobReviewDto>>(`${this.baseUrl}/job-reviews/admin`, { params: httpParams });
+  }
+
+  deleteJobReview(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/job-reviews/${id}`);
+  }
+
+  // --- Modèles de Mission (Job Templates) ---
+  getJobTemplatesAdmin(page: number = 1, pageSize: number = 20): Observable<PagedResult<JobTemplateDto>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<JobTemplateDto>>(`${this.baseUrl}/job-templates/admin/all`, { params });
+  }
+
+  deleteJobTemplate(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/job-templates/${id}`);
   }
 }

@@ -125,6 +125,11 @@ export const routes: Routes = [
         data: { title: 'Profile Types' },
       },
       {
+        path: 'profiles/mobile-config',
+        loadComponent: () => import('./views/profile/mobile-config/mobile-config').then((m) => m.MobileConfigComponent),
+        data: { title: 'Configuration Mobile & Feature Flags' },
+      },
+      {
         path: 'profiles/:id',
         loadComponent: () => import('./views/profile/profile-detail/profile-detail').then((m) => m.ProfileDetail),
         data: { title: 'Profile Detail' },
@@ -241,6 +246,12 @@ export const routes: Routes = [
         data: { title: 'Politiques de Règlement' },
       },
       {
+        path: 'marketplace/parameters',
+        loadComponent: () =>
+          import('./views/marketplace/parameters/parameters').then((m) => m.MarketplaceParametersComponent),
+        data: { title: 'Paramètres Marketplace' },
+      },
+      {
         path: 'freelance/job-postings',
         loadComponent: () => import('./views/freelance/job-postings/job-postings').then((m) => m.JobPostingsComponent),
         data: { title: 'Offres Freelance' },
@@ -254,6 +265,16 @@ export const routes: Routes = [
         path: 'freelance/job-contracts',
         loadComponent: () => import('./views/freelance/job-contracts/job-contracts').then((m) => m.JobContractsComponent),
         data: { title: 'Missions & Pointages' },
+      },
+      {
+        path: 'freelance/job-reviews',
+        loadComponent: () => import('./views/freelance/job-reviews/job-reviews').then((m) => m.JobReviewsComponent),
+        data: { title: 'Modération Avis Freelance' },
+      },
+      {
+        path: 'freelance/job-templates',
+        loadComponent: () => import('./views/freelance/job-templates/job-templates').then((m) => m.JobTemplatesComponent),
+        data: { title: 'Modèles de Mission' },
       },
       {
         path: 'wallet/all',

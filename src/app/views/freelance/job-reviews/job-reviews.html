@@ -1,0 +1,169 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Modération des Avis Missions" subTitle="Freelance" />
+
+  <!-- Filter Toolbar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <app-icon icon="search"></app-icon>
+            </span>
+            <input
+              type="text"
+              class="form-control border-start-0"
+              placeholder="Rechercher par évaluateur, travailleur ou commentaire..."
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="onFilterChange()"
+            />
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedRating" (change)="onFilterChange()">
+            <option [ngValue]="null">Toutes les notes (1 à 5 étoiles)</option>
+            <option [ngValue]="5">5 étoiles ★★★★★</option>
+            <option [ngValue]="4">4 étoiles ★★★★☆</option>
+            <option [ngValue]="3">3 étoiles ★★★☆☆</option>
+            <option [ngValue]="2">2 étoiles ★★☆☆☆</option>
+            <option [ngValue]="1">1 étoile ★☆☆☆☆</option>
+          </select>
+        </div>
+
+        <div class="col-md-4 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1" (click)="onFilterChange()">
+            <app-icon icon="refresh-cw"></app-icon>
+            <span>Filtrer</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Table -->
+  <div class="card">
+    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">Tous les avis freelance ({{ totalCount }})</h5>
+      @if (loading) {
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      }
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 190px;">Évaluateur</th>
+              <th style="width: 190px;">Personne Évaluée</th>
+              <th style="width: 120px;">Rôle</th>
+              <th style="width: 140px;">Note</th>
+              <th style="width: 180px;">Critères Détaillés</th>
+              <th>Commentaire</th>
+              <th style="width: 140px;">Date</th>
+              <th style="width: 80px;" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of reviews; track r.id) {
+            <tr>
+              <td>
+                <div class="fw-medium text-dark">{{ r.raterName || 'Utilisateur' }}</div>
+                <small class="text-muted fs-xs font-monospace">{{ r.raterId.substring(0, 8) }}...</small>
+              </td>
+              <td>
+                <div class="fw-medium text-dark">{{ r.subjectName || 'Utilisateur' }}</div>
+                <small class="text-muted fs-xs font-monospace">{{ r.subjectId.substring(0, 8) }}...</small>
+              </td>
+              <td>
+                @if (r.raterRole === 0) {
+                <span class="badge bg-soft-primary text-primary">Employeur</span>
+                } @else {
+                <span class="badge bg-soft-info text-info">Freelance</span>
+                }
+              </td>
+              <td>
+                <span class="rating-badge text-warning fs-sm">
+                  @for (star of [1,2,3,4,5]; track star) {
+                  <span>{{ star <= r.rating ? '★' : '☆' }}</span>
+                  }
+                  <span class="text-dark ms-1">({{ r.rating }}/5)</span>
+                </span>
+              </td>
+              <td>
+                <div class="fs-xs text-muted d-flex flex-column gap-1">
+                  @if (r.punctuality != null) {
+                  <span>Ponctualité : <strong>{{ r.punctuality }}/5</strong></span>
+                  }
+                  @if (r.quality != null) {
+                  <span>Qualité : <strong>{{ r.quality }}/5</strong></span>
+                  }
+                  @if (r.communication != null) {
+                  <span>Communication : <strong>{{ r.communication }}/5</strong></span>
+                  }
+                </div>
+              </td>
+              <td>
+                <p class="mb-0 text-muted fs-sm" style="max-width: 400px;">
+                  {{ r.comment || '— Aucun commentaire écrit —' }}
+                </p>
+              </td>
+              <td class="text-muted fs-sm">
+                {{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td class="text-end">
+                <button
+                  type="button"
+                  class="btn btn-xs btn-soft-danger"
+                  title="Supprimer cette évaluation"
+                  (click)="deleteReview(r)"
+                >
+                  <app-icon icon="trash-2"></app-icon>
+                </button>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="8" class="text-center text-muted py-5">
+                @if (loading) {
+                <span>Chargement des avis...</span>
+                } @else {
+                <div class="py-4">
+                  <app-icon icon="briefcase" class="fs-xl text-muted mb-2"></app-icon>
+                  <p class="mb-0">Aucun avis trouvé pour les filtres sélectionnés.</p>
+                </div>
+                }
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (totalPages > 1) {
+    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center py-2">
+      <span class="text-muted fs-sm">Page {{ page }} sur {{ totalPages }} (Total : {{ totalCount }} avis)</span>
+      <div class="d-flex gap-1">
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          [disabled]="page <= 1"
+          (click)="onPageChange(page - 1)"
+        >
+          Précédent
+        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          [disabled]="page >= totalPages"
+          (click)="onPageChange(page + 1)"
+        >
+          Suivant
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>

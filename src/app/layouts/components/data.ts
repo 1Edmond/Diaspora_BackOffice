@@ -97,6 +97,12 @@ export const menuItems: MenuItemType[] = [
         'label': 'Profile Types',
         'icon': 'globe',
       },
+      {
+        'url': '/profiles/mobile-config',
+        'slug': 'pages:profiles-mobile-config',
+        'label': 'Config Mobile & Features',
+        'icon': 'smartphone',
+      },
     ],
   },
   {
@@ -212,6 +218,12 @@ export const menuItems: MenuItemType[] = [
         'label': 'Politiques de Règlement',
         'icon': 'credit-card',
       },
+      {
+        'url': '/marketplace/parameters',
+        'slug': 'pages:marketplace-parameters',
+        'label': 'Paramètres Généraux',
+        'icon': 'sliders',
+      },
     ],
   },
   {
@@ -237,6 +249,18 @@ export const menuItems: MenuItemType[] = [
         'slug': 'pages:freelance-contracts',
         'label': 'Contracts & Check-ins',
         'icon': 'clock',
+      },
+      {
+        'url': '/freelance/job-reviews',
+        'slug': 'pages:freelance-reviews',
+        'label': 'Avis & Évaluations',
+        'icon': 'star',
+      },
+      {
+        'url': '/freelance/job-templates',
+        'slug': 'pages:freelance-templates',
+        'label': 'Modèles de Mission',
+        'icon': 'copy',
       },
     ],
   },

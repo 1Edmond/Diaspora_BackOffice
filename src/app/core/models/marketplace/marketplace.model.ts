@@ -115,6 +115,7 @@ export interface CategoryDto {
 export interface ReviewDto {
   id: string
   listingId: string
+  listingTitle?: string
   reviewerId: string
   reviewerName: string
   rating: number

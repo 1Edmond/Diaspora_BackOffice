@@ -145,6 +145,44 @@ export interface JobCheckInDto {
   createdAt: string;
 }
 
+export interface JobReviewDto {
+  id: string;
+  jobApplicationId: string;
+  raterId: string;
+  raterName: string;
+  subjectId: string;
+  subjectName: string;
+  raterRole: number; // 0: Employer, 1: Worker
+  rating: number;
+  punctuality?: number;
+  quality?: number;
+  communication?: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface JobTemplateDto {
+  id: string;
+  employerId: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  categoryName: string;
+  capacity: number;
+  amount: number;
+  currency: string;
+  paymentType: PaymentType;
+  paymentTiming: PaymentTiming;
+  checkInMethod: CheckInMethod;
+  geofenceRadiusMeters?: number;
+  requiresKycVerification: boolean;
+  latitude?: number;
+  longitude?: number;
+  requiredSkills: string[];
+  requiredDocuments: string[];
+  createdAt: string;
+}
+
 export interface PagedResult<T> {
   items: T[];
   totalCount: number;

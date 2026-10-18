@@ -29,6 +29,7 @@ import {
   DisputeStatus,
   ResolveDisputeRequest,
 } from '../models/marketplace/dispute.model';
+import { MarketplaceParameter } from '../models/marketplace/parameter.model';
 import {
   ProfileTypePaymentPolicy,
   UpdatePaymentPolicyRequest,
@@ -257,5 +258,28 @@ export class MarketplaceService {
 
   resolveDispute(id: string, request: ResolveDisputeRequest): Observable<any> {
     return this.http.post<any>(`${environment.apiBaseUrl}/api/disputes/${id}/resolve`, request);
+  }
+
+  // Reviews Moderation (Global Admin)
+  getReviewsAdmin(query: { page?: number; pageSize?: number; rating?: number; search?: string } = {}): Observable<PagedList<ReviewDto>> {
+    const params: any = {};
+    if (query.page != null) params.page = query.page.toString();
+    if (query.pageSize != null) params.pageSize = query.pageSize.toString();
+    if (query.rating != null) params.rating = query.rating.toString();
+    if (query.search) params.search = query.search;
+    return this.http.get<PagedList<ReviewDto>>(`${environment.apiBaseUrl}/api/marketplace/reviews/admin`, { params });
+  }
+
+  deleteReviewAdmin(reviewId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiBaseUrl}/api/marketplace/reviews/${reviewId}`);
+  }
+
+  // Marketplace Parameters
+  getParameters(): Observable<MarketplaceParameter[]> {
+    return this.http.get<MarketplaceParameter[]>(`${environment.apiBaseUrl}/api/marketplace/parameters`);
+  }
+
+  updateParameter(key: string, value: string): Observable<void> {
+    return this.http.put<void>(`${environment.apiBaseUrl}/api/marketplace/parameters/${key}`, { value });
   }
 }
