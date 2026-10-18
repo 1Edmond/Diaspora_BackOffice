@@ -228,8 +228,8 @@ export class MarketplaceService {
     });
   }
 
-  resolveReport(id: string, status: number, notes: string): Observable<BaseResponse> {
-    return this.http.post<BaseResponse>(`${environment.apiBaseUrl}/api/reports/${id}/resolve`, { status, notes });
+  resolveReport(id: string, newStatus: number, resolutionNotes: string): Observable<BaseResponse> {
+    return this.http.post<BaseResponse>(`${environment.apiBaseUrl}/api/reports/${id}/resolve`, { newStatus, resolutionNotes });
   }
 
   getDisputes(status?: DisputeStatus, pageNumber = 1, pageSize = 20): Observable<PagedList<DisputeDto>> {
