@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { WalletService } from '@core/services/wallet.service'
@@ -7,13 +8,14 @@ import { WalletParameterDto } from '@core/models/wallet/wallet.model'
 @Component({
   selector: 'app-wallet-parameters',
   standalone: true,
-  imports: [PageBreadcrumb, FormsModule],
+  imports: [CommonModule, PageBreadcrumb, FormsModule],
   templateUrl: './parameters.html',
   styles: ``,
 })
 export class WalletParameters implements OnInit {
   parameters: WalletParameterDto[] = []
   loading = false
+  saving = false
   error = ''
   success = ''
   editKey = ''
@@ -43,16 +45,19 @@ export class WalletParameters implements OnInit {
   }
 
   save() {
+    this.saving = true
     this.walletService.updateParameter(this.editKey, { value: this.editValue }).subscribe({
       next: () => {
-        this.success = 'Parameter updated'
+        this.saving = false
+        this.success = 'Paramètre mis à jour avec succès'
         this.editKey = ''
         this.editValue = ''
         this.editDescription = ''
         this.loadParameters()
       },
       error: (err: any) => {
-        this.error = err.error?.error || err.error?.message || 'Failed to update'
+        this.saving = false
+        this.error = err.error?.error || err.error?.message || 'Échec de la mise à jour'
       },
     })
   }

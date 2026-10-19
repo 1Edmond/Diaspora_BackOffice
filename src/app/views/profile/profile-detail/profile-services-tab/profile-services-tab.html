@@ -81,7 +81,7 @@
               <td>{{ listing.averageRating ? (listing.averageRating | number:'1.0-1') : '—' }} <app-icon icon="star" class="text-warning fs-xs"></app-icon> ({{ listing.reviewCount }})</td>
               <td>{{ listing.createdAt | date:'short' }}</td>
               <td>
-                <a [routerLink]="['/marketplace/listings', listing.id]" class="btn btn-sm btn-outline-primary" title="View Details">
+                <a [routerLink]="['/marketplace/listings', listing.id]" class="btn btn-sm btn-outline-primary" title="Voir les détails">
                   <app-icon icon="eye"></app-icon>
                 </a>
               </td>

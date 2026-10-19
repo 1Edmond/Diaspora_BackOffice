@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { PageBreadcrumb } from '@app/components/page-breadcrumb/page-breadcrumb'
 import { Icon } from '@app/components/icon/icon'
@@ -10,13 +11,14 @@ import { ProfileTypeDto } from '@core/models/profile/profile.model'
 @Component({
   selector: 'app-profile-types',
   standalone: true,
-  imports: [PageBreadcrumb, FormsModule, Icon],
+  imports: [CommonModule, PageBreadcrumb, FormsModule, Icon],
   templateUrl: './profile-types.html',
   styles: ``,
 })
 export class ProfileTypes implements OnInit {
   types: ProfileTypeDto[] = []
   loading = false
+  saving = false
   error = ''
   successMessage = ''
   republishing = false
@@ -83,10 +85,12 @@ export class ProfileTypes implements OnInit {
     if (!this.formData.countryName || !this.formData.countryCode) return
     this.error = ''
     this.successMessage = ''
+    this.saving = true
 
     if (this.editingId) {
       this.profileService.updateProfileType(this.editingId, this.formData).subscribe({
         next: () => {
+          this.saving = false
           this.editingId = null
           this.resetForm()
           this.loadTypes()
@@ -94,6 +98,7 @@ export class ProfileTypes implements OnInit {
           this.toast.success(this.successMessage)
         },
         error: (err: any) => {
+          this.saving = false
           this.error = err.error?.error || err.error?.message || 'Failed to update profile type'
           this.toast.error(this.error)
         },
@@ -101,12 +106,14 @@ export class ProfileTypes implements OnInit {
     } else {
       this.profileService.createProfileType(this.formData).subscribe({
         next: () => {
+          this.saving = false
           this.resetForm()
           this.loadTypes()
           this.successMessage = 'Nouveau pays / Profile Type ajouté avec succès.'
           this.toast.success(this.successMessage)
         },
         error: (err: any) => {
+          this.saving = false
           this.error = err.error?.error || err.error?.message || 'Failed to create profile type'
           this.toast.error(this.error)
         },

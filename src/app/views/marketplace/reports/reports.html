@@ -184,7 +184,7 @@
     }
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeResolveModal()">Cancel</button>
+      <button type="button" class="btn btn-secondary" (click)="closeResolveModal()">Annuler</button>
       <button type="button" class="btn btn-primary" (click)="resolveReport()" [disabled]="resolveLoading || (resolveStatus === 3 && !resolveNotes.trim())">
         @if (resolveLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
         Resolve
