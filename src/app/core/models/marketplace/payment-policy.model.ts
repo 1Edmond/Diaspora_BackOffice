@@ -49,6 +49,19 @@ export interface ProfileTypePaymentPolicy {
 }
 
 export interface UpdatePaymentPolicyRequest {
+  countryCode?: string;
+  allowedPolicy: AllowedSettlementPolicy;
+  defaultCashTiming: DirectCashTiming;
+  directBookingFeeEnabled: boolean;
+  directBookingFeeFixedAmount: number;
+  directBookingFeeRate: number;
+  currency: string;
+  isActive: boolean;
+}
+
+export interface CreatePaymentPolicyRequest {
+  profileTypeId: string;
+  countryCode?: string;
   allowedPolicy: AllowedSettlementPolicy;
   defaultCashTiming: DirectCashTiming;
   directBookingFeeEnabled: boolean;

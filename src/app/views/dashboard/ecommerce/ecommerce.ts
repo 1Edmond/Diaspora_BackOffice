@@ -14,11 +14,16 @@ import { KYCStatistics } from '@core/models/identity/user.model';
 import { PlatformRevenueDto } from '@core/models/wallet/wallet.model';
 import { DisputeDto, DisputeStatus } from '@core/models/marketplace/dispute.model';
 
+import { FormsModule } from '@angular/forms';
+import { ProfileService } from '@core/services/profile.service';
+import { ProfileTypeDto } from '@core/models/profile/profile.model';
+
 @Component({
   selector: 'app-ecommerce',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     PageBreadcrumb,
     Icon,
@@ -39,9 +44,12 @@ export class Ecommerce implements OnInit {
   openDisputesCount = 0;
   activeMissionsCount = 0;
 
-  // Trésorerie multi-devises
+  // Trésorerie multi-devises pilotée par ProfileTypes
   revenueData: PlatformRevenueDto | null = null;
-  selectedCurrency: string = 'EUR';
+  profileTypes: ProfileTypeDto[] = [];
+  selectedProfileTypeId: string = '';
+  selectedProfileType: ProfileTypeDto | null = null;
+  selectedCurrency: string = 'XOF';
   availableCurrencies: string[] = [];
   totalHeld = 0;
   totalCommission = 0;
@@ -57,7 +65,8 @@ export class Ecommerce implements OnInit {
     private documentService: DocumentService,
     private procedureService: ProcedureService,
     private marketplaceService: MarketplaceService,
-    private freelanceService: FreelanceService
+    private freelanceService: FreelanceService,
+    private profileService: ProfileService
   ) {}
 
   ngOnInit() {
@@ -66,6 +75,18 @@ export class Ecommerce implements OnInit {
 
   loadDashboardData() {
     this.loading = true;
+
+    // 0. Charger les ProfileTypes pour piloter la devise par défaut
+    this.profileService.getProfileTypes().subscribe({
+      next: (pts) => {
+        this.profileTypes = pts || [];
+        if (this.profileTypes.length > 0 && !this.selectedProfileType) {
+          const defaultPt = this.profileTypes.find((p) => p.isActive) || this.profileTypes[0];
+          this.selectProfileType(defaultPt);
+        }
+      },
+      error: () => {},
+    });
 
     // 1. Identity & KYC
     this.identityService.getKYCStatistics().subscribe({
@@ -81,14 +102,12 @@ export class Ecommerce implements OnInit {
       next: (rev: PlatformRevenueDto) => {
         this.revenueData = rev;
         this.availableCurrencies = (rev.currencies || []).map((c) => c.currency);
-        if (this.availableCurrencies.length > 0) {
-          if (!this.availableCurrencies.includes(this.selectedCurrency)) {
-            this.selectedCurrency = this.availableCurrencies.find((c) => c === 'EUR')
-              ?? this.availableCurrencies.find((c) => c === 'USD')
-              ?? this.availableCurrencies[0];
-          }
-          this.updateCurrencyMetrics();
+        if (this.selectedProfileType) {
+          this.selectedCurrency = this.selectedProfileType.currency || 'XOF';
+        } else if (this.availableCurrencies.length > 0 && !this.availableCurrencies.includes(this.selectedCurrency)) {
+          this.selectedCurrency = this.availableCurrencies[0];
         }
+        this.updateCurrencyMetrics();
       },
       error: () => {},
     });
@@ -131,13 +150,29 @@ export class Ecommerce implements OnInit {
     });
   }
 
+  selectProfileType(pt: ProfileTypeDto) {
+    this.selectedProfileType = pt;
+    this.selectedProfileTypeId = pt.id;
+    this.selectedCurrency = pt.currency || 'XOF';
+    this.updateCurrencyMetrics();
+  }
+
+  onProfileTypeIdChange(id: string) {
+    const pt = this.profileTypes.find((p) => p.id === id);
+    if (pt) {
+      this.selectProfileType(pt);
+    }
+  }
+
   selectCurrency(currency: string) {
     this.selectedCurrency = currency;
     this.updateCurrencyMetrics();
   }
 
   private updateCurrencyMetrics() {
-    const summary = this.revenueData?.currencies?.find((c) => c.currency === this.selectedCurrency);
+    const summary = this.revenueData?.currencies?.find(
+      (c) => c.currency.toUpperCase() === this.selectedCurrency.toUpperCase()
+    );
     if (summary) {
       this.totalCommission = summary.platformBalance;
       this.totalHeld = summary.totalEscrowHeld;

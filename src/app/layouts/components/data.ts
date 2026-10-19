@@ -260,7 +260,7 @@ export const menuItems: MenuItemType[] = [
         'url': '/freelance/job-templates',
         'slug': 'pages:freelance-templates',
         'label': 'Modèles de Mission',
-        'icon': 'file-badge',
+        'icon': 'clipboard-list',
       },
     ],
   },

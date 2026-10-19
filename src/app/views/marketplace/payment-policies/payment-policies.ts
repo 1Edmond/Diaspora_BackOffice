@@ -10,6 +10,7 @@ import { ToastService } from '@core/services/toast.service'
 import {
   ProfileTypePaymentPolicy,
   UpdatePaymentPolicyRequest,
+  CreatePaymentPolicyRequest,
   AllowedSettlementPolicy,
   DirectCashTiming,
   AllowedSettlementPolicyLabels,
@@ -54,10 +55,25 @@ export class PaymentPolicies implements OnInit {
   searchTerm = ''
 
   @ViewChild('editModal') editModal!: TemplateRef<any>
+  @ViewChild('createModal') createModal!: TemplateRef<any>
   modalRef: NgbModalRef | null = null
+
+  existingPolicyTypeIds = new Set<string>()
 
   editingPolicy: ProfileTypePaymentPolicy | null = null
   editForm: UpdatePaymentPolicyRequest = {
+    allowedPolicy: AllowedSettlementPolicy.Both,
+    defaultCashTiming: DirectCashTiming.AtPickup,
+    directBookingFeeEnabled: false,
+    directBookingFeeFixedAmount: 0,
+    directBookingFeeRate: 0,
+    currency: 'XOF',
+    isActive: true,
+  }
+
+  createForm: CreatePaymentPolicyRequest = {
+    profileTypeId: '',
+    countryCode: '',
     allowedPolicy: AllowedSettlementPolicy.Both,
     defaultCashTiming: DirectCashTiming.AtPickup,
     directBookingFeeEnabled: false,
@@ -137,6 +153,7 @@ export class PaymentPolicies implements OnInit {
           }
         })
 
+        this.existingPolicyTypeIds = existingTypeIds
         this.policies = mappedPolicies
         this.loading = false
       },
@@ -189,6 +206,67 @@ export class PaymentPolicies implements OnInit {
     this.editingPolicy = null
   }
 
+  get availableProfileTypes(): ProfileTypeDto[] {
+    return this.profileTypes.filter((pt) => !this.existingPolicyTypeIds.has(pt.id))
+  }
+
+  openCreateModal(): void {
+    const available = this.availableProfileTypes
+    const defaultPt = available.length > 0 ? available[0] : (this.profileTypes[0] || null)
+
+    this.createForm = {
+      profileTypeId: defaultPt?.id || '',
+      countryCode: defaultPt?.countryCode || '',
+      allowedPolicy: AllowedSettlementPolicy.Both,
+      defaultCashTiming: DirectCashTiming.AtPickup,
+      directBookingFeeEnabled: false,
+      directBookingFeeFixedAmount: 0,
+      directBookingFeeRate: 0,
+      currency: defaultPt?.currency || 'XOF',
+      isActive: true,
+    }
+
+    this.modalRef = this.modalService.open(this.createModal, { centered: true, size: 'lg' })
+  }
+
+  onProfileTypeSelected(profileTypeId: string): void {
+    const pt = this.profileTypes.find((p) => p.id === profileTypeId)
+    if (pt) {
+      this.createForm.profileTypeId = pt.id
+      this.createForm.countryCode = pt.countryCode
+      this.createForm.currency = pt.currency || 'XOF'
+    }
+  }
+
+  saveNewPolicy(): void {
+    if (!this.createForm.profileTypeId) {
+      this.toast.error('Veuillez sélectionner un type de profil / pays.')
+      return
+    }
+
+    this.saving = true
+    this.marketplaceService.createPaymentPolicy(this.createForm).subscribe({
+      next: () => {
+        this.saving = false
+        const pt = this.profileTypes.find((p) => p.id === this.createForm.profileTypeId)
+        this.toast.success(
+          `Nouvelle politique de règlement pour ${pt?.countryName || this.createForm.countryCode} créée avec succès.`
+        )
+        this.closeModal()
+        this.loadData()
+      },
+      error: (err) => {
+        this.saving = false
+        const msg =
+          err.error?.error ||
+          err.error?.message ||
+          err.error?.title ||
+          'Une erreur est survenue lors de la création de la politique.'
+        this.toast.error(msg)
+      },
+    })
+  }
+
   savePolicy(): void {
     if (!this.editingPolicy) return
     this.saving = true
@@ -207,6 +285,7 @@ export class PaymentPolicies implements OnInit {
         error: (err) => {
           this.saving = false
           const msg =
+            err.error?.error ||
             err.error?.message ||
             err.error?.title ||
             'Une erreur est survenue lors de l\'enregistrement de la politique.'

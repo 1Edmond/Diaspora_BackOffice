@@ -130,14 +130,26 @@ export const MODULES: ModuleItem[] = [
                 </p>
               </div>
 
-              <button
-                type="button"
-                class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm overlay-close-btn"
-                (click)="closeOverlay()"
-                aria-label="Fermer"
-              >
-                <app-icon icon="x" class="fs-4"></app-icon>
-              </button>
+              <div class="d-flex align-items-center gap-2">
+                @if (navigationFocusService.isFocused()) {
+                  <button
+                    type="button"
+                    class="btn btn-warning btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-2 fw-medium"
+                    (click)="resetFocus()"
+                  >
+                    <app-icon icon="rotate-ccw"></app-icon>
+                    <span>Mode par défaut (Tous les onglets)</span>
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="btn btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm overlay-close-btn"
+                  (click)="closeOverlay()"
+                  aria-label="Fermer"
+                >
+                  <app-icon icon="x" class="fs-4"></app-icon>
+                </button>
+              </div>
             </div>
 
             <!-- Grille des 10 cartes interactives -->

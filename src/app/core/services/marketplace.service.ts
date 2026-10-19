@@ -33,6 +33,7 @@ import { MarketplaceParameter } from '../models/marketplace/parameter.model';
 import {
   ProfileTypePaymentPolicy,
   UpdatePaymentPolicyRequest,
+  CreatePaymentPolicyRequest,
 } from '../models/marketplace/payment-policy.model';
 
 @Injectable({
@@ -251,6 +252,10 @@ export class MarketplaceService {
 
   getPaymentPolicyByProfileType(profileTypeId: string): Observable<ProfileTypePaymentPolicy> {
     return this.http.get<ProfileTypePaymentPolicy>(`${this.paymentPoliciesApiUrl}/by-profile-type/${profileTypeId}`);
+  }
+
+  createPaymentPolicy(request: CreatePaymentPolicyRequest): Observable<{ id: string }> {
+    return this.http.post<{ id: string }>(this.paymentPoliciesApiUrl, request);
   }
 
   updatePaymentPolicy(profileTypeId: string, data: UpdatePaymentPolicyRequest): Observable<void> {

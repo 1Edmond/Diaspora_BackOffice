@@ -118,6 +118,10 @@
           <app-icon icon="refresh-cw" [class]="loading ? 'spin' : ''"></app-icon>
           Actualiser
         </button>
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-1" (click)="openCreateModal()" [disabled]="loading">
+          <app-icon icon="plus"></app-icon>
+          Nouvelle politique
+        </button>
       </div>
     </div>
 
@@ -523,6 +527,285 @@
         } @else {
           <app-icon icon="check"></app-icon>
           Enregistrer la Politique
+        }
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Interactive Policy Creation Modal -->
+  <ng-template #createModal let-modal>
+    <div class="modal-header bg-primary text-white">
+      <h5 class="modal-title text-white d-flex align-items-center gap-2">
+        <app-icon icon="plus-circle"></app-icon>
+        Nouvelle Politique de Règlement Marketplace
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+    </div>
+
+    <div class="modal-body p-4">
+      <!-- 0. ProfileType / Country Selector -->
+      <div class="mb-4">
+        <label class="form-label fs-13 fw-semibold text-dark mb-1">
+          Type de Profil / Pays <span class="text-danger">*</span>
+        </label>
+        <select
+          class="form-select"
+          [(ngModel)]="createForm.profileTypeId"
+          (ngModelChange)="onProfileTypeSelected($event)"
+        >
+          <option value="" disabled>-- Sélectionner un pays / type de profil --</option>
+          @for (pt of profileTypes; track pt.id) {
+            <option [value]="pt.id">
+              {{ pt.flag || '🏳️' }} {{ pt.countryName }} ({{ pt.countryCode }}) — Devise: {{ pt.currency || 'XOF' }}
+              @if (existingPolicyTypeIds.has(pt.id)) { (Déjà configuré) }
+            </option>
+          }
+        </select>
+        <small class="text-muted fs-12">Sélectionnez le pays ou le profil pour lequel définir les règles de règlement.</small>
+      </div>
+
+      <!-- 1. Settlement Mode Selector -->
+      <div class="mb-4">
+        <label class="form-label fs-13 fw-semibold text-dark mb-2">
+          1. Mode de Règlement Autorisé <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex flex-column gap-2">
+          <!-- Option 0: WalletEscrowOnly -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="createForm.allowedPolicy === AllowedSettlementPolicy.WalletEscrowOnly"
+            (click)="createForm.allowedPolicy = AllowedSettlementPolicy.WalletEscrowOnly"
+          >
+            <div class="d-flex align-items-start">
+              <input
+                type="radio"
+                class="form-check-input mt-1 me-3"
+                name="createAllowedPolicy"
+                [value]="AllowedSettlementPolicy.WalletEscrowOnly"
+                [(ngModel)]="createForm.allowedPolicy"
+              />
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-dark fs-14">Séquestre Wallet Diaspora Uniquement</strong>
+                  <span class="badge bg-soft-info text-info fs-11">Sécurisé 100%</span>
+                </div>
+                <p class="text-muted fs-12 mb-0 mt-1">
+                  Les utilisateurs paient exclusivement via le portefeuille électronique Diaspora. Les fonds sont séquestrés jusqu'à validation OTP à la livraison.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 1: DirectHandoverOnly -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="createForm.allowedPolicy === AllowedSettlementPolicy.DirectHandoverOnly"
+            (click)="createForm.allowedPolicy = AllowedSettlementPolicy.DirectHandoverOnly"
+          >
+            <div class="d-flex align-items-start">
+              <input
+                type="radio"
+                class="form-check-input mt-1 me-3"
+                name="createAllowedPolicy"
+                [value]="AllowedSettlementPolicy.DirectHandoverOnly"
+                [(ngModel)]="createForm.allowedPolicy"
+              />
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-dark fs-14">Règlement Direct en Espèces Uniquement</strong>
+                  <span class="badge bg-soft-warning text-warning fs-11">Paiement main à main</span>
+                </div>
+                <p class="text-muted fs-12 mb-0 mt-1">
+                  Paiement de main à main en espèces entre l'expéditeur et le voyageur. Diaspora sert uniquement d'entremetteur sans séquestrer les montants.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 2: Both -->
+          <div
+            class="policy-radio-card"
+            [class.selected]="createForm.allowedPolicy === AllowedSettlementPolicy.Both"
+            (click)="createForm.allowedPolicy = AllowedSettlementPolicy.Both"
+          >
+            <div class="d-flex align-items-start">
+              <input
+                type="radio"
+                class="form-check-input mt-1 me-3"
+                name="createAllowedPolicy"
+                [value]="AllowedSettlementPolicy.Both"
+                [(ngModel)]="createForm.allowedPolicy"
+              />
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                  <strong class="text-dark fs-14">Bi-Mode : Séquestre Wallet & Espèces au Choix</strong>
+                  <span class="badge bg-soft-success text-success fs-11">Recommandé</span>
+                </div>
+                <p class="text-muted fs-12 mb-0 mt-1">
+                  L'utilisateur choisit librement à la réservation entre la protection Séquestre Wallet Diaspora ou le règlement en main propre.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Cash Timing Selector (only if cash allowed) -->
+      @if (createForm.allowedPolicy !== AllowedSettlementPolicy.WalletEscrowOnly) {
+        <div class="mb-4 p-3 bg-light rounded border">
+          <label class="form-label fs-13 fw-semibold text-dark mb-2">
+            2. Moment de Remise des Espèces par Défaut
+          </label>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card h-100 bg-white"
+                [class.selected]="createForm.defaultCashTiming === DirectCashTiming.AtPickup"
+                (click)="createForm.defaultCashTiming = DirectCashTiming.AtPickup"
+              >
+                <input
+                  type="radio"
+                  class="form-check-input me-2"
+                  name="createCashTiming"
+                  [value]="DirectCashTiming.AtPickup"
+                  [(ngModel)]="createForm.defaultCashTiming"
+                />
+                <strong class="fs-12 text-dark d-block mt-1">À la prise en charge</strong>
+                <small class="text-muted fs-11">L'expéditeur remet les espèces au voyageur lors de la prise en charge du colis.</small>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card h-100 bg-white"
+                [class.selected]="createForm.defaultCashTiming === DirectCashTiming.AtDelivery"
+                (click)="createForm.defaultCashTiming = DirectCashTiming.AtDelivery"
+              >
+                <input
+                  type="radio"
+                  class="form-check-input me-2"
+                  name="createCashTiming"
+                  [value]="DirectCashTiming.AtDelivery"
+                  [(ngModel)]="createForm.defaultCashTiming"
+                />
+                <strong class="fs-12 text-dark d-block mt-1">À la livraison finale</strong>
+                <small class="text-muted fs-11">Le destinataire remet les espèces au voyageur à la remise du colis.</small>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div
+                class="policy-radio-card h-100 bg-white"
+                [class.selected]="createForm.defaultCashTiming === DirectCashTiming.FreeChoice"
+                (click)="createForm.defaultCashTiming = DirectCashTiming.FreeChoice"
+              >
+                <input
+                  type="radio"
+                  class="form-check-input me-2"
+                  name="createCashTiming"
+                  [value]="DirectCashTiming.FreeChoice"
+                  [(ngModel)]="createForm.defaultCashTiming"
+                />
+                <strong class="fs-12 text-dark d-block mt-1">Libre choix des parties</strong>
+                <small class="text-muted fs-11">Accord mutuel direct entre l'expéditeur et le voyageur.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 3. Direct Booking Platform Monetization -->
+      <div class="mb-4 p-3 border rounded">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <strong class="d-block fs-13 text-dark">Monétisation de la Réservation Directe</strong>
+            <small class="text-muted fs-12">Prélever des frais de plateforme lors de la mise en relation en mode espèces.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input
+              class="form-check-input fs-16"
+              type="checkbox"
+              id="createFeeSwitch"
+              [(ngModel)]="createForm.directBookingFeeEnabled"
+            />
+          </div>
+        </div>
+
+        @if (createForm.directBookingFeeEnabled) {
+          <div class="row g-3 pt-2 border-top">
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Frais Fixes par Réservation</label>
+              <div class="input-group input-group-sm">
+                <input
+                  type="number"
+                  class="form-control"
+                  min="0"
+                  step="100"
+                  placeholder="Ex: 500"
+                  [(ngModel)]="createForm.directBookingFeeFixedAmount"
+                />
+                <span class="input-group-text bg-light text-muted">{{ createForm.currency }}</span>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Taux Variable (%)</label>
+              <div class="input-group input-group-sm">
+                <input
+                  type="number"
+                  class="form-control"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  placeholder="Ex: 5"
+                  [(ngModel)]="createForm.directBookingFeeRate"
+                />
+                <span class="input-group-text bg-light text-muted">%</span>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fs-12 fw-medium text-dark">Devise des Frais</label>
+              <input
+                type="text"
+                class="form-control form-control-sm text-uppercase"
+                placeholder="Ex: XOF, EUR"
+                [(ngModel)]="createForm.currency"
+                maxlength="5"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- 4. Active Status Toggle -->
+      <div class="d-flex align-items-center justify-content-between p-2 border rounded">
+        <div>
+          <strong class="d-block fs-13 text-dark">Politique active pour ce pays</strong>
+          <small class="text-muted fs-12">Si désactivée, les règles par défaut du système s'appliqueront.</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input
+            class="form-check-input fs-16"
+            type="checkbox"
+            id="createPolicyActiveSwitch"
+            [(ngModel)]="createForm.isActive"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer border-top bg-light">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()" [disabled]="saving">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" (click)="saveNewPolicy()" [disabled]="saving || !createForm.profileTypeId">
+        @if (saving) {
+          <div class="spinner-border spinner-border-sm me-1"></div>
+          Création en cours...
+        } @else {
+          <app-icon icon="check"></app-icon>
+          Créer la Politique
         }
       </button>
     </div>

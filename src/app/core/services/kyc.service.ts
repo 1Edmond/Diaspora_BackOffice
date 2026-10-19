@@ -79,9 +79,10 @@ export class KycService {
     return this.http.post<KycVerification>(`${this.apiUrl}/${id}/request-info`, data);
   }
 
-  uploadDocument(verificationId: string, file: File): Observable<any> {
+  uploadDocument(verificationId: string, file: File, documentType = 'IdentityDocument'): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('documentType', documentType);
     return this.http.post(`${this.apiUrl}/${verificationId}/documents`, formData);
   }
 
