@@ -132,8 +132,12 @@ export class AuthService {
   private setSession(response: LoginResponse): void {
     sessionStorage.setItem('accessToken', response.accessToken);
     sessionStorage.setItem('refreshToken', response.refreshToken);
-    sessionStorage.setItem('currentUser', JSON.stringify(response.user));
-    this.currentUserSubject.next(response.user);
+    const userToStore = {
+      ...response.user,
+      role: response.user?.role?.length ? response.user.role : (response.role || []),
+    };
+    sessionStorage.setItem('currentUser', JSON.stringify(userToStore));
+    this.currentUserSubject.next(userToStore);
   }
 
   private clearSession(): void {

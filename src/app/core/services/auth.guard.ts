@@ -13,11 +13,10 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: any): boolean | UrlTree {
     if (this.auth.isAuthenticated()) {
-      const user = this.auth.getCurrentUser();
-      const roles = user?.role || [];
-      const hasAdminRole = roles.some(r => ['Admin', 'SuperAdmin', 'Officer', 'Moderator'].includes(r));
+      const user = this.auth.getCurrentUser() as any;
+      const roles: string[] = user?.role || user?.roles || [];
+      const hasAdminRole = roles.some(r => ['admin', 'superadmin', 'officer', 'moderator'].includes(r?.toLowerCase()));
       if (!hasAdminRole) {
-        this.auth.logout();
         return this.router.createUrlTree(['/auth/sign-in'], {
           queryParams: { error: 'unauthorized_role' },
         });

@@ -19,8 +19,8 @@ export class SignIn {
   name = META_DATA.name
   author = META_DATA.author
 
-  email = ''
-  password = ''
+  email = 'admin@diaspora.org'
+  password = '1234'
   rememberMe = true
   error = ''
   loading = false
